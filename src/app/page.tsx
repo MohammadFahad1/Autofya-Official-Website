@@ -8,6 +8,7 @@ import AiDevelopmentExcellence from "@/components/AiDevelopmentExcellence";
 import FasterDeliveryBanner from "@/components/FasterDeliveryBanner";
 import ProductsSolutions from "@/components/ProductsSolutions";
 import CompanyOverview from "@/components/CompanyOverview";
+import TechStackSection from "@/components/TechStackSection";
 
 export default function Home() {
   return (
@@ -28,6 +29,7 @@ export default function Home() {
         <FasterDeliveryBanner />
         <ProductsSolutions />
         <CompanyOverview />
+        <TechStackSection />
       </main>
     </div>
   );
