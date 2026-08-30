@@ -7,6 +7,7 @@ import IndustriesSection from "@/components/IndustriesSection";
 import AiDevelopmentExcellence from "@/components/AiDevelopmentExcellence";
 import FasterDeliveryBanner from "@/components/FasterDeliveryBanner";
 import ProductsSolutions from "@/components/ProductsSolutions";
+import CompanyOverview from "@/components/CompanyOverview";
 
 export default function Home() {
   return (
@@ -26,6 +27,7 @@ export default function Home() {
         <AiDevelopmentExcellence />
         <FasterDeliveryBanner />
         <ProductsSolutions />
+        <CompanyOverview />
       </main>
     </div>
   );
