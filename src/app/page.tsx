@@ -4,6 +4,7 @@ import HeroSection from "@/components/HeroSection";
 import TrustedBy from "@/components/TrustedBy";
 import CoreCapabilities from "@/components/CoreCapabilities";
 import IndustriesSection from "@/components/IndustriesSection";
+import AiDevelopmentExcellence from "@/components/AiDevelopmentExcellence";
 
 export default function Home() {
   return (
@@ -20,6 +21,7 @@ export default function Home() {
         <TrustedBy />
         <CoreCapabilities />
         <IndustriesSection />
+        <AiDevelopmentExcellence />
       </main>
     </div>
   );
