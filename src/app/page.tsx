@@ -5,6 +5,8 @@ import TrustedBy from "@/components/TrustedBy";
 import CoreCapabilities from "@/components/CoreCapabilities";
 import IndustriesSection from "@/components/IndustriesSection";
 import AiDevelopmentExcellence from "@/components/AiDevelopmentExcellence";
+import FasterDeliveryBanner from "@/components/FasterDeliveryBanner";
+import ProductsSolutions from "@/components/ProductsSolutions";
 
 export default function Home() {
   return (
@@ -22,6 +24,8 @@ export default function Home() {
         <CoreCapabilities />
         <IndustriesSection />
         <AiDevelopmentExcellence />
+        <FasterDeliveryBanner />
+        <ProductsSolutions />
       </main>
     </div>
   );
