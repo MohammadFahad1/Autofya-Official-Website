@@ -3,6 +3,7 @@ import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
 import TrustedBy from "@/components/TrustedBy";
 import CoreCapabilities from "@/components/CoreCapabilities";
+import IndustriesSection from "@/components/IndustriesSection";
 
 export default function Home() {
   return (
@@ -18,6 +19,7 @@ export default function Home() {
         <HeroSection />
         <TrustedBy />
         <CoreCapabilities />
+        <IndustriesSection />
       </main>
     </div>
   );
