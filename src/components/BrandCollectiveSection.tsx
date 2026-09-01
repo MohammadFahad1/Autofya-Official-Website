@@ -36,7 +36,7 @@ export default function BrandCollectiveSection() {
               ERP<span className="font-extrabold">23</span>
             </span>
             <span className="text-[8px] font-bold text-slate-400 tracking-tight mt-0.5">
-              Powered By <span className="text-slate-600 font-black">BRAIN STATION 23</span>
+              Powered By <span className="text-slate-600 font-black">AUTOFYA</span>
             </span>
           </div>
         </div>
