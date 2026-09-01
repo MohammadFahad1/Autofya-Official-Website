@@ -12,9 +12,9 @@ export const metadata: Metadata = {
   title: "Autofya | Software • AI • Automation",
   description: "Scale your tech and AI engineering team with top-tier global talents.",
   icons: {
-    icon: "/favicon.jpeg",
-    shortcut: "/favicon.jpeg",
-    apple: "/favicon.jpeg",
+    icon: "/favicon.png",
+    shortcut: "/favicon.png",
+    apple: "/favicon.png",
   },
 };
 
@@ -26,7 +26,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       className={`${manrope.variable} h-full antialiased font-sans`}
     >
       <head>
-        <link rel="icon" href="/favicon.jpeg" type="image/jpeg" />
+        <link rel="icon" href="/favicon.png" type="image/png" />
       </head>
       <body className="min-h-full flex flex-col font-sans text-[#0B1340] bg-white">{children}</body>
     </html>

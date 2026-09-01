@@ -9,6 +9,10 @@ import FasterDeliveryBanner from "@/components/FasterDeliveryBanner";
 import ProductsSolutions from "@/components/ProductsSolutions";
 import CompanyOverview from "@/components/CompanyOverview";
 import TechStackSection from "@/components/TechStackSection";
+import OurProcessSection from "@/components/OurProcessSection";
+import BrandCollectiveSection from "@/components/BrandCollectiveSection";
+import CaseStudiesSection from "@/components/CaseStudiesSection";
+import JoinOurTeamSection from "@/components/JoinOurTeamSection";
 
 export default function Home() {
   return (
@@ -30,6 +34,10 @@ export default function Home() {
         <ProductsSolutions />
         <CompanyOverview />
         <TechStackSection />
+        <OurProcessSection />
+        <BrandCollectiveSection />
+        <CaseStudiesSection />
+        <JoinOurTeamSection />
       </main>
     </div>
   );

@@ -14,7 +14,7 @@ export default function AutofyaLogo({
   return (
     <div className={`flex items-center select-none ${className}`}>
       <Image
-        src="/logo.jpeg"
+        src="/logo.png"
         alt="Autofya - Software • AI • Automation"
         width={180}
         height={height}
