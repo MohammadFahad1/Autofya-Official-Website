@@ -13,6 +13,7 @@ import OurProcessSection from "@/components/OurProcessSection";
 import BrandCollectiveSection from "@/components/BrandCollectiveSection";
 import CaseStudiesSection from "@/components/CaseStudiesSection";
 import JoinOurTeamSection from "@/components/JoinOurTeamSection";
+import Footer from "@/components/Footer";
 
 export default function Home() {
   return (
@@ -39,6 +40,9 @@ export default function Home() {
         <CaseStudiesSection />
         <JoinOurTeamSection />
       </main>
+
+      {/* Global Offices & Footer */}
+      <Footer />
     </div>
   );
 }
