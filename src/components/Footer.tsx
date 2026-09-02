@@ -2,6 +2,7 @@
 
 import React from "react";
 import Image from "next/image";
+import Link from "next/link";
 import AutofyaLogo from "./AutofyaLogo";
 
 interface Office {
@@ -180,12 +181,12 @@ export default function Footer() {
               Let's discuss how our resource augmentation and AI-powered development can accelerate your project delivery.
             </p>
             <div>
-              <a
-                href="#contact"
-                className="inline-flex items-center justify-center px-8 py-3.5 rounded-full bg-[#F59E0B] hover:bg-[#D97706] text-[#0B1340] font-bold text-base sm:text-lg shadow-md transition-all duration-200"
+              <Link
+                href="/schedule"
+                className="inline-flex items-center justify-center px-8 py-3.5 rounded-full bg-[#F59E0B] hover:bg-[#D97706] text-[#0B1340] font-bold text-base sm:text-lg shadow-md transition-all duration-200 cursor-pointer"
               >
                 Schedule a Call
-              </a>
+              </Link>
             </div>
           </div>
         </div>

@@ -1,5 +1,8 @@
+"use client";
+
 import React from "react";
 import Image from "next/image";
+import Link from "next/link";
 
 interface ProcessStep {
   stepNumber: number;
@@ -121,12 +124,12 @@ export default function OurProcessSection() {
               We blend human expertise with AI precision—delivering faster outcomes without compromising security.
             </p>
             <div className="mb-10">
-              <a
-                href="#contact"
-                className="inline-flex items-center justify-center px-7 py-3 rounded-full bg-[#F59E0B] hover:bg-[#D97706] text-white font-semibold text-base sm:text-lg shadow-sm transition-all duration-200"
+              <Link
+                href="/schedule"
+                className="inline-flex items-center justify-center px-7 py-3 rounded-full bg-[#F59E0B] hover:bg-[#D97706] text-white font-semibold text-base sm:text-lg shadow-sm transition-all duration-200 cursor-pointer"
               >
                 Schedule a Call
-              </a>
+              </Link>
             </div>
 
             {/* Featured Team Image */}

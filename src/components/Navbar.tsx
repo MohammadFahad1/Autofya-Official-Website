@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import AutofyaLogo from "./AutofyaLogo";
 
 type MegaMenuKey = "Services" | "Industries" | "Products" | "Resources" | null;
@@ -341,12 +342,12 @@ export default function Navbar() {
 
         {/* Right: Action Button */}
         <div className="hidden sm:flex items-center gap-4">
-          <a
-            href="#schedule"
+          <Link
+            href="/schedule"
             className="inline-flex items-center justify-center px-6 py-3 rounded-full text-sm font-bold text-white bg-[#FF9000] hover:bg-[#E68200] active:scale-95 shadow-sm transition-all duration-200 cursor-pointer"
           >
             Schedule a Call
-          </a>
+          </Link>
         </div>
 
         {/* Mobile menu trigger */}
@@ -868,12 +869,13 @@ export default function Navbar() {
               {link.name}
             </a>
           ))}
-          <a
-            href="#schedule"
+          <Link
+            href="/schedule"
+            onClick={() => setMobileMenuOpen(false)}
             className="block text-center w-full py-3 mt-4 rounded-full text-sm font-bold text-white bg-[#FF9000] hover:bg-[#E68200] cursor-pointer"
           >
             Schedule a Call
-          </a>
+          </Link>
         </div>
       )}
     </header>

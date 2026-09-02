@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function HeroSection() {
   const [activeSlide, setActiveSlide] = useState(0);
@@ -184,15 +185,15 @@ export default function HeroSection() {
 
                   {/* Solid Orange Pill CTA Button (Matching Brain Station 23) */}
                   <div className="pt-2">
-                    <a
-                      href={slide.ctaLink}
+                    <Link
+                      href="/schedule"
                       onClick={(e) => {
                         if (Math.abs(dragOffset) > 10) e.preventDefault();
                       }}
-                      className="inline-flex items-center justify-center px-8 py-4 rounded-full text-base font-bold text-white bg-[#FF9000] hover:bg-[#E68200] active:scale-95 shadow-md transition-all duration-200"
+                      className="inline-flex items-center justify-center px-8 py-4 rounded-full text-base font-bold text-white bg-[#FF9000] hover:bg-[#E68200] active:scale-95 shadow-md transition-all duration-200 cursor-pointer"
                     >
                       {slide.ctaText}
-                    </a>
+                    </Link>
                   </div>
 
                   {/* Carousel Pagination Dots */}
