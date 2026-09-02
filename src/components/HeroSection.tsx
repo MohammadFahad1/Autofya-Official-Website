@@ -171,7 +171,7 @@ export default function HeroSection() {
                   <div className="space-y-6">
                     <h1 className="text-4xl sm:text-5xl lg:text-[54px] font-extrabold text-[#0B1340] leading-[1.15] tracking-tight">
                       {slide.title}{" "}
-                      <span className="text-[#00A3AD]">
+                      <span className="text-[#00a2ad]">
                         {slide.highlight}
                       </span>{" "}
                       {slide.titleEnd}

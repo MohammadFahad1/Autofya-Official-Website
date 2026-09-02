@@ -154,7 +154,7 @@ export default function CaseStudiesSection() {
                 onClick={() => setActiveTab(index)}
                 className={`flex items-center justify-center w-36 h-20 px-4 rounded-xl transition-all duration-200 shrink-0 ${
                   isActive
-                    ? "bg-white border-t border-x border-slate-200/80 border-b-[3px] border-b-[#0284C7]"
+                    ? "bg-white border-t border-x border-slate-200/80 border-b-[3px] border-b-[#00a2ad]"
                     : "bg-[#F1F5F9]/70 border border-slate-200/60 hover:bg-white hover:border-slate-300"
                 }`}
               >
@@ -182,7 +182,7 @@ export default function CaseStudiesSection() {
           {/* Right: Case Study Info */}
           <div className="lg:col-span-6 flex flex-col justify-center">
             {/* Category Tag */}
-            <span className="text-[#0284C7] font-semibold text-sm sm:text-base tracking-wide uppercase mb-2">
+            <span className="text-[#00a2ad] font-semibold text-sm sm:text-base tracking-wide uppercase mb-2">
               {current.category}
             </span>
 
@@ -213,7 +213,7 @@ export default function CaseStudiesSection() {
                 
                 {/* Stat 1 */}
                 <div>
-                  <div className="text-4xl sm:text-5xl font-light text-[#0284C7] tracking-tight">
+                  <div className="text-4xl sm:text-5xl font-light text-[#00a2ad] tracking-tight">
                     {current.stat1Value}
                   </div>
                   <div className="text-slate-500 text-sm sm:text-base font-normal mt-1">
@@ -223,7 +223,7 @@ export default function CaseStudiesSection() {
 
                 {/* Stat 2 */}
                 <div>
-                  <div className="text-4xl sm:text-5xl font-light text-[#0284C7] tracking-tight">
+                  <div className="text-4xl sm:text-5xl font-light text-[#00a2ad] tracking-tight">
                     {current.stat2Value}
                   </div>
                   <div className="text-slate-500 text-sm sm:text-base font-normal mt-1">

@@ -148,13 +148,13 @@ export default function Footer() {
 
                   <a
                     href={`mailto:${office.email}`}
-                    className="text-[#38BDF8] hover:text-[#7DD3FC] text-sm font-medium hover:underline block mb-1 transition-colors"
+                    className="text-[#00a2ad] hover:text-[#33b5be] text-sm font-medium hover:underline block mb-1 transition-colors"
                   >
                     {office.email}
                   </a>
 
                   {office.phone && (
-                    <span className="text-[#38BDF8] text-sm font-medium">
+                    <span className="text-[#00a2ad] text-sm font-medium">
                       {office.phone}
                     </span>
                   )}
@@ -206,19 +206,19 @@ export default function Footer() {
               
               {/* Social Icons */}
               <div className="flex items-center space-x-8 sm:space-x-10 text-white text-3xl sm:text-[32px]">
-                <a href="https://facebook.com" target="_blank" rel="noreferrer" aria-label="Facebook" className="hover:text-[#0084FF] transition-colors font-extrabold">
+                <a href="https://facebook.com" target="_blank" rel="noreferrer" aria-label="Facebook" className="hover:text-[#00a2ad] transition-colors font-extrabold">
                   f
                 </a>
-                <a href="https://linkedin.com" target="_blank" rel="noreferrer" aria-label="LinkedIn" className="hover:text-[#0084FF] transition-colors font-extrabold">
+                <a href="https://linkedin.com" target="_blank" rel="noreferrer" aria-label="LinkedIn" className="hover:text-[#00a2ad] transition-colors font-extrabold">
                   in
                 </a>
-                <a href="https://twitter.com" target="_blank" rel="noreferrer" aria-label="X" className="hover:text-[#0084FF] transition-colors font-extrabold">
+                <a href="https://twitter.com" target="_blank" rel="noreferrer" aria-label="X" className="hover:text-[#00a2ad] transition-colors font-extrabold">
                   X
                 </a>
-                <a href="https://youtube.com" target="_blank" rel="noreferrer" aria-label="YouTube" className="hover:text-[#0084FF] transition-colors font-extrabold text-2xl sm:text-3xl">
+                <a href="https://youtube.com" target="_blank" rel="noreferrer" aria-label="YouTube" className="hover:text-[#00a2ad] transition-colors font-extrabold text-2xl sm:text-3xl">
                   ►
                 </a>
-                <a href="https://medium.com" target="_blank" rel="noreferrer" aria-label="Medium" className="hover:text-[#0084FF] transition-colors font-extrabold">
+                <a href="https://medium.com" target="_blank" rel="noreferrer" aria-label="Medium" className="hover:text-[#00a2ad] transition-colors font-extrabold">
                   M
                 </a>
               </div>
@@ -296,7 +296,7 @@ export default function Footer() {
                     </svg>
                   </div>
                   <span className="text-xs sm:text-sm text-slate-300 font-medium flex items-center gap-1">
-                    <span className="text-[#0084FF]">•</span> GDPR
+                    <span className="text-[#00a2ad]">•</span> GDPR
                   </span>
                 </div>
 
@@ -306,7 +306,7 @@ export default function Footer() {
                     ISO
                   </div>
                   <span className="text-xs sm:text-sm text-slate-300 font-medium flex items-center gap-1">
-                    <span className="text-[#0084FF]">•</span> ISO
+                    <span className="text-[#00a2ad]">•</span> ISO
                   </span>
                 </div>
 
@@ -316,7 +316,7 @@ export default function Footer() {
                     ISO
                   </div>
                   <span className="text-xs sm:text-sm text-slate-300 font-medium flex items-center gap-1">
-                    <span className="text-[#0084FF]">•</span> ISO
+                    <span className="text-[#00a2ad]">•</span> ISO
                   </span>
                 </div>
 
@@ -326,7 +326,7 @@ export default function Footer() {
                     CMMI
                   </div>
                   <span className="text-xs sm:text-sm text-slate-300 font-medium flex items-center gap-1">
-                    <span className="text-[#0084FF]">•</span> CMMI
+                    <span className="text-[#00a2ad]">•</span> CMMI
                   </span>
                 </div>
               </div>
@@ -336,11 +336,11 @@ export default function Footer() {
             <div>
               <span className="text-slate-200 text-sm font-semibold block mb-4">Partnerships:</span>
               <div className="flex items-center space-x-6 sm:space-x-8 text-white font-bold text-base sm:text-lg">
-                <span className="flex items-center gap-1.5"><span className="text-blue-500">■</span> Microsoft</span>
+                <span className="flex items-center gap-1.5"><span className="text-[#00a2ad]">■</span> Microsoft</span>
                 <span className="font-extrabold tracking-tight">aws</span>
                 <span className="font-semibold italic">moodle</span>
                 <span className="text-xs sm:text-sm font-medium border border-slate-600 px-2.5 py-1 rounded">Google Cloud Partner</span>
-                <span className="font-bold text-[#00A1E0]">salesforce</span>
+                <span className="font-bold text-[#00a2ad]">salesforce</span>
                 <span className="text-xs sm:text-sm text-slate-300">Certified Partner</span>
               </div>
             </div>

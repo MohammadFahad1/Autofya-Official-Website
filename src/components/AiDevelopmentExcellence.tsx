@@ -81,10 +81,10 @@ export default function AiDevelopmentExcellence() {
             {metrics.map((item, index) => (
               <div key={index} className="space-y-2 border-b border-slate-200/60 pb-8 last:border-0 last:pb-0">
                 <div className="flex items-baseline gap-3">
-                  <span className="text-5xl sm:text-6xl font-light text-[#00A3AD] tracking-tight">
+                  <span className="text-5xl sm:text-6xl font-light text-[#00a2ad] tracking-tight">
                     {item.stat}
                   </span>
-                  <span className="text-xs sm:text-sm font-bold text-[#00A3AD] uppercase tracking-wider">
+                  <span className="text-xs sm:text-sm font-bold text-[#00a2ad] uppercase tracking-wider">
                     {item.badge}
                   </span>
                 </div>

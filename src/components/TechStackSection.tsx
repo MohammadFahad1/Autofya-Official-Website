@@ -65,7 +65,7 @@ export default function TechStackSection() {
               {marqueeRow1.map((item, idx) => (
                 <span
                   key={`${item}-${idx}`}
-                  className="font-extrabold text-3xl sm:text-4xl lg:text-[44px] text-white hover:text-[#00A3AD] transition-colors cursor-pointer px-6 sm:px-10 py-3 whitespace-nowrap select-none opacity-95 hover:opacity-100 tracking-tight"
+                  className="font-extrabold text-3xl sm:text-4xl lg:text-[44px] text-white hover:text-[#00a2ad] transition-colors cursor-pointer px-6 sm:px-10 py-3 whitespace-nowrap select-none opacity-95 hover:opacity-100 tracking-tight"
                 >
                   {item}
                 </span>
@@ -79,7 +79,7 @@ export default function TechStackSection() {
               {marqueeRow2.map((item, idx) => (
                 <span
                   key={`${item}-${idx}`}
-                  className="font-extrabold text-3xl sm:text-4xl lg:text-[44px] text-white hover:text-[#00A3AD] transition-colors cursor-pointer px-6 sm:px-10 py-3 whitespace-nowrap select-none opacity-95 hover:opacity-100 tracking-tight"
+                  className="font-extrabold text-3xl sm:text-4xl lg:text-[44px] text-white hover:text-[#00a2ad] transition-colors cursor-pointer px-6 sm:px-10 py-3 whitespace-nowrap select-none opacity-95 hover:opacity-100 tracking-tight"
                 >
                   {item}
                 </span>

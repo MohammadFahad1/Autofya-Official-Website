@@ -297,8 +297,8 @@ export default function Navbar() {
                 onClick={() => handleNavClick(link.name)}
                 className={`flex items-center gap-1.5 text-[15px] font-semibold transition-colors py-2 focus:outline-none cursor-pointer ${
                   activeMegaMenu === link.name
-                    ? "text-[#00A3AD]"
-                    : "text-[#0B1340] hover:text-[#00A3AD]"
+                    ? "text-[#00a2ad]"
+                    : "text-[#0B1340] hover:text-[#00a2ad]"
                 }`}
               >
                 {link.name}
@@ -306,7 +306,7 @@ export default function Navbar() {
                   <svg
                     className={`w-4 h-4 text-slate-400 transition-transform duration-300 ${
                       activeMegaMenu === link.name
-                        ? "text-[#00A3AD] rotate-180"
+                        ? "text-[#00a2ad] rotate-180"
                         : ""
                     }`}
                     fill="none"
@@ -385,7 +385,7 @@ export default function Navbar() {
                         <a
                           href="#case-studies"
                           onClick={() => setActiveMegaMenu(null)}
-                          className="text-[13px] font-bold text-[#0284C7] hover:underline cursor-pointer"
+                          className="text-[13px] font-bold text-[#00a2ad] hover:underline cursor-pointer"
                         >
                           View All &gt;
                         </a>
@@ -408,7 +408,7 @@ export default function Navbar() {
                               />
                             </div>
                             <div className="flex flex-col flex-1 min-w-0">
-                              <h5 className="text-[14px] font-bold text-[#0B1340] group-hover:text-[#00A3AD] transition-colors leading-snug line-clamp-2">
+                              <h5 className="text-[14px] font-bold text-[#0B1340] group-hover:text-[#00a2ad] transition-colors leading-snug line-clamp-2">
                                 {item.title}
                               </h5>
                               <p className="text-[12px] text-slate-500 line-clamp-2 mt-1 leading-normal">
@@ -440,7 +440,7 @@ export default function Navbar() {
                           <a
                             href={currentMenu.testimonial.viewAllLink || "#testimonials"}
                             onClick={() => setActiveMegaMenu(null)}
-                            className="text-[13px] font-bold text-[#0284C7] hover:underline cursor-pointer"
+                            className="text-[13px] font-bold text-[#00a2ad] hover:underline cursor-pointer"
                           >
                             View All &gt;
                           </a>
@@ -493,7 +493,7 @@ export default function Navbar() {
                           <a
                             href={`#${item.toLowerCase().replace(/\s+/g, "-")}`}
                             onClick={() => setActiveMegaMenu(null)}
-                            className="text-[15px] font-semibold text-[#0B1340] hover:text-[#00A3AD] transition-colors block cursor-pointer"
+                            className="text-[15px] font-semibold text-[#0B1340] hover:text-[#00a2ad] transition-colors block cursor-pointer"
                           >
                             {item}
                           </a>
@@ -526,7 +526,7 @@ export default function Navbar() {
                         <a
                           href={currentMenu.sidebar.newsLinkHref || "#about"}
                           onClick={() => setActiveMegaMenu(null)}
-                          className="text-[12px] font-bold text-[#00A3AD] hover:underline cursor-pointer"
+                          className="text-[12px] font-bold text-[#00a2ad] hover:underline cursor-pointer"
                         >
                           {currentMenu.sidebar.newsLinkText}
                         </a>
@@ -548,7 +548,7 @@ export default function Navbar() {
                       <a
                         href="#case-studies"
                         onClick={() => setActiveMegaMenu(null)}
-                        className="text-slate-900 font-medium underline hover:text-[#00A3AD] transition-colors cursor-pointer"
+                        className="text-slate-900 font-medium underline hover:text-[#00a2ad] transition-colors cursor-pointer"
                       >
                         Read case study.
                       </a>
@@ -567,7 +567,7 @@ export default function Navbar() {
                   {currentMenu.productsCol1 && (
                     <div>
                       <h4 className="text-[17px] font-bold text-[#0B1340] flex items-center gap-2 mb-5">
-                        <span className="text-[#0284C7] text-sm">■</span> {currentMenu.productsCol1.category}
+                        <span className="text-[#00a2ad] text-sm">■</span> {currentMenu.productsCol1.category}
                       </h4>
                       <div className="space-y-3.5">
                         {currentMenu.productsCol1.items.map((item, idx) => {
@@ -582,11 +582,11 @@ export default function Navbar() {
                               target={isExt ? "_blank" : undefined}
                               rel={isExt ? "noopener noreferrer" : undefined}
                               onClick={() => setActiveMegaMenu(null)}
-                              className="text-[16px] font-semibold text-slate-700 hover:text-[#00A3AD] transition-colors block py-0.5 cursor-pointer flex items-center gap-1.5 group"
+                              className="text-[16px] font-semibold text-slate-700 hover:text-[#00a2ad] transition-colors block py-0.5 cursor-pointer flex items-center gap-1.5 group"
                             >
                               <span>{name}</span>
                               {isExt && (
-                                <span className="text-xs text-slate-400 group-hover:text-[#00A3AD]">↗</span>
+                                <span className="text-xs text-slate-400 group-hover:text-[#00a2ad]">↗</span>
                               )}
                             </a>
                           );
@@ -601,7 +601,7 @@ export default function Navbar() {
                   {currentMenu.productsCol2?.map((group, gIdx) => (
                     <div key={gIdx}>
                       <h4 className="text-[17px] font-bold text-[#0B1340] flex items-center gap-2 mb-3">
-                        <span className="text-[#0284C7] text-sm">■</span> {group.category}
+                        <span className="text-[#00a2ad] text-sm">■</span> {group.category}
                       </h4>
                       <div className="space-y-2.5">
                         {group.items.map((item, idx) => {
@@ -616,11 +616,11 @@ export default function Navbar() {
                               target={isExt ? "_blank" : undefined}
                               rel={isExt ? "noopener noreferrer" : undefined}
                               onClick={() => setActiveMegaMenu(null)}
-                              className="text-[16px] font-semibold text-slate-700 hover:text-[#00A3AD] transition-colors block py-0.5 cursor-pointer flex items-center gap-1.5 group"
+                              className="text-[16px] font-semibold text-slate-700 hover:text-[#00a2ad] transition-colors block py-0.5 cursor-pointer flex items-center gap-1.5 group"
                             >
                               <span>{name}</span>
                               {isExt && (
-                                <span className="text-xs text-slate-400 group-hover:text-[#00A3AD]">↗</span>
+                                <span className="text-xs text-slate-400 group-hover:text-[#00a2ad]">↗</span>
                               )}
                             </a>
                           );
@@ -635,7 +635,7 @@ export default function Navbar() {
                   {currentMenu.productsCol3 && (
                     <div>
                       <h4 className="text-[17px] font-bold text-[#0B1340] flex items-center gap-2 mb-5">
-                        <span className="text-[#0284C7] text-sm">■</span> {currentMenu.productsCol3.category}
+                        <span className="text-[#00a2ad] text-sm">■</span> {currentMenu.productsCol3.category}
                       </h4>
                       <div className="space-y-3.5">
                         {currentMenu.productsCol3.items.map((item, idx) => {
@@ -650,11 +650,11 @@ export default function Navbar() {
                               target={isExt ? "_blank" : undefined}
                               rel={isExt ? "noopener noreferrer" : undefined}
                               onClick={() => setActiveMegaMenu(null)}
-                              className="text-[16px] font-semibold text-slate-700 hover:text-[#00A3AD] transition-colors block py-0.5 cursor-pointer flex items-center gap-1.5 group"
+                              className="text-[16px] font-semibold text-slate-700 hover:text-[#00a2ad] transition-colors block py-0.5 cursor-pointer flex items-center gap-1.5 group"
                             >
                               <span>{name}</span>
                               {isExt && (
-                                <span className="text-xs text-slate-400 group-hover:text-[#00A3AD]">↗</span>
+                                <span className="text-xs text-slate-400 group-hover:text-[#00a2ad]">↗</span>
                               )}
                             </a>
                           );
@@ -669,7 +669,7 @@ export default function Navbar() {
               <div className="flex-1 bg-white p-8 sm:p-10 flex flex-col justify-between">
                 <div>
                   <h4 className="text-[17px] font-bold text-[#0B1340] flex items-center gap-2 mb-6">
-                    <span className="text-[#0284C7] text-sm">■</span> {currentMenu.section1Title}
+                    <span className="text-[#00a2ad] text-sm">■</span> {currentMenu.section1Title}
                   </h4>
 
                   <div className="grid grid-cols-2 gap-x-16 gap-y-4 max-w-2xl">
@@ -679,7 +679,7 @@ export default function Navbar() {
                           key={idx}
                           href={`#${item.toLowerCase().replace(/\s+/g, "-")}`}
                           onClick={() => setActiveMegaMenu(null)}
-                          className="text-[16px] font-semibold text-slate-700 hover:text-[#00A3AD] transition-colors block py-0.5 cursor-pointer"
+                          className="text-[16px] font-semibold text-slate-700 hover:text-[#00a2ad] transition-colors block py-0.5 cursor-pointer"
                         >
                           {item}
                         </a>
@@ -692,7 +692,7 @@ export default function Navbar() {
                           key={idx}
                           href={`#${item.toLowerCase().replace(/\s+/g, "-")}`}
                           onClick={() => setActiveMegaMenu(null)}
-                          className="text-[16px] font-semibold text-slate-700 hover:text-[#00A3AD] transition-colors block py-0.5 cursor-pointer"
+                          className="text-[16px] font-semibold text-slate-700 hover:text-[#00a2ad] transition-colors block py-0.5 cursor-pointer"
                         >
                           {item}
                         </a>
@@ -705,7 +705,7 @@ export default function Navbar() {
                   <a
                     href="#industries"
                     onClick={() => setActiveMegaMenu(null)}
-                    className="inline-flex items-center text-[16px] font-bold text-[#0B1340] hover:text-[#00A3AD] transition-colors group cursor-pointer"
+                    className="inline-flex items-center text-[16px] font-bold text-[#0B1340] hover:text-[#00a2ad] transition-colors group cursor-pointer"
                   >
                     <span>All Industries</span>
                     <span className="ml-1.5 transition-transform group-hover:translate-x-1">→</span>
@@ -718,8 +718,8 @@ export default function Navbar() {
                 
                 {/* Column 1: Inside Autofya */}
                 <div className="col-span-6">
-                  <h4 className="text-[15px] font-bold text-[#0284C7] flex items-center gap-2 mb-5">
-                    <span className="text-[#0284C7] text-xs">■</span> {currentMenu.section1Title}
+                  <h4 className="text-[15px] font-bold text-[#00a2ad] flex items-center gap-2 mb-5">
+                    <span className="text-[#00a2ad] text-xs">■</span> {currentMenu.section1Title}
                   </h4>
                   <div className="space-y-3.5">
                     {currentMenu.insideItems?.map((item, idx) => (
@@ -727,7 +727,7 @@ export default function Navbar() {
                         key={idx}
                         href={`#${item.toLowerCase().replace(/\s+/g, "-")}`}
                         onClick={() => setActiveMegaMenu(null)}
-                        className="text-[15px] font-medium text-slate-700 hover:text-[#00A3AD] transition-colors block py-0.5 cursor-pointer"
+                        className="text-[15px] font-medium text-slate-700 hover:text-[#00a2ad] transition-colors block py-0.5 cursor-pointer"
                       >
                         {item}
                       </a>
@@ -737,8 +737,8 @@ export default function Navbar() {
 
                 {/* Column 2: Recognitions */}
                 <div className="col-span-6 pl-4 border-l border-slate-100">
-                  <h4 className="text-[15px] font-bold text-[#0284C7] flex items-center gap-2 mb-5">
-                    <span className="text-[#0284C7] text-xs">■</span> {currentMenu.section2Title}
+                  <h4 className="text-[15px] font-bold text-[#00a2ad] flex items-center gap-2 mb-5">
+                    <span className="text-[#00a2ad] text-xs">■</span> {currentMenu.section2Title}
                   </h4>
                   <div className="space-y-3.5">
                     {currentMenu.recognitionsItems?.map((item, idx) => (
@@ -746,7 +746,7 @@ export default function Navbar() {
                         key={idx}
                         href={`#${item.toLowerCase().replace(/\s+/g, "-")}`}
                         onClick={() => setActiveMegaMenu(null)}
-                        className="text-[15px] font-medium text-slate-700 hover:text-[#00A3AD] transition-colors block py-0.5 cursor-pointer"
+                        className="text-[15px] font-medium text-slate-700 hover:text-[#00a2ad] transition-colors block py-0.5 cursor-pointer"
                       >
                         {item}
                       </a>
@@ -761,8 +761,8 @@ export default function Navbar() {
                 
                 {/* Top Services Section (Col 8) */}
                 <div className="col-span-8">
-                  <h4 className="text-[15px] font-bold text-[#0284C7] flex items-center gap-2 mb-5">
-                    <span className="text-[#0284C7] text-xs">■</span> {currentMenu.section1Title}
+                  <h4 className="text-[15px] font-bold text-[#00a2ad] flex items-center gap-2 mb-5">
+                    <span className="text-[#00a2ad] text-xs">■</span> {currentMenu.section1Title}
                   </h4>
 
                   <div className="grid grid-cols-2 gap-x-10 gap-y-3.5">
@@ -772,7 +772,7 @@ export default function Navbar() {
                           key={idx}
                           href={`#${item.toLowerCase().replace(/\s+/g, "-")}`}
                           onClick={() => setActiveMegaMenu(null)}
-                          className="text-[15px] font-medium text-slate-700 hover:text-[#00A3AD] transition-colors block py-0.5 cursor-pointer"
+                          className="text-[15px] font-medium text-slate-700 hover:text-[#00a2ad] transition-colors block py-0.5 cursor-pointer"
                         >
                           {item}
                         </a>
@@ -785,7 +785,7 @@ export default function Navbar() {
                           key={idx}
                           href={`#${item.toLowerCase().replace(/\s+/g, "-")}`}
                           onClick={() => setActiveMegaMenu(null)}
-                          className="text-[15px] font-medium text-slate-700 hover:text-[#00A3AD] transition-colors block py-0.5 cursor-pointer"
+                          className="text-[15px] font-medium text-slate-700 hover:text-[#00a2ad] transition-colors block py-0.5 cursor-pointer"
                         >
                           {item}
                         </a>
@@ -798,7 +798,7 @@ export default function Navbar() {
                       <a
                         href="#services"
                         onClick={() => setActiveMegaMenu(null)}
-                        className="inline-flex items-center text-[15px] font-bold text-[#0B1340] hover:text-[#00A3AD] transition-colors group cursor-pointer"
+                        className="inline-flex items-center text-[15px] font-bold text-[#0B1340] hover:text-[#00a2ad] transition-colors group cursor-pointer"
                       >
                         <span>{currentMenu.allLinkText}</span>
                         <span className="ml-1.5 transition-transform group-hover:translate-x-1">→</span>
@@ -809,8 +809,8 @@ export default function Navbar() {
 
                 {/* Enterprise Focused Section (Col 4) */}
                 <div className="col-span-4 pl-4 border-l border-slate-100">
-                  <h4 className="text-[15px] font-bold text-[#0284C7] flex items-center gap-2 mb-5">
-                    <span className="text-[#0284C7] text-xs">■</span> {currentMenu.section2Title}
+                  <h4 className="text-[15px] font-bold text-[#00a2ad] flex items-center gap-2 mb-5">
+                    <span className="text-[#00a2ad] text-xs">■</span> {currentMenu.section2Title}
                   </h4>
 
                   <div className="space-y-3.5">
@@ -819,7 +819,7 @@ export default function Navbar() {
                         key={idx}
                         href={`#${item.toLowerCase().replace(/\s+/g, "-")}`}
                         onClick={() => setActiveMegaMenu(null)}
-                        className="text-[15px] font-medium text-slate-700 hover:text-[#00A3AD] transition-colors block py-0.5 cursor-pointer"
+                        className="text-[15px] font-medium text-slate-700 hover:text-[#00a2ad] transition-colors block py-0.5 cursor-pointer"
                       >
                         {item}
                       </a>
@@ -841,7 +841,7 @@ export default function Navbar() {
             <a
               key={link.name}
               href={`#${link.name.toLowerCase().replace(/\s+/g, "-")}`}
-              className="block py-2 text-base font-semibold text-[#0B1340] hover:text-[#00A3AD] cursor-pointer"
+              className="block py-2 text-base font-semibold text-[#0B1340] hover:text-[#00a2ad] cursor-pointer"
             >
               {link.name}
             </a>

@@ -21,7 +21,7 @@ export default function OurProcessSection() {
         "Receive a GDPR/ISO 27001-compliant project blueprint",
       ],
       renderIcon: () => (
-        <svg className="w-7 h-7 text-[#0284C7]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-7 h-7 text-[#00a2ad]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -53,7 +53,7 @@ export default function OurProcessSection() {
         "Dedicated PM + automated progress dashboards",
       ],
       renderIcon: () => (
-        <svg className="w-7 h-7 text-[#0284C7]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-7 h-7 text-[#00a2ad]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -73,7 +73,7 @@ export default function OurProcessSection() {
         "Real-time compliance checks (ISO 27001 baked in)",
       ],
       renderIcon: () => (
-        <svg className="w-7 h-7 text-[#0284C7]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-7 h-7 text-[#00a2ad]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -93,7 +93,7 @@ export default function OurProcessSection() {
         "90-day post-launch support with AI-driven analytics",
       ],
       renderIcon: () => (
-        <svg className="w-7 h-7 text-[#0284C7]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-7 h-7 text-[#00a2ad]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -150,10 +150,10 @@ export default function OurProcessSection() {
 
                 {/* Step Badge */}
                 <div className="flex items-center space-x-3 mb-3.5">
-                  <span className="inline-flex items-center px-3 py-1 rounded-md text-sm sm:text-base font-bold bg-[#0284C7]/10 text-[#0284C7]">
+                  <span className="inline-flex items-center px-3 py-1 rounded-md text-sm sm:text-base font-bold bg-[#00a2ad]/10 text-[#00a2ad]">
                     Step {step.stepNumber}
                   </span>
-                  <span className="text-sm sm:text-base font-semibold text-[#0284C7]">
+                  <span className="text-sm sm:text-base font-semibold text-[#00a2ad]">
                     {step.badgeTitle}
                   </span>
                 </div>

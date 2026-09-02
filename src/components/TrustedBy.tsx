@@ -7,10 +7,10 @@ export default function TrustedBy() {
     { name: "Virtual Affairs", logo: "/brands/virtual-affairs.png", text: "Virtual Affairs" },
     { name: "vallie", logo: "/brands/vallie.png", text: "vallie", color: "text-[#E11D48]" },
     { name: "robi", logo: "/brands/robi.png", text: "robi", color: "text-[#E11D48]" },
-    { name: "TENNANT", logo: "/brands/tennant.png", text: "TENNANT", color: "text-[#0284C7]" },
+    { name: "TENNANT", logo: "/brands/tennant.png", text: "TENNANT", color: "text-[#00a2ad]" },
     { name: "VEON", logo: "/brands/veon.png", text: "VEON", color: "text-[#F59E0B]" },
     { name: "SANOFI", logo: "/brands/sanofi.png", text: "SANOFI", color: "text-[#4A1E9E]" },
-    { name: "telenor", logo: "/brands/telenor.png", text: "telenor", color: "text-[#00A3AD]" },
+    { name: "telenor", logo: "/brands/telenor.png", text: "telenor", color: "text-[#00a2ad]" },
   ];
 
   // Duplicate list to achieve a 100% seamless infinite marquee loop

@@ -17,7 +17,7 @@ import Footer from "@/components/Footer";
 
 export default function Home() {
   return (
-    <div className="min-h-screen flex flex-col bg-white text-[#0B1340] selection:bg-[#00A3AD] selection:text-white">
+    <div className="min-h-screen flex flex-col bg-white text-[#0B1340] selection:bg-[#00a2ad] selection:text-white">
       {/* Top Banner */}
       <AnnouncementBar />
 

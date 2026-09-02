@@ -14,7 +14,7 @@ export default function BrandCollectiveSection() {
       renderLogo: () => (
         <div className="flex flex-col items-center justify-center text-center">
           <span className="text-xl sm:text-2xl font-black text-slate-800 tracking-tight leading-none">
-            Station <span className="text-[#00A3AD]">23</span>
+            Station <span className="text-[#00a2ad]">23</span>
           </span>
           <span className="text-[9px] font-medium text-slate-400 tracking-wider uppercase mt-1">
             Your Trusted Solution Partner
@@ -28,11 +28,11 @@ export default function BrandCollectiveSection() {
       renderLogo: () => (
         <div className="flex items-center space-x-2.5">
           {/* Globe / Network Icon */}
-          <svg className="w-8 h-8 text-[#0084FF] shrink-0" viewBox="0 0 32 32" fill="currentColor">
+          <svg className="w-8 h-8 text-[#00a2ad] shrink-0" viewBox="0 0 32 32" fill="currentColor">
             <path d="M16 2a14 14 0 100 28 14 14 0 000-28zm-2 24.93c-3.95-.49-7.07-3.61-7.56-7.56h15.12c-.49 3.95-3.61 7.07-7.56 7.56zm-7.56-11.43c.49-3.95 3.61-7.07 7.56-7.56v15.12c-3.95-.49-7.07-3.61-7.56-7.56zm17.12 0h-7.56V7.94c3.95.49 7.07 3.61 7.56 7.56z" />
           </svg>
           <div className="flex flex-col">
-            <span className="text-2xl font-black text-[#0084FF] tracking-tighter leading-none">
+            <span className="text-2xl font-black text-[#00a2ad] tracking-tighter leading-none">
               ERP<span className="font-extrabold">23</span>
             </span>
             <span className="text-[8px] font-bold text-slate-400 tracking-tight mt-0.5">
@@ -48,8 +48,8 @@ export default function BrandCollectiveSection() {
       renderLogo: () => (
         <div className="flex items-center space-x-2.5">
           {/* VR Headset Icon */}
-          <div className="w-9 h-9 rounded-full bg-[#00A3AD]/10 flex items-center justify-center shrink-0">
-            <svg className="w-6 h-6 text-[#00A3AD]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="w-9 h-9 rounded-full bg-[#00a2ad]/10 flex items-center justify-center shrink-0">
+            <svg className="w-6 h-6 text-[#00a2ad]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -61,7 +61,7 @@ export default function BrandCollectiveSection() {
             </svg>
           </div>
           <div className="flex flex-col">
-            <span className="text-2xl font-black text-[#00A3AD] tracking-tight leading-none">
+            <span className="text-2xl font-black text-[#00a2ad] tracking-tight leading-none">
               XR <span className="font-extrabold text-slate-800">23</span>
             </span>
             <span className="text-[9px] font-semibold text-slate-400 tracking-wider uppercase mt-0.5">
@@ -76,7 +76,7 @@ export default function BrandCollectiveSection() {
       name: "FINTECH 23",
       renderLogo: () => (
         <div className="flex items-center">
-          <span className="text-2xl sm:text-[26px] font-black text-[#0284C7] tracking-tight">
+          <span className="text-2xl sm:text-[26px] font-black text-[#00a2ad] tracking-tight">
             FINTECH <span className="text-[#0B1340]">23</span>
           </span>
         </div>
@@ -140,7 +140,7 @@ export default function BrandCollectiveSection() {
       name: "CLOUD 23",
       renderLogo: () => (
         <div className="flex items-center space-x-2.5">
-          <svg className="w-7 h-7 text-[#0284C7] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-7 h-7 text-[#00a2ad] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -148,7 +148,7 @@ export default function BrandCollectiveSection() {
               d="M3 15a4 4 0 004 4h9a5 5 0 001-9.9M13 15.9A4.5 4.5 0 0113 7a4.5 4.5 0 018.2 2.3A4.5 4.5 0 0118 15.9"
             />
           </svg>
-          <span className="text-xl font-black text-[#0284C7] tracking-tight">
+          <span className="text-xl font-black text-[#00a2ad] tracking-tight">
             CLOUD <span className="text-slate-800">23</span>
           </span>
         </div>

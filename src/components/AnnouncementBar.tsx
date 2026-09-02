@@ -2,7 +2,7 @@ import React from "react";
 
 export default function AnnouncementBar() {
   return (
-    <div className="w-full bg-[#00A3AD] text-white py-2.5 px-4 text-center text-sm font-medium flex items-center justify-center gap-2 relative z-50">
+    <div className="w-full bg-[#00a2ad] text-white py-2.5 px-4 text-center text-sm font-medium flex items-center justify-center gap-2 relative z-50">
       <span className="flex items-center gap-1.5">
         <svg
           className="w-4 h-4 text-amber-300"
