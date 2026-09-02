@@ -17,6 +17,13 @@ interface SidebarData {
   newsLinkHref?: string;
 }
 
+interface CaseStudyRecommendation {
+  image: string;
+  title: string;
+  description: string;
+  linkHref?: string;
+}
+
 interface StandardMegaMenu {
   sidebar: SidebarData;
   section1Title: string;
@@ -24,11 +31,15 @@ interface StandardMegaMenu {
   section1Col2?: string[];
   showAllLink?: boolean;
   allLinkText?: string;
-  section2Title: string;
+  section2Title?: string;
   section2Col?: string[];
   isCustomResources?: boolean;
+  isCustomIndustries?: boolean;
   insideItems?: string[];
   recognitionsItems?: string[];
+  caseStudyRecommendations?: CaseStudyRecommendation[];
+  industriesCol1?: string[];
+  industriesCol2?: string[];
 }
 
 export default function Navbar() {
@@ -116,42 +127,41 @@ export default function Navbar() {
       ],
     },
     Industries: {
+      isCustomIndustries: true,
       sidebar: {
-        title: "Industry Expertise",
-        subtitle: "Domain-driven solutions for global enterprise sectors.",
-        items: [
-          "Enterprise Fintech",
-          "Global HealthTech",
-          "Automotive & Mobility",
-          "Media & Streaming",
-          "EdTech Platforms",
-        ],
-        caseStudy: "Transforming Telecommunications Infrastructure.",
+        title: "Industries",
+        subtitle:
+          "We've delivered 2500+ projects across 130+ sectors. Experience in your industry? We have it.",
       },
-      section1Title: "Core Sectors",
-      section1Col1: [
-        "Fintech & Core Banking",
-        "Pharma & Life Sciences",
-        "Telecom & OSS/BSS",
-        "Real Estate Tech",
-        "Software / ITES",
+      caseStudyRecommendations: [
+        {
+          image: "/cs_safety_at_sea.jpg",
+          title: "Safety at Sea - Leveraging IoT for Strengthening Maritime Security",
+          description: "Autofya developed an advanced IoT-based boat safety system",
+          linkHref: "#case-study-safety-at-sea",
+        },
+        {
+          image: "/cs_digital_wallet.jpg",
+          title: "Fueling Financial Inclusion through Digital Wallet Solutions",
+          description: "Digital wallet services are becoming increasingly popular as people",
+          linkHref: "#case-study-digital-wallet",
+        },
       ],
-      section1Col2: [
-        "e-Commerce Platforms",
-        "Education & LMS",
-        "Retail & Distribution",
-        "Automotive IoT",
-        "Startup Accelerators",
+      section1Title: "Industries",
+      industriesCol1: [
+        "Fintech",
+        "Pharma",
+        "Telecom",
+        "Real Estate",
+        "Software/ITES",
+        "e-Commerce",
       ],
-      showAllLink: true,
-      allLinkText: "All Industries",
-      section2Title: "Domain Focus",
-      section2Col: [
-        "Insurance Systems",
-        "Logistics & Supply Chain",
-        "Telehealth Systems",
-        "DRM & Content Engines",
-        "Government IT",
+      industriesCol2: [
+        "Education",
+        "Retail",
+        "Automotive",
+        "Startup",
+        "Non-Profit",
       ],
     },
     Products: {
@@ -318,90 +328,196 @@ export default function Navbar() {
           <div className="max-w-[1380px] mx-auto flex min-h-[380px]">
             
             {/* LEFT SIDEBAR COLUMN */}
-            <div className="w-[320px] sm:w-[360px] shrink-0 bg-[#F8FAFC] p-8 border-r border-slate-200/60 flex flex-col justify-between">
-              <div>
-                <h3 className="text-[20px] font-bold text-[#0B1340] mb-1">
-                  {currentMenu.sidebar.title}
-                </h3>
-                <p className="text-[13px] text-slate-500 font-normal leading-relaxed mb-6">
-                  {currentMenu.sidebar.subtitle}
-                </p>
+            <div className="w-[360px] sm:w-[420px] shrink-0 bg-[#F8FAFC] p-8 border-r border-slate-200/60 flex flex-col justify-between">
+              {currentMenu.isCustomIndustries ? (
+                <div className="flex flex-col justify-between h-full">
+                  <div>
+                    <h3 className="text-[22px] sm:text-[24px] font-bold text-[#0B1340] mb-2.5">
+                      {currentMenu.sidebar.title}
+                    </h3>
+                    <p className="text-[14px] text-slate-600 font-normal leading-relaxed mb-6">
+                      {currentMenu.sidebar.subtitle}
+                    </p>
 
-                {currentMenu.sidebar.items && currentMenu.sidebar.items.length > 0 && (
-                  <ul className="space-y-3.5">
-                    {currentMenu.sidebar.items.map((item, iIdx) => (
-                      <li key={iIdx}>
+                    <div className="border-t border-slate-200/80 pt-5">
+                      <div className="flex items-center justify-between mb-4">
+                        <h4 className="text-[15px] font-bold text-[#0B1340]">
+                          Recommended Case Study
+                        </h4>
                         <a
-                          href={`#${item.toLowerCase().replace(/\s+/g, "-")}`}
+                          href="#case-studies"
                           onClick={() => setActiveMegaMenu(null)}
-                          className="text-[15px] font-semibold text-[#0B1340] hover:text-[#00A3AD] transition-colors block cursor-pointer"
+                          className="text-[13px] font-bold text-[#0284C7] hover:underline cursor-pointer"
                         >
-                          {item}
+                          View All &gt;
                         </a>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-
-              {/* Bottom Card for Resources or Standard Case Study */}
-              {currentMenu.isCustomResources ? (
-                <div className="pt-5 border-t border-slate-200/80 mt-6">
-                  <div className="flex items-center space-x-3">
-                    {currentMenu.sidebar.newsImage && (
-                      <div className="relative w-20 h-14 rounded-lg overflow-hidden shrink-0 border border-slate-200 shadow-sm">
-                        <Image
-                          src={currentMenu.sidebar.newsImage}
-                          alt="WEF 2025 Event"
-                          fill
-                          className="object-cover"
-                        />
                       </div>
-                    )}
-                    <div className="flex flex-col">
-                      <p className="text-[13px] font-semibold text-slate-800 leading-snug line-clamp-3 mb-1">
-                        {currentMenu.sidebar.newsTitle}
-                      </p>
-                      <a
-                        href={currentMenu.sidebar.newsLinkHref || "#about"}
-                        onClick={() => setActiveMegaMenu(null)}
-                        className="text-[12px] font-bold text-[#00A3AD] hover:underline cursor-pointer"
-                      >
-                        {currentMenu.sidebar.newsLinkText}
-                      </a>
+
+                      <div className="space-y-4.5">
+                        {currentMenu.caseStudyRecommendations?.map((item, idx) => (
+                          <a
+                            key={idx}
+                            href={item.linkHref || "#case-studies"}
+                            onClick={() => setActiveMegaMenu(null)}
+                            className="flex gap-3.5 group items-start cursor-pointer"
+                          >
+                            <div className="relative w-28 h-20 rounded-lg overflow-hidden shrink-0 border border-slate-200 shadow-sm bg-slate-100">
+                              <Image
+                                src={item.image}
+                                alt={item.title}
+                                fill
+                                className="object-cover group-hover:scale-105 transition-transform duration-300"
+                              />
+                            </div>
+                            <div className="flex flex-col flex-1 min-w-0">
+                              <h5 className="text-[14px] font-bold text-[#0B1340] group-hover:text-[#00A3AD] transition-colors leading-snug line-clamp-2">
+                                {item.title}
+                              </h5>
+                              <p className="text-[12px] text-slate-500 line-clamp-2 mt-1 leading-normal">
+                                {item.description}
+                              </p>
+                            </div>
+                          </a>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="pt-6 border-t border-slate-200/80 mt-6">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <div className="w-5 h-5 bg-[#E11D48] rounded text-white font-bold text-[9px] flex items-center justify-center">
-                      ★
-                    </div>
-                    <span className="text-[12px] font-semibold text-slate-500">
-                      Solution Partner
-                    </span>
-                  </div>
-                  <p className="text-[13px] text-slate-700 leading-snug font-normal">
-                    {currentMenu.sidebar.caseStudy}{" "}
-                    <a
-                      href="#case-studies"
-                      onClick={() => setActiveMegaMenu(null)}
-                      className="text-slate-900 font-medium underline hover:text-[#00A3AD] transition-colors cursor-pointer"
-                    >
-                      Read case study.
-                    </a>
+                <div>
+                  <h3 className="text-[20px] font-bold text-[#0B1340] mb-1">
+                    {currentMenu.sidebar.title}
+                  </h3>
+                  <p className="text-[13px] text-slate-500 font-normal leading-relaxed mb-6">
+                    {currentMenu.sidebar.subtitle}
                   </p>
+
+                  {currentMenu.sidebar.items && currentMenu.sidebar.items.length > 0 && (
+                    <ul className="space-y-3.5">
+                      {currentMenu.sidebar.items.map((item, iIdx) => (
+                        <li key={iIdx}>
+                          <a
+                            href={`#${item.toLowerCase().replace(/\s+/g, "-")}`}
+                            onClick={() => setActiveMegaMenu(null)}
+                            className="text-[15px] font-semibold text-[#0B1340] hover:text-[#00A3AD] transition-colors block cursor-pointer"
+                          >
+                            {item}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
+              )}
+
+              {/* Bottom Card for Resources or Standard Case Study */}
+              {!currentMenu.isCustomIndustries && (
+                currentMenu.isCustomResources ? (
+                  <div className="pt-5 border-t border-slate-200/80 mt-6">
+                    <div className="flex items-center space-x-3">
+                      {currentMenu.sidebar.newsImage && (
+                        <div className="relative w-20 h-14 rounded-lg overflow-hidden shrink-0 border border-slate-200 shadow-sm">
+                          <Image
+                            src={currentMenu.sidebar.newsImage}
+                            alt="WEF 2025 Event"
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                      )}
+                      <div className="flex flex-col">
+                        <p className="text-[13px] font-semibold text-slate-800 leading-snug line-clamp-3 mb-1">
+                          {currentMenu.sidebar.newsTitle}
+                        </p>
+                        <a
+                          href={currentMenu.sidebar.newsLinkHref || "#about"}
+                          onClick={() => setActiveMegaMenu(null)}
+                          className="text-[12px] font-bold text-[#00A3AD] hover:underline cursor-pointer"
+                        >
+                          {currentMenu.sidebar.newsLinkText}
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="pt-6 border-t border-slate-200/80 mt-6">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <div className="w-5 h-5 bg-[#E11D48] rounded text-white font-bold text-[9px] flex items-center justify-center">
+                        ★
+                      </div>
+                      <span className="text-[12px] font-semibold text-slate-500">
+                        Solution Partner
+                      </span>
+                    </div>
+                    <p className="text-[13px] text-slate-700 leading-snug font-normal">
+                      {currentMenu.sidebar.caseStudy}{" "}
+                      <a
+                        href="#case-studies"
+                        onClick={() => setActiveMegaMenu(null)}
+                        className="text-slate-900 font-medium underline hover:text-[#00A3AD] transition-colors cursor-pointer"
+                      >
+                        Read case study.
+                      </a>
+                    </p>
+                  </div>
+                )
               )}
             </div>
 
             {/* RIGHT MAIN COLUMNS */}
-            {currentMenu.isCustomResources ? (
-              /* CUSTOM RESOURCES DROPDOWN LAYOUT (MATCHING ATTACHED SCREENSHOT) */
+            {currentMenu.isCustomIndustries ? (
+              /* CUSTOM INDUSTRIES DROPDOWN LAYOUT (MATCHING ATTACHED SCREENSHOT) */
+              <div className="flex-1 bg-white p-8 sm:p-10 flex flex-col justify-between">
+                <div>
+                  <h4 className="text-[17px] font-bold text-[#0B1340] flex items-center gap-2 mb-6">
+                    <span className="text-[#0284C7] text-sm">■</span> {currentMenu.section1Title}
+                  </h4>
+
+                  <div className="grid grid-cols-2 gap-x-16 gap-y-4 max-w-2xl">
+                    <div className="space-y-3.5">
+                      {currentMenu.industriesCol1?.map((item, idx) => (
+                        <a
+                          key={idx}
+                          href={`#${item.toLowerCase().replace(/\s+/g, "-")}`}
+                          onClick={() => setActiveMegaMenu(null)}
+                          className="text-[16px] font-semibold text-slate-700 hover:text-[#00A3AD] transition-colors block py-0.5 cursor-pointer"
+                        >
+                          {item}
+                        </a>
+                      ))}
+                    </div>
+
+                    <div className="space-y-3.5">
+                      {currentMenu.industriesCol2?.map((item, idx) => (
+                        <a
+                          key={idx}
+                          href={`#${item.toLowerCase().replace(/\s+/g, "-")}`}
+                          onClick={() => setActiveMegaMenu(null)}
+                          className="text-[16px] font-semibold text-slate-700 hover:text-[#00A3AD] transition-colors block py-0.5 cursor-pointer"
+                        >
+                          {item}
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-8 pt-5 border-t border-slate-100">
+                  <a
+                    href="#industries"
+                    onClick={() => setActiveMegaMenu(null)}
+                    className="inline-flex items-center text-[16px] font-bold text-[#0B1340] hover:text-[#00A3AD] transition-colors group cursor-pointer"
+                  >
+                    <span>All Industries</span>
+                    <span className="ml-1.5 transition-transform group-hover:translate-x-1">→</span>
+                  </a>
+                </div>
+              </div>
+            ) : currentMenu.isCustomResources ? (
+              /* CUSTOM RESOURCES DROPDOWN LAYOUT */
               <div className="flex-1 bg-white p-8 sm:p-10 grid grid-cols-12 gap-8 items-start">
                 
-                {/* Column 1: Inside Brain Station 23 */}
+                {/* Column 1: Inside Autofya */}
                 <div className="col-span-6">
                   <h4 className="text-[15px] font-bold text-[#0284C7] flex items-center gap-2 mb-5">
                     <span className="text-[#0284C7] text-xs">■</span> {currentMenu.section1Title}
