@@ -18,7 +18,7 @@ export default function HeroSection() {
       highlight: "Top 1% Global Talents",
       titleEnd: "in 4 Weeks",
       subtitle:
-        "From startups to enterprises—build scalable, secure software with our 20+ years of expertise and ISO 27001-certified teams.",
+        "From startups to enterprises—build scalable, secure software with our 20+ years of expertise and high-performing engineering teams.",
       ctaText: "Hire Your Team Now",
       ctaLink: "#hire-team",
       badgeTop: { value: "20+", label: "Years of Experience" },

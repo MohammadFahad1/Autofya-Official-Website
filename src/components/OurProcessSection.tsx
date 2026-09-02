@@ -18,7 +18,7 @@ export default function OurProcessSection() {
       bullets: [
         "Free 60-min strategy session to analyze your tech stack",
         "AI-driven scoping tool estimates time/cost savings",
-        "Receive a GDPR/ISO 27001-compliant project blueprint",
+        "Receive a GDPR-compliant project blueprint",
       ],
       renderIcon: () => (
         <svg className="w-7 h-7 text-[#00a2ad]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -70,7 +70,7 @@ export default function OurProcessSection() {
       bullets: [
         "AI pair-programming assistants (70% faster dev)",
         "Self-healing test suites (99.9% reliability)",
-        "Real-time compliance checks (ISO 27001 baked in)",
+        "Real-time security and compliance checks",
       ],
       renderIcon: () => (
         <svg className="w-7 h-7 text-[#00a2ad]" fill="none" stroke="currentColor" viewBox="0 0 24 24">

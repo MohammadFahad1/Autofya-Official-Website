@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import Image from "next/image";
 import AutofyaLogo from "./AutofyaLogo";
@@ -118,7 +120,7 @@ export default function Footer() {
     <footer className="bg-[#0B1528] text-white font-sans border-t border-slate-800/80">
       
       {/* GLOBAL OFFICES SECTION - EXACT BRAIN STATION 23 DESIGN */}
-      <div className="py-20 sm:py-24 border-b border-slate-800/60">
+      <div id="global-offices" className="py-20 sm:py-24 border-b border-slate-800/60 scroll-mt-20">
         <div className="max-w-[1380px] mx-auto px-4 sm:px-6 lg:px-8">
           
           {/* Title */}
@@ -196,9 +198,16 @@ export default function Footer() {
             
             {/* Column 1: Brand Info */}
             <div className="lg:col-span-4 flex flex-col items-start pr-0 lg:pr-6">
-              <div className="mb-4 bg-white p-2 rounded-lg">
+              <a
+                href="/"
+                onClick={(e) => {
+                  e.preventDefault();
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+                className="mb-4 bg-white p-2 rounded-lg block cursor-pointer"
+              >
                 <AutofyaLogo height={44} />
-              </div>
+              </a>
 
               <p className="text-slate-300 text-sm sm:text-base leading-relaxed mb-6 max-w-sm font-normal">
                 AI-ready software service company specializing in resource augmentation. We deliver 10X faster solutions for startups, SMEs, and Enterprises across Fintech, Pharma, Retail & Distribution.
@@ -297,26 +306,6 @@ export default function Footer() {
                   </div>
                   <span className="text-xs sm:text-sm text-slate-300 font-medium flex items-center gap-1">
                     <span className="text-[#00a2ad]">•</span> GDPR
-                  </span>
-                </div>
-
-                {/* ISO 27001 */}
-                <div className="flex flex-col items-center">
-                  <div className="w-10 h-10 rounded-full border border-slate-600 flex items-center justify-center mb-1 text-xs font-bold text-center leading-tight">
-                    ISO
-                  </div>
-                  <span className="text-xs sm:text-sm text-slate-300 font-medium flex items-center gap-1">
-                    <span className="text-[#00a2ad]">•</span> ISO
-                  </span>
-                </div>
-
-                {/* ISO 9001 */}
-                <div className="flex flex-col items-center">
-                  <div className="w-10 h-10 rounded-full border border-slate-600 flex items-center justify-center mb-1 text-xs font-bold text-center leading-tight">
-                    ISO
-                  </div>
-                  <span className="text-xs sm:text-sm text-slate-300 font-medium flex items-center gap-1">
-                    <span className="text-[#00a2ad]">•</span> ISO
                   </span>
                 </div>
 

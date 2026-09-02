@@ -68,7 +68,7 @@ export default function CompanyOverview() {
               </h3>
 
               <p className="text-slate-600 text-sm sm:text-base leading-relaxed mb-8">
-                Certified in CMMI Level 3, ISO 27001, and 8+ partners with AWS, Microsoft, Odoo
+                Certified in CMMI Level 3, and 8+ partners with AWS, Microsoft, Odoo
               </p>
             </div>
 

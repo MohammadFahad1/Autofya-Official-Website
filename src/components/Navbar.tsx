@@ -93,6 +93,11 @@ export default function Navbar() {
       }
     } else {
       setActiveMegaMenu(null);
+      const targetId = menuName.toLowerCase().replace(/\s+/g, "-");
+      const element = document.getElementById(targetId);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth" });
+      }
     }
   };
 
@@ -282,7 +287,15 @@ export default function Navbar() {
     >
       <div className="max-w-[1380px] mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
         {/* Left: Logo */}
-        <a href="#" className="flex items-center gap-2 focus:outline-none cursor-pointer">
+        <a
+          href="/"
+          onClick={(e) => {
+            e.preventDefault();
+            setActiveMegaMenu(null);
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }}
+          className="flex items-center gap-2 focus:outline-none cursor-pointer"
+        >
           <AutofyaLogo height={44} showTagline={true} />
         </a>
 
@@ -841,6 +854,15 @@ export default function Navbar() {
             <a
               key={link.name}
               href={`#${link.name.toLowerCase().replace(/\s+/g, "-")}`}
+              onClick={(e) => {
+                setMobileMenuOpen(false);
+                const targetId = link.name.toLowerCase().replace(/\s+/g, "-");
+                const element = document.getElementById(targetId);
+                if (element) {
+                  e.preventDefault();
+                  element.scrollIntoView({ behavior: "smooth" });
+                }
+              }}
               className="block py-2 text-base font-semibold text-[#0B1340] hover:text-[#00a2ad] cursor-pointer"
             >
               {link.name}
