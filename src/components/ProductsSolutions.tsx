@@ -33,6 +33,12 @@ export default function ProductsSolutions() {
       link: "#omnizia",
     },
     {
+      title: "Safar BD (safarbd.com) — Car Rental Service in Bangladesh",
+      description:
+        "Leading vehicle rental and mobility platform delivering real-time car bookings, corporate fleet management, and chauffeur services across Bangladesh.",
+      link: "https://safarbd.com",
+    },
+    {
       title: "Insurance Tech Solutions",
       description:
         "Modernize underwriting, claims, and policy management with AI and data analytics for personalized, scalable insurance products.",

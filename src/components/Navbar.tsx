@@ -24,6 +24,26 @@ interface CaseStudyRecommendation {
   linkHref?: string;
 }
 
+interface TestimonialData {
+  ratingSource: string;
+  ratingStars: number;
+  quote: string;
+  authorName: string;
+  authorTitle: string;
+  viewAllLink?: string;
+}
+
+interface ProductItem {
+  name: string;
+  href?: string;
+  external?: boolean;
+}
+
+interface ProductCategoryGroup {
+  category: string;
+  items: (string | ProductItem)[];
+}
+
 interface StandardMegaMenu {
   sidebar: SidebarData;
   section1Title: string;
@@ -35,11 +55,16 @@ interface StandardMegaMenu {
   section2Col?: string[];
   isCustomResources?: boolean;
   isCustomIndustries?: boolean;
+  isCustomProducts?: boolean;
   insideItems?: string[];
   recognitionsItems?: string[];
   caseStudyRecommendations?: CaseStudyRecommendation[];
   industriesCol1?: string[];
   industriesCol2?: string[];
+  testimonial?: TestimonialData;
+  productsCol1?: ProductCategoryGroup;
+  productsCol2?: ProductCategoryGroup[];
+  productsCol3?: ProductCategoryGroup;
 }
 
 export default function Navbar() {
@@ -165,43 +190,56 @@ export default function Navbar() {
       ],
     },
     Products: {
+      isCustomProducts: true,
       sidebar: {
-        title: "Product Suite",
-        subtitle: "Enterprise automation platforms and modules.",
-        items: [
-          "AI Agent Framework",
-          "Workflow Automator",
-          "Document Processor",
-          "Microservices Core",
-          "Dashboard Starter Kit",
-        ],
-        caseStudy: "Deploying White-Label Fintech Engines at Scale.",
+        title: "Products",
+        subtitle:
+          "Autofya delivers tailored digital solutions across fintech, healthcare, e-commerce, and more, empowering industries with innovation and expertise.",
       },
-      section1Title: "AI & Automation",
-      section1Col1: [
-        "Autofya AI Agents",
-        "LLM Pipeline Builder",
-        "RAG Knowledge Base",
-        "OCR Document Parser",
-        "Predictive Analytics",
+      testimonial: {
+        ratingSource: "Clutch",
+        ratingStars: 5,
+        quote:
+          "Autofya's resource augmentation transformed our development velocity. Their AI-powered approach delivered our fintech platform 8X faster than expected.",
+        authorName: "Engr. Kamrul Hasan",
+        authorTitle: "Founder & CEO",
+        viewAllLink: "#testimonials",
+      },
+      section1Title: "Products",
+      productsCol1: {
+        category: "Fintech",
+        items: [
+          "Digital Banking Software",
+          "E-wallet Software",
+          "Digital Lending & Credit",
+          "Insurance 360",
+          "Cross Border Payments Solution",
+        ],
+      },
+      productsCol2: [
+        {
+          category: "Healthcare",
+          items: ["Omnizia", "Time2Publish"],
+        },
+        {
+          category: "Mobility & Transport",
+          items: [
+            {
+              name: "Safar BD (safarbd.com)",
+              href: "https://safarbd.com",
+              external: true,
+            },
+          ],
+        },
+        {
+          category: "LMS",
+          items: ["Proctoring Pro"],
+        },
       ],
-      section1Col2: [
-        "Low-Code Automator",
-        "CI/CD Pipeline Kit",
-        "Security OAuth Engine",
-        "Multi-Tenant Auth",
-        "Kubernetes Cluster Core",
-      ],
-      showAllLink: true,
-      allLinkText: "All Products",
-      section2Title: "Accelerators",
-      section2Col: [
-        "Core Banking API",
-        "Retail Inventory Engine",
-        "LMS Video Player",
-        "Spatial 3D Viewer",
-        "Telemetry Dashboard",
-      ],
+      productsCol3: {
+        category: "AI Solution",
+        items: ["NeuraFlow - Conversational AI Agent"],
+      },
     },
     Resources: {
       isCustomResources: true,
@@ -240,7 +278,7 @@ export default function Navbar() {
   return (
     <header
       ref={headerRef}
-      className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-100 transition-all"
+      className="sticky top-0 z-50 bg-[#FFFF] backdrop-blur-md border-b border-slate-100 transition-all"
     >
       <div className="max-w-[1380px] mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
         {/* Left: Logo */}
@@ -383,6 +421,62 @@ export default function Navbar() {
                     </div>
                   </div>
                 </div>
+              ) : currentMenu.isCustomProducts ? (
+                <div className="flex flex-col justify-between h-full">
+                  <div>
+                    <h3 className="text-[22px] sm:text-[24px] font-bold text-[#0B1340] mb-2.5">
+                      {currentMenu.sidebar.title}
+                    </h3>
+                    <p className="text-[14px] text-slate-600 font-normal leading-relaxed mb-6">
+                      {currentMenu.sidebar.subtitle}
+                    </p>
+
+                    {currentMenu.testimonial && (
+                      <div className="border-t border-slate-200/80 pt-5">
+                        <div className="flex items-center justify-between mb-3">
+                          <h4 className="text-[15px] font-bold text-[#0B1340]">
+                            Testimonials
+                          </h4>
+                          <a
+                            href={currentMenu.testimonial.viewAllLink || "#testimonials"}
+                            onClick={() => setActiveMegaMenu(null)}
+                            className="text-[13px] font-bold text-[#0284C7] hover:underline cursor-pointer"
+                          >
+                            View All &gt;
+                          </a>
+                        </div>
+
+                        {/* Clutch Rating */}
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="text-[10px] font-semibold text-slate-500 tracking-wider uppercase">
+                            REVIEWED ON
+                          </span>
+                          <span className="text-[15px] font-black text-[#0B1340]">
+                            Clutch
+                          </span>
+                          <div className="flex items-center text-[#E11D48] text-xs gap-0.5 ml-1">
+                            ★★★★★
+                          </div>
+                        </div>
+
+                        {/* Quote */}
+                        <p className="text-[13px] text-slate-600 font-normal leading-relaxed mb-4">
+                          &ldquo;{currentMenu.testimonial.quote}&rdquo;
+                        </p>
+
+                        {/* Author */}
+                        <div>
+                          <h5 className="text-[14px] font-bold text-[#0B1340]">
+                            {currentMenu.testimonial.authorName}
+                          </h5>
+                          <p className="text-[12px] text-slate-500 font-normal">
+                            {currentMenu.testimonial.authorTitle}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
               ) : (
                 <div>
                   <h3 className="text-[20px] font-bold text-[#0B1340] mb-1">
@@ -411,7 +505,7 @@ export default function Navbar() {
               )}
 
               {/* Bottom Card for Resources or Standard Case Study */}
-              {!currentMenu.isCustomIndustries && (
+              {!currentMenu.isCustomIndustries && !currentMenu.isCustomProducts && (
                 currentMenu.isCustomResources ? (
                   <div className="pt-5 border-t border-slate-200/80 mt-6">
                     <div className="flex items-center space-x-3">
@@ -465,7 +559,112 @@ export default function Navbar() {
             </div>
 
             {/* RIGHT MAIN COLUMNS */}
-            {currentMenu.isCustomIndustries ? (
+            {currentMenu.isCustomProducts ? (
+              /* CUSTOM PRODUCTS DROPDOWN LAYOUT (MATCHING ATTACHED SCREENSHOT) */
+              <div className="flex-1 bg-white p-8 sm:p-10 grid grid-cols-12 gap-8 items-start">
+                {/* Column 1: Fintech */}
+                <div className="col-span-4">
+                  {currentMenu.productsCol1 && (
+                    <div>
+                      <h4 className="text-[17px] font-bold text-[#0B1340] flex items-center gap-2 mb-5">
+                        <span className="text-[#0284C7] text-sm">■</span> {currentMenu.productsCol1.category}
+                      </h4>
+                      <div className="space-y-3.5">
+                        {currentMenu.productsCol1.items.map((item, idx) => {
+                          const isObj = typeof item !== "string";
+                          const name = isObj ? item.name : item;
+                          const href = isObj ? item.href || "#" : `#${item.toLowerCase().replace(/\s+/g, "-")}`;
+                          const isExt = isObj ? item.external : false;
+                          return (
+                            <a
+                              key={idx}
+                              href={href}
+                              target={isExt ? "_blank" : undefined}
+                              rel={isExt ? "noopener noreferrer" : undefined}
+                              onClick={() => setActiveMegaMenu(null)}
+                              className="text-[16px] font-semibold text-slate-700 hover:text-[#00A3AD] transition-colors block py-0.5 cursor-pointer flex items-center gap-1.5 group"
+                            >
+                              <span>{name}</span>
+                              {isExt && (
+                                <span className="text-xs text-slate-400 group-hover:text-[#00A3AD]">↗</span>
+                              )}
+                            </a>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Column 2: Healthcare, Mobility & LMS */}
+                <div className="col-span-4 space-y-6">
+                  {currentMenu.productsCol2?.map((group, gIdx) => (
+                    <div key={gIdx}>
+                      <h4 className="text-[17px] font-bold text-[#0B1340] flex items-center gap-2 mb-3">
+                        <span className="text-[#0284C7] text-sm">■</span> {group.category}
+                      </h4>
+                      <div className="space-y-2.5">
+                        {group.items.map((item, idx) => {
+                          const isObj = typeof item !== "string";
+                          const name = isObj ? item.name : item;
+                          const href = isObj ? item.href || "#" : `#${item.toLowerCase().replace(/\s+/g, "-")}`;
+                          const isExt = isObj ? item.external : false;
+                          return (
+                            <a
+                              key={idx}
+                              href={href}
+                              target={isExt ? "_blank" : undefined}
+                              rel={isExt ? "noopener noreferrer" : undefined}
+                              onClick={() => setActiveMegaMenu(null)}
+                              className="text-[16px] font-semibold text-slate-700 hover:text-[#00A3AD] transition-colors block py-0.5 cursor-pointer flex items-center gap-1.5 group"
+                            >
+                              <span>{name}</span>
+                              {isExt && (
+                                <span className="text-xs text-slate-400 group-hover:text-[#00A3AD]">↗</span>
+                              )}
+                            </a>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Column 3: AI Solution */}
+                <div className="col-span-4">
+                  {currentMenu.productsCol3 && (
+                    <div>
+                      <h4 className="text-[17px] font-bold text-[#0B1340] flex items-center gap-2 mb-5">
+                        <span className="text-[#0284C7] text-sm">■</span> {currentMenu.productsCol3.category}
+                      </h4>
+                      <div className="space-y-3.5">
+                        {currentMenu.productsCol3.items.map((item, idx) => {
+                          const isObj = typeof item !== "string";
+                          const name = isObj ? item.name : item;
+                          const href = isObj ? item.href || "#" : `#${item.toLowerCase().replace(/\s+/g, "-")}`;
+                          const isExt = isObj ? item.external : false;
+                          return (
+                            <a
+                              key={idx}
+                              href={href}
+                              target={isExt ? "_blank" : undefined}
+                              rel={isExt ? "noopener noreferrer" : undefined}
+                              onClick={() => setActiveMegaMenu(null)}
+                              className="text-[16px] font-semibold text-slate-700 hover:text-[#00A3AD] transition-colors block py-0.5 cursor-pointer flex items-center gap-1.5 group"
+                            >
+                              <span>{name}</span>
+                              {isExt && (
+                                <span className="text-xs text-slate-400 group-hover:text-[#00A3AD]">↗</span>
+                              )}
+                            </a>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : currentMenu.isCustomIndustries ? (
               /* CUSTOM INDUSTRIES DROPDOWN LAYOUT (MATCHING ATTACHED SCREENSHOT) */
               <div className="flex-1 bg-white p-8 sm:p-10 flex flex-col justify-between">
                 <div>
