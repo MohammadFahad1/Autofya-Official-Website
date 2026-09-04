@@ -255,7 +255,7 @@ export default function Navbar() {
         newsImage: "/company_team_group.jpg",
         newsTitle: "Autofya's leadership promotes next-gen AI automation prowess at WEF 2025",
         newsLinkText: "About Us >",
-        newsLinkHref: "#about",
+        newsLinkHref: "/about",
       },
       section1Title: "Inside Autofya",
       insideItems: [
@@ -307,35 +307,45 @@ export default function Navbar() {
               key={link.name}
               className="relative h-full flex items-center cursor-pointer"
             >
-              <button
-                onClick={() => handleNavClick(link.name)}
-                className={`flex items-center gap-1.5 text-[15px] font-semibold transition-colors py-2 focus:outline-none cursor-pointer ${
-                  activeMegaMenu === link.name
-                    ? "text-[#00a2ad]"
-                    : "text-[#0B1340] hover:text-[#00a2ad]"
-                }`}
-              >
-                {link.name}
-                {link.hasDropdown && (
-                  <svg
-                    className={`w-4 h-4 text-slate-400 transition-transform duration-300 ${
-                      activeMegaMenu === link.name
-                        ? "text-[#00a2ad] rotate-180"
-                        : ""
-                    }`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
-                )}
-              </button>
+              {link.href ? (
+                <Link
+                  href={link.href}
+                  onClick={() => setActiveMegaMenu(null)}
+                  className="text-[15px] font-semibold text-[#0B1340] hover:text-[#00a2ad] transition-colors py-2 focus:outline-none cursor-pointer"
+                >
+                  {link.name}
+                </Link>
+              ) : (
+                <button
+                  onClick={() => handleNavClick(link.name)}
+                  className={`flex items-center gap-1.5 text-[15px] font-semibold transition-colors py-2 focus:outline-none cursor-pointer ${
+                    activeMegaMenu === link.name
+                      ? "text-[#00a2ad]"
+                      : "text-[#0B1340] hover:text-[#00a2ad]"
+                  }`}
+                >
+                  {link.name}
+                  {link.hasDropdown && (
+                    <svg
+                      className={`w-4 h-4 text-slate-400 transition-transform duration-300 ${
+                        activeMegaMenu === link.name
+                          ? "text-[#00a2ad] rotate-180"
+                          : ""
+                      }`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                  )}
+                </button>
+              )}
             </div>
           ))}
         </nav>
@@ -736,16 +746,30 @@ export default function Navbar() {
                     <span className="text-[#00a2ad] text-xs">■</span> {currentMenu.section1Title}
                   </h4>
                   <div className="space-y-3.5">
-                    {currentMenu.insideItems?.map((item, idx) => (
-                      <a
-                        key={idx}
-                        href={`#${item.toLowerCase().replace(/\s+/g, "-")}`}
-                        onClick={() => setActiveMegaMenu(null)}
-                        className="text-[15px] font-medium text-slate-700 hover:text-[#00a2ad] transition-colors block py-0.5 cursor-pointer"
-                      >
-                        {item}
-                      </a>
-                    ))}
+                    {currentMenu.insideItems?.map((item, idx) => {
+                      if (item === "About Us") {
+                        return (
+                          <Link
+                            key={idx}
+                            href="/about"
+                            onClick={() => setActiveMegaMenu(null)}
+                            className="text-[15px] font-medium text-slate-700 hover:text-[#00a2ad] transition-colors block py-0.5 cursor-pointer"
+                          >
+                            {item}
+                          </Link>
+                        );
+                      }
+                      return (
+                        <a
+                          key={idx}
+                          href={`#${item.toLowerCase().replace(/\s+/g, "-")}`}
+                          onClick={() => setActiveMegaMenu(null)}
+                          className="text-[15px] font-medium text-slate-700 hover:text-[#00a2ad] transition-colors block py-0.5 cursor-pointer"
+                        >
+                          {item}
+                        </a>
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -852,22 +876,33 @@ export default function Navbar() {
       {mobileMenuOpen && (
         <div className="lg:hidden bg-white border-b border-slate-200 px-4 pt-2 pb-6 space-y-3">
           {navLinks.map((link) => (
-            <a
-              key={link.name}
-              href={`#${link.name.toLowerCase().replace(/\s+/g, "-")}`}
-              onClick={(e) => {
-                setMobileMenuOpen(false);
-                const targetId = link.name.toLowerCase().replace(/\s+/g, "-");
-                const element = document.getElementById(targetId);
-                if (element) {
-                  e.preventDefault();
-                  element.scrollIntoView({ behavior: "smooth" });
-                }
-              }}
-              className="block py-2 text-base font-semibold text-[#0B1340] hover:text-[#00a2ad] cursor-pointer"
-            >
-              {link.name}
-            </a>
+            link.href ? (
+              <Link
+                key={link.name}
+                href={link.href}
+                onClick={() => setMobileMenuOpen(false)}
+                className="block py-2 text-base font-semibold text-[#0B1340] hover:text-[#00a2ad] cursor-pointer"
+              >
+                {link.name}
+              </Link>
+            ) : (
+              <a
+                key={link.name}
+                href={`#${link.name.toLowerCase().replace(/\s+/g, "-")}`}
+                onClick={(e) => {
+                  setMobileMenuOpen(false);
+                  const targetId = link.name.toLowerCase().replace(/\s+/g, "-");
+                  const element = document.getElementById(targetId);
+                  if (element) {
+                    e.preventDefault();
+                    element.scrollIntoView({ behavior: "smooth" });
+                  }
+                }}
+                className="block py-2 text-base font-semibold text-[#0B1340] hover:text-[#00a2ad] cursor-pointer"
+              >
+                {link.name}
+              </a>
+            )
           ))}
           <Link
             href="/schedule"

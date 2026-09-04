@@ -263,7 +263,7 @@ export default function Footer() {
                 Company
               </h4>
               <ul className="space-y-3 text-sm sm:text-base text-slate-200">
-                <li><a href="#about" className="hover:text-white transition-colors">About Us</a></li>
+                <li><Link href="/about" className="hover:text-white transition-colors">About Us</Link></li>
                 <li><a href="#case-studies" className="hover:text-white transition-colors">Case Studies</a></li>
                 <li><a href="#blog" className="hover:text-white transition-colors">Blog</a></li>
                 <li><a href="#career" className="hover:text-white transition-colors">Career</a></li>
