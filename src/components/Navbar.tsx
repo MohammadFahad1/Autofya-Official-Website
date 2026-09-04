@@ -7,6 +7,12 @@ import AutofyaLogo from "./AutofyaLogo";
 
 type MegaMenuKey = "Services" | "Industries" | "Products" | "Resources" | null;
 
+interface NavItem {
+  name: string;
+  hasDropdown: boolean;
+  href?: string;
+}
+
 interface SidebarData {
   title: string;
   subtitle: string;
@@ -102,7 +108,7 @@ export default function Navbar() {
     }
   };
 
-  const navLinks = [
+  const navLinks: NavItem[] = [
     { name: "Services", hasDropdown: true },
     { name: "Industries", hasDropdown: true },
     { name: "Products", hasDropdown: true },
