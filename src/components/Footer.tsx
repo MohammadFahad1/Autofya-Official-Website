@@ -199,16 +199,12 @@ export default function Footer() {
             
             {/* Column 1: Brand Info */}
             <div className="lg:col-span-4 flex flex-col items-start pr-0 lg:pr-6">
-              <a
+              <Link
                 href="/"
-                onClick={(e) => {
-                  e.preventDefault();
-                  window.scrollTo({ top: 0, behavior: "smooth" });
-                }}
                 className="mb-4 bg-white p-2 rounded-lg block cursor-pointer"
               >
                 <AutofyaLogo height={44} />
-              </a>
+              </Link>
 
               <p className="text-slate-300 text-sm sm:text-base leading-relaxed mb-6 max-w-sm font-normal">
                 AI-ready software service company specializing in resource augmentation. We deliver 10X faster solutions for startups, SMEs, and Enterprises across Fintech, Pharma, Retail & Distribution.
@@ -266,7 +262,7 @@ export default function Footer() {
                 <li><Link href="/about" className="hover:text-white transition-colors">About Us</Link></li>
                 <li><a href="#case-studies" className="hover:text-white transition-colors">Case Studies</a></li>
                 <li><a href="#blog" className="hover:text-white transition-colors">Blog</a></li>
-                <li><a href="#career" className="hover:text-white transition-colors">Career</a></li>
+                <li><Link href="/career" className="hover:text-white transition-colors">Career</Link></li>
                 <li><a href="#contact" className="hover:text-white transition-colors">Contact</a></li>
               </ul>
             </div>

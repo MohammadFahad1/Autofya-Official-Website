@@ -294,17 +294,15 @@ export default function Navbar() {
     >
       <div className="max-w-[1380px] mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
         {/* Left: Logo */}
-        <a
+        <Link
           href="/"
-          onClick={(e) => {
-            e.preventDefault();
+          onClick={() => {
             setActiveMegaMenu(null);
-            window.scrollTo({ top: 0, behavior: "smooth" });
           }}
           className="flex items-center gap-2 focus:outline-none cursor-pointer"
         >
           <AutofyaLogo height={44} showTagline={true} />
-        </a>
+        </Link>
 
         {/* Middle: Navigation Links */}
         <nav className="hidden lg:flex items-center gap-8 h-full">
@@ -758,6 +756,18 @@ export default function Navbar() {
                           <Link
                             key={idx}
                             href="/about"
+                            onClick={() => setActiveMegaMenu(null)}
+                            className="text-[15px] font-medium text-slate-700 hover:text-[#00a2ad] transition-colors block py-0.5 cursor-pointer"
+                          >
+                            {item}
+                          </Link>
+                        );
+                      }
+                      if (item === "Career") {
+                        return (
+                          <Link
+                            key={idx}
+                            href="/career"
                             onClick={() => setActiveMegaMenu(null)}
                             className="text-[15px] font-medium text-slate-700 hover:text-[#00a2ad] transition-colors block py-0.5 cursor-pointer"
                           >

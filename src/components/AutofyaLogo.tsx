@@ -19,7 +19,8 @@ export default function AutofyaLogo({
         width={180}
         height={height}
         priority
-        className="h-10 sm:h-11 w-auto object-contain"
+        style={{ width: "auto", height: "auto" }}
+        className="h-10 sm:h-11 object-contain"
       />
     </div>
   );

@@ -1,5 +1,6 @@
 import React from "react";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function JoinOurTeamSection() {
   return (
@@ -16,12 +17,12 @@ export default function JoinOurTeamSection() {
               We always welcome talented professionals to strengthen our team.
             </p>
             <div>
-              <a
-                href="#careers"
+              <Link
+                href="/career"
                 className="inline-flex items-center justify-center px-7 py-3 rounded-full bg-[#F59E0B] hover:bg-[#D97706] text-[#0B1340] font-bold text-base sm:text-lg shadow-md transition-all duration-200"
               >
                 Visit Career
-              </a>
+              </Link>
             </div>
           </div>
 
