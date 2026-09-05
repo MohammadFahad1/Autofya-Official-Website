@@ -4,11 +4,12 @@ import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import LeadershipValues from "@/components/LeadershipValues";
+import CompanyGrowth from "@/components/CompanyGrowth";
 
 export const metadata: Metadata = {
   title: "About Us | Autofya",
   description:
-    "Autofya is a leading software development company committed to delivering cutting-edge digital solutions that drive business growth and transformation since 2006.",
+    "Autofya is a leading software development company committed to delivering cutting-edge digital solutions that drive business growth and transformation since 2023.",
 };
 
 export default function AboutPage() {
@@ -62,7 +63,7 @@ export default function AboutPage() {
               {/* LEFT COLUMN: Main Heading, Description, Mission & Vision */}
               <div className="lg:col-span-6 flex flex-col justify-center">
                 <h2 className="text-3xl sm:text-4xl lg:text-[42px] font-extrabold text-[#0B1340] leading-[1.2] tracking-tight mb-6">
-                  Innovating Digital Solutions Since 2006
+                  Innovating Digital Solutions Since 2023
                 </h2>
 
                 <p className="text-slate-600 text-base sm:text-lg leading-relaxed mb-10 font-normal">
@@ -113,6 +114,11 @@ export default function AboutPage() {
         {/* LEADERSHIP VALUES (OWNPATH) SECTION                                       */}
         {/* ========================================================================= */}
         <LeadershipValues />
+
+        {/* ========================================================================= */}
+        {/* COMPANY GROWTH SECTION                                                    */}
+        {/* ========================================================================= */}
+        <CompanyGrowth />
       </main>
 
       {/* Footer */}
