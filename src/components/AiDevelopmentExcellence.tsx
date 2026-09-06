@@ -1,5 +1,6 @@
 import React from "react";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function AiDevelopmentExcellence() {
   const metrics = [
@@ -54,12 +55,12 @@ export default function AiDevelopmentExcellence() {
 
             {/* CTA Button */}
             <div>
-              <a
-                href="#schedule"
-                className="inline-flex items-center justify-center px-8 py-3.5 rounded-full text-sm font-bold text-white bg-[#FF9000] hover:bg-[#E68200] active:scale-95 shadow-md transition-all"
+              <Link
+                href="/schedule"
+                className="inline-flex items-center justify-center px-8 py-3.5 rounded-full text-sm font-bold text-white bg-[#FF9000] hover:bg-[#E68200] active:scale-95 shadow-md transition-all cursor-pointer"
               >
                 Schedule a Call
-              </a>
+              </Link>
             </div>
 
             {/* Featured Photo Card */}
