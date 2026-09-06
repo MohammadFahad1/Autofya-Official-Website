@@ -19,7 +19,7 @@ export default function Footer() {
       country: "Bangladesh",
       address: "8th Floor, 2 Bir Uttam AK Khandakar Road, Mohakhali C/A,Dhaka 1212, Bangladesh",
       email: "sales@autofya.com",
-      phone: "+8809610-902323",
+      phone: "+8801406792827",
       renderSkyline: () => (
         <svg viewBox="0 0 160 100" className="w-36 sm:w-44 h-auto text-slate-500/80 stroke-current fill-none stroke-[1.25]" strokeLinecap="round" strokeLinejoin="round">
           <path d="M10 90h140M20 94h120M35 97h90" opacity="0.4" />

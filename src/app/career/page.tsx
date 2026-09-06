@@ -169,7 +169,7 @@ export default function CareerPage() {
                 </div>
                 <div>
                   <span className="font-bold text-[#0B1340]">Phone Number: </span>
-                  <span className="text-slate-600 font-semibold">+880 1700 000000</span>
+                  <span className="text-slate-600 font-semibold">+8801406792827</span>
                 </div>
               </div>
             </div>
