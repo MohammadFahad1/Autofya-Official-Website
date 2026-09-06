@@ -1,18 +1,257 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import AutofyaLogo from "@/components/AutofyaLogo";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
+export interface CountryCodeOption {
+  name: string;
+  code: string;
+  flag: string;
+  iso: string;
+}
+
+const countryCodeOptions: CountryCodeOption[] = [
+  { name: "United States", code: "+1", flag: "🇺🇸", iso: "us" },
+  { name: "United Kingdom", code: "+44", flag: "🇬🇧", iso: "gb" },
+  { name: "Germany", code: "+49", flag: "🇩🇪", iso: "de" },
+  { name: "United Arab Emirates", code: "+971", flag: "🇦🇪", iso: "ae" },
+  { name: "Saudi Arabia", code: "+966", flag: "🇸🇦", iso: "sa" },
+  { name: "Qatar", code: "+974", flag: "🇶🇦", iso: "qa" },
+  { name: "Kuwait", code: "+965", flag: "🇰🇼", iso: "kw" },
+  { name: "Oman", code: "+968", flag: "🇴🇲", iso: "om" },
+  { name: "Bahrain", code: "+973", flag: "🇧🇭", iso: "bh" },
+  { name: "Japan", code: "+81", flag: "🇯🇵", iso: "jp" },
+  { name: "Singapore", code: "+65", flag: "🇸🇬", iso: "sg" },
+  { name: "South Korea", code: "+82", flag: "🇰🇷", iso: "kr" },
+  { name: "Hong Kong", code: "+852", flag: "🇭🇰", iso: "hk" },
+  { name: "Taiwan", code: "+886", flag: "🇹🇼", iso: "tw" },
+  { name: "Malaysia", code: "+60", flag: "🇲🇾", iso: "my" },
+  { name: "China", code: "+86", flag: "🇨🇳", iso: "cn" },
+  { name: "India", code: "+91", flag: "🇮🇳", iso: "in" },
+  { name: "Thailand", code: "+66", flag: "🇹🇭", iso: "th" },
+  { name: "Vietnam", code: "+84", flag: "🇻🇳", iso: "vn" },
+  { name: "Indonesia", code: "+62", flag: "🇮🇩", iso: "id" },
+  { name: "Philippines", code: "+63", flag: "🇵🇭", iso: "ph" },
+  { name: "France", code: "+33", flag: "🇫🇷", iso: "fr" },
+  { name: "Italy", code: "+39", flag: "🇮🇹", iso: "it" },
+  { name: "Spain", code: "+34", flag: "🇪🇸", iso: "es" },
+  { name: "Netherlands", code: "+31", flag: "🇳🇱", iso: "nl" },
+  { name: "Switzerland", code: "+41", flag: "🇨🇭", iso: "ch" },
+  { name: "Sweden", code: "+46", flag: "🇸🇪", iso: "se" },
+  { name: "Norway", code: "+47", flag: "🇳🇴", iso: "no" },
+  { name: "Denmark", code: "+45", flag: "🇩🇰", iso: "dk" },
+  { name: "Finland", code: "+358", flag: "🇫🇮", iso: "fi" },
+  { name: "Ireland", code: "+353", flag: "🇮🇪", iso: "ie" },
+  { name: "Belgium", code: "+32", flag: "🇧🇪", iso: "be" },
+  { name: "Austria", code: "+43", flag: "🇦🇹", iso: "at" },
+  { name: "Poland", code: "+48", flag: "🇵🇱", iso: "pl" },
+  { name: "Portugal", code: "+351", flag: "🇵🇹", iso: "pt" },
+  { name: "Greece", code: "+30", flag: "🇬🇷", iso: "gr" },
+  { name: "Czechia", code: "+420", flag: "🇨🇿", iso: "cz" },
+  { name: "Hungary", code: "+36", flag: "🇭🇺", iso: "hu" },
+  { name: "Romania", code: "+40", flag: "🇷🇴", iso: "ro" },
+  { name: "Luxembourg", code: "+352", flag: "🇱🇺", iso: "lu" },
+  { name: "Monaco", code: "+377", flag: "🇲🇨", iso: "mc" },
+  { name: "Iceland", code: "+354", flag: "🇮🇸", iso: "is" },
+  { name: "Estonia", code: "+372", flag: "🇪🇪", iso: "ee" },
+  { name: "Latvia", code: "+371", flag: "🇱🇻", iso: "lv" },
+  { name: "Lithuania", code: "+370", flag: "🇱🇹", iso: "lt" },
+  { name: "Israel", code: "+972", flag: "🇮🇱", iso: "il" },
+  { name: "Turkey", code: "+90", flag: "🇹🇷", iso: "tr" },
+  { name: "Canada", code: "+1", flag: "🇨🇦", iso: "ca" },
+  { name: "Australia", code: "+61", flag: "🇦🇺", iso: "au" },
+  { name: "New Zealand", code: "+64", flag: "🇳🇿", iso: "nz" },
+  { name: "Bangladesh", code: "+880", flag: "🇧🇩", iso: "bd" },
+];
+
+function CountryCodeSelect({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (code: string) => void;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const selectedCountry =
+    countryCodeOptions.find((c) => c.code === value) || countryCodeOptions[0];
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const filteredCountries = countryCodeOptions.filter(
+    (c) =>
+      c.name.toLowerCase().includes(search.toLowerCase()) ||
+      c.code.includes(search)
+  );
+
+  return (
+    <div ref={dropdownRef} className="relative">
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="px-3 py-2.5 rounded-lg border border-slate-300 text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:border-[#00a2ad] flex items-center gap-2 cursor-pointer whitespace-nowrap h-full"
+      >
+        {/* Flag Image */}
+        <img
+          src={`https://flagcdn.com/w40/${selectedCountry.iso}.png`}
+          alt={selectedCountry.name}
+          className="w-5 h-3.5 object-cover rounded-[2px] border border-slate-200/80 shadow-xs shrink-0"
+        />
+        <span>{selectedCountry.code}</span>
+        <span className="text-[10px] text-slate-400">▼</span>
+      </button>
+
+      {isOpen && (
+        <div className="absolute top-full left-0 mt-1 w-64 max-h-60 bg-white border border-slate-200 rounded-xl shadow-xl z-50 overflow-hidden flex flex-col animate-fadeIn">
+          <div className="p-2 border-b border-slate-100 bg-slate-50">
+            <input
+              type="text"
+              autoFocus
+              placeholder="Search country or code..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full px-2.5 py-1.5 rounded-md border border-slate-300 text-xs focus:outline-none focus:border-[#00a2ad] bg-white font-medium text-slate-800"
+            />
+          </div>
+
+          <div className="overflow-y-auto max-h-48 divide-y divide-slate-50">
+            {filteredCountries.length > 0 ? (
+              filteredCountries.map((c, idx) => (
+                <button
+                  key={`${c.code}-${c.name}-${idx}`}
+                  type="button"
+                  onClick={() => {
+                    onChange(c.code);
+                    setIsOpen(false);
+                    setSearch("");
+                  }}
+                  className={`w-full px-3 py-2 text-left text-xs flex items-center justify-between hover:bg-[#00a2ad]/10 transition-colors cursor-pointer ${
+                    value === c.code && selectedCountry.name === c.name
+                      ? "bg-[#00a2ad]/5 font-bold text-[#00a2ad]"
+                      : "text-slate-700"
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5 truncate">
+                    <img
+                      src={`https://flagcdn.com/w40/${c.iso}.png`}
+                      alt={c.name}
+                      className="w-5 h-3.5 object-cover rounded-[2px] border border-slate-200/80 shadow-xs shrink-0"
+                    />
+                    <span className="truncate font-semibold">{c.name}</span>
+                  </div>
+                  <span className="text-slate-400 font-mono text-[11px] shrink-0 ml-2">{c.code}</span>
+                </button>
+              ))
+            ) : (
+              <div className="p-3 text-xs text-slate-400 text-center">No countries found</div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export interface TimezoneOption {
+  label: string;
+  name: string;
+  offset: number; // Offset relative to UTC in hours
+  code: string;
+}
+
+const timezones: TimezoneOption[] = [
+  { label: "🌐 Asia/Dhaka (BDT, GMT+6)", name: "Asia/Dhaka", offset: 6, code: "BDT" },
+  { label: "🌐 UTC / GMT (GMT+0)", name: "UTC", offset: 0, code: "UTC" },
+  { label: "🌐 US/Eastern (EDT, GMT-4)", name: "America/New_York", offset: -4, code: "EDT" },
+  { label: "🌐 US/Pacific (PDT, GMT-7)", name: "America/Los_Angeles", offset: -7, code: "PDT" },
+  { label: "🌐 Europe/London (BST, GMT+1)", name: "Europe/London", offset: 1, code: "BST" },
+  { label: "🌐 Europe/Berlin (CEST, GMT+2)", name: "Europe/Berlin", offset: 2, code: "CEST" },
+  { label: "🌐 Asia/Dubai (GST, GMT+4)", name: "Asia/Dubai", offset: 4, code: "GST" },
+  { label: "🌐 Asia/Tokyo (JST, GMT+9)", name: "Asia/Tokyo", offset: 9, code: "JST" },
+  { label: "🌐 Australia/Sydney (AEST, GMT+10)", name: "Australia/Sydney", offset: 10, code: "AEST" },
+];
+
+// Base Availability Window: 4:00 PM to 12:00 AM BDT (GMT+6)
+// Corresponds to 10:00 AM to 6:00 PM UTC
+const baseUtcSlots = [
+  { hour: 10, minute: 0 },
+  { hour: 10, minute: 30 },
+  { hour: 11, minute: 0 },
+  { hour: 11, minute: 30 },
+  { hour: 12, minute: 0 },
+  { hour: 12, minute: 30 },
+  { hour: 13, minute: 0 },
+  { hour: 13, minute: 30 },
+  { hour: 14, minute: 0 },
+  { hour: 14, minute: 30 },
+  { hour: 15, minute: 0 },
+  { hour: 15, minute: 30 },
+  { hour: 16, minute: 0 },
+  { hour: 16, minute: 30 },
+  { hour: 17, minute: 0 },
+  { hour: 17, minute: 30 },
+];
+
+const getFormattedSlotTime = (slot: { hour: number; minute: number }, offset: number) => {
+  let totalMinutes = slot.hour * 60 + slot.minute + offset * 60;
+  totalMinutes = (totalMinutes + 1440) % 1440;
+
+  const h24 = Math.floor(totalMinutes / 60);
+  const m = totalMinutes % 60;
+
+  const period = h24 >= 12 ? "pm" : "am";
+  const h12 = h24 % 12 === 0 ? 12 : h24 % 12;
+  const mStr = m < 10 ? `0${m}` : `${m}`;
+
+  return `${h12}:${mStr}${period}`;
+};
+
 export default function SchedulePage() {
-  // Calendar & Slot State
-  const [currentMonth, setCurrentMonth] = useState(8); // September (0-indexed: 8)
-  const [currentYear, setCurrentYear] = useState(2026);
-  const [selectedDay, setSelectedDay] = useState<number | null>(18);
+  const today = new Date();
+  // Calendar & Slot State initialized dynamically
+  const [currentMonth, setCurrentMonth] = useState(today.getMonth());
+  const [currentYear, setCurrentYear] = useState(today.getFullYear());
+  const [selectedDay, setSelectedDay] = useState<number | null>(today.getDate());
+  const [selectedTzIdx, setSelectedTzIdx] = useState(0);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string | null>(null);
-  const [activeSlotForNext, setActiveSlotForNext] = useState<string | null>("1:30am");
+  const [activeSlotForNext, setActiveSlotForNext] = useState<string | null>(null);
+
+  const selectedTz = timezones[selectedTzIdx];
+
+  // Days in selected month & Monday-based offset
+  const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+  const firstDayIndex = (new Date(currentYear, currentMonth, 1).getDay() + 6) % 7;
+
+  // Navigation validation
+  const canGoPrevMonth =
+    currentYear > today.getFullYear() ||
+    (currentYear === today.getFullYear() && currentMonth > today.getMonth());
+
+  // Past Date Check
+  const isPastDate = (day: number) => {
+    const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const cellDate = new Date(currentYear, currentMonth, day);
+    return cellDate < startOfToday;
+  };
+
+  // Booked Slot Generator (deterministic per month/day)
+  const isSlotBooked = (day: number, slotIdx: number) => {
+    const seed = (currentYear * 365 + (currentMonth + 1) * 31 + day * 17 + slotIdx * 11) % 10;
+    return seed === 1 || seed === 4 || seed === 7;
+  };
 
   // Flow Step: 1 = Date/Time, 2 = Form Details, 3 = Confirmation
   const [step, setStep] = useState<1 | 2 | 3>(1);
@@ -22,7 +261,7 @@ export default function SchedulePage() {
   const [email, setEmail] = useState("");
   const [showAddGuests, setShowAddGuests] = useState(false);
   const [guestEmails, setGuestEmails] = useState<string[]>([""]);
-  const [countryCode, setCountryCode] = useState("+880");
+  const [countryCode, setCountryCode] = useState("+1");
   const [phone, setPhone] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [role, setRole] = useState("");
@@ -41,12 +280,6 @@ export default function SchedulePage() {
     "July", "August", "September", "October", "November", "December"
   ];
 
-  const timeSlots = [
-    "12:00am", "12:30am", "1:00am", "1:30am", "2:00am", "2:30am",
-    "3:00am", "3:30am", "4:00am", "10:00am", "10:30am", "11:00am",
-    "02:00pm", "03:30pm", "05:00pm"
-  ];
-
   const outcomeOptions = [
     "Launch a new digital product/ecommerce platform",
     "Modernise or scale an existing system",
@@ -60,6 +293,7 @@ export default function SchedulePage() {
   ];
 
   const handlePrevMonth = () => {
+    if (!canGoPrevMonth) return;
     if (currentMonth === 0) {
       setCurrentMonth(11);
       setCurrentYear(currentYear - 1);
@@ -113,7 +347,8 @@ export default function SchedulePage() {
     const bookingPayload = {
       meetingTitle: "Autofya Meeting — 30 Minute Meeting",
       date: `${monthNames[currentMonth]} ${selectedDay}, ${currentYear}`,
-      timeSlot: activeSlotForNext || "1:30am",
+      timeSlot: activeSlotForNext || "04:00pm BDT",
+      timezone: selectedTz.name,
       name,
       email,
       guestEmails: guestEmails.filter((g) => g.trim().length > 0),
@@ -138,8 +373,10 @@ export default function SchedulePage() {
   };
 
   // Format date display for right sidebar & step 2
+  const dateObj = selectedDay ? new Date(currentYear, currentMonth, selectedDay) : null;
+  const dayOfWeekName = dateObj ? dateObj.toLocaleDateString("en-US", { weekday: "long" }) : "";
   const formattedSelectedDate = selectedDay
-    ? `Friday, ${monthNames[currentMonth]} ${selectedDay}, ${currentYear}`
+    ? `${dayOfWeekName}, ${monthNames[currentMonth]} ${selectedDay}, ${currentYear}`
     : "Select a Date";
 
   return (
@@ -150,7 +387,7 @@ export default function SchedulePage() {
         {/* MAIN CALENDLY-STYLE WIDGET CARD */}
         <div className="w-full max-w-[1060px] bg-white rounded-2xl border border-slate-200/90 shadow-xl overflow-hidden flex flex-col md:flex-row transition-all duration-300">
           
-          {/* LEFT SIDEBAR PANEL (Matching Screenshot 1 & 2) */}
+          {/* LEFT SIDEBAR PANEL */}
           <div className="w-full md:w-[320px] lg:w-[360px] p-6 sm:p-8 border-b md:border-b-0 md:border-r border-slate-200/80 bg-white flex flex-col justify-between shrink-0">
             <div>
               {/* Logo */}
@@ -198,7 +435,7 @@ export default function SchedulePage() {
                     <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 002 2h1.5a2.5 2.5 0 002.5-2.5V7.865M19 19.5V18a2 2 0 00-2-2h-1.5a2.5 2.5 0 01-2.5-2.5V11" />
                     </svg>
-                    <span>Asia/Dhaka</span>
+                    <span>{selectedTz.name} ({selectedTz.code})</span>
                   </div>
                 </div>
               </div>
@@ -243,7 +480,12 @@ export default function SchedulePage() {
                       <button
                         type="button"
                         onClick={handlePrevMonth}
-                        className="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-600 font-bold transition-colors cursor-pointer"
+                        disabled={!canGoPrevMonth}
+                        className={`w-8 h-8 rounded-full flex items-center justify-center font-bold transition-colors ${
+                          !canGoPrevMonth
+                            ? "text-slate-300 cursor-not-allowed"
+                            : "hover:bg-slate-100 text-slate-600 cursor-pointer"
+                        }`}
                         aria-label="Previous month"
                       >
                         ‹
@@ -275,23 +517,30 @@ export default function SchedulePage() {
                     {/* Calendar Days Grid */}
                     <div className="grid grid-cols-7 gap-1 text-center text-sm font-semibold">
                       {/* Blank offset slots for month alignment */}
-                      <span className="p-2 text-slate-300"></span>
-                      <span className="p-2 text-slate-300"></span>
+                      {Array.from({ length: firstDayIndex }).map((_, idx) => (
+                        <span key={`blank-${idx}`} className="p-2"></span>
+                      ))}
                       
-                      {Array.from({ length: 30 }, (_, i) => i + 1).map((day) => {
+                      {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => {
                         const isSelected = selectedDay === day;
+                        const disabled = isPastDate(day);
+
                         return (
                           <button
                             key={day}
                             type="button"
+                            disabled={disabled}
                             onClick={() => {
+                              if (disabled) return;
                               setSelectedDay(day);
                               setActiveSlotForNext(null);
                             }}
-                            className={`w-9 h-9 mx-auto rounded-full flex items-center justify-center transition-all cursor-pointer ${
-                              isSelected
-                                ? "bg-[#00a2ad] text-white font-bold shadow-md"
-                                : "text-slate-700 hover:bg-[#00a2ad]/10 hover:text-[#00a2ad]"
+                            className={`w-9 h-9 mx-auto rounded-full flex items-center justify-center transition-all ${
+                              disabled
+                                ? "text-slate-300 bg-slate-50 cursor-not-allowed line-through opacity-40"
+                                : isSelected
+                                ? "bg-[#00a2ad] text-white font-bold shadow-md cursor-pointer"
+                                : "text-slate-700 hover:bg-[#00a2ad]/10 hover:text-[#00a2ad] cursor-pointer font-semibold"
                             }`}
                           >
                             {day}
@@ -305,18 +554,25 @@ export default function SchedulePage() {
                       <label className="block text-xs font-bold text-slate-500 mb-1.5">
                         Time zone
                       </label>
-                      <select className="w-full p-2.5 rounded-lg border border-slate-200 text-xs font-semibold text-slate-700 focus:outline-none focus:border-[#00a2ad] bg-white cursor-pointer">
-                        <option>🌐 Asia/Dhaka (9:44pm)</option>
-                        <option>🌐 UTC / GMT (+00:00)</option>
-                        <option>🌐 US/Eastern (EDT)</option>
-                        <option>🌐 US/Pacific (PDT)</option>
-                        <option>🌐 Europe/London (BST)</option>
+                      <select
+                        value={selectedTzIdx}
+                        onChange={(e) => {
+                          setSelectedTzIdx(Number(e.target.value));
+                          setActiveSlotForNext(null);
+                        }}
+                        className="w-full p-2.5 rounded-lg border border-slate-200 text-xs font-semibold text-slate-700 focus:outline-none focus:border-[#00a2ad] bg-white cursor-pointer"
+                      >
+                        {timezones.map((tz, idx) => (
+                          <option key={idx} value={idx}>
+                            {tz.label}
+                          </option>
+                        ))}
                       </select>
                     </div>
 
                   </div>
 
-                  {/* TIME SLOTS COLUMN (Matching Screenshot 1 Right Column) */}
+                  {/* TIME SLOTS COLUMN */}
                   {selectedDay && (
                     <div className="flex-1 w-full border-t lg:border-t-0 lg:border-l border-slate-200/80 pt-6 lg:pt-0 lg:pl-8">
                       <h4 className="text-sm font-bold text-slate-600 mb-4">
@@ -324,22 +580,40 @@ export default function SchedulePage() {
                       </h4>
 
                       <div className="space-y-2.5 max-h-[380px] overflow-y-auto pr-2 scrollbar-thin">
-                        {timeSlots.map((slot) => {
-                          const isActive = activeSlotForNext === slot;
+                        {baseUtcSlots.map((baseSlot, slotIdx) => {
+                          const slotTimeStr = getFormattedSlotTime(baseSlot, selectedTz.offset);
+                          const slotLabel = `${slotTimeStr} ${selectedTz.code}`;
+                          const booked = isSlotBooked(selectedDay, slotIdx);
+                          const isActive = activeSlotForNext === slotLabel;
+
+                          if (booked) {
+                            return (
+                              <div
+                                key={slotIdx}
+                                className="w-full py-3 px-4 rounded-lg border border-slate-200 bg-slate-100/90 text-slate-400 font-semibold text-xs flex items-center justify-between cursor-not-allowed opacity-70 select-none"
+                              >
+                                <span className="line-through">{slotTimeStr}</span>
+                                <span className="text-[10px] font-bold bg-slate-200 text-slate-500 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                                  Booked
+                                </span>
+                              </div>
+                            );
+                          }
+
                           return (
-                            <div key={slot} className="flex items-center gap-2">
+                            <div key={slotIdx} className="flex items-center gap-2">
                               {isActive ? (
                                 <div className="flex items-center gap-2 w-full animate-fadeIn">
                                   <button
                                     type="button"
-                                    className="flex-1 py-3 px-4 rounded-lg bg-slate-500 text-white font-bold text-sm text-center shadow-inner cursor-default"
+                                    className="flex-1 py-3 px-4 rounded-lg bg-slate-500 text-white font-bold text-xs text-center shadow-inner cursor-default"
                                   >
-                                    {slot}
+                                    {slotLabel}
                                   </button>
                                   <button
                                     type="button"
                                     onClick={() => setStep(2)}
-                                    className="flex-1 py-3 px-4 rounded-lg bg-[#00a2ad] hover:bg-[#008f99] text-white font-bold text-sm text-center shadow-md transition-all cursor-pointer"
+                                    className="flex-1 py-3 px-4 rounded-lg bg-[#00a2ad] hover:bg-[#008f99] text-white font-bold text-xs text-center shadow-md transition-all cursor-pointer"
                                   >
                                     Next
                                   </button>
@@ -347,10 +621,10 @@ export default function SchedulePage() {
                               ) : (
                                 <button
                                   type="button"
-                                  onClick={() => setActiveSlotForNext(slot)}
-                                  className="w-full py-3 px-4 rounded-lg border border-[#00a2ad]/60 text-[#00a2ad] font-bold text-sm hover:border-[#00a2ad] hover:bg-[#00a2ad]/5 transition-all text-center cursor-pointer"
+                                  onClick={() => setActiveSlotForNext(slotLabel)}
+                                  className="w-full py-3 px-4 rounded-lg border border-[#00a2ad]/60 text-[#00a2ad] font-bold text-xs hover:border-[#00a2ad] hover:bg-[#00a2ad]/5 transition-all text-center cursor-pointer"
                                 >
-                                  {slot}
+                                  {slotTimeStr}
                                 </button>
                               )}
                             </div>
@@ -458,18 +732,10 @@ export default function SchedulePage() {
                       Phone *
                     </label>
                     <div className="flex gap-2">
-                      <select
+                      <CountryCodeSelect
                         value={countryCode}
-                        onChange={(e) => setCountryCode(e.target.value)}
-                        className="px-3 py-2.5 rounded-lg border border-slate-300 text-xs font-bold text-slate-700 bg-white focus:outline-none focus:border-[#00a2ad]"
-                      >
-                        <option value="+880">🇧🇩 +880</option>
-                        <option value="+1">🇺🇸 +1</option>
-                        <option value="+44">🇬🇧 +44</option>
-                        <option value="+49">🇩🇪 +49</option>
-                        <option value="+971">🇦🇪 +971</option>
-                        <option value="+81">🇯🇵 +81</option>
-                      </select>
+                        onChange={setCountryCode}
+                      />
                       <input
                         type="tel"
                         value={phone}
@@ -548,7 +814,8 @@ export default function SchedulePage() {
                       className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm font-medium text-slate-700 bg-white focus:outline-none focus:border-[#00a2ad]"
                     >
                       <option value="">Select...</option>
-                      <option value="Under $10,000">Under $10,000</option>
+                      <option value="Under $5,000">Under $5,000</option>
+                      <option value="$5,000 - $10,000">$5,000 - $10,000</option>
                       <option value="$10,000 - $25,000">$10,000 - $25,000</option>
                       <option value="$25,000 - $50,000">$25,000 - $50,000</option>
                       <option value="$50,000 - $100,000">$50,000 - $100,000</option>
