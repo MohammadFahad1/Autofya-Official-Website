@@ -16,14 +16,14 @@ export default function HeroSection() {
     {
       id: 0,
       title: "Scale Your Dev Team With",
-      highlight: "Top 1% Global Talents",
+      highlight: "Top Talents",
       titleEnd: "in 4 Weeks",
       subtitle:
-        "From startups to enterprises—build scalable, secure software with our 20+ years of expertise and high-performing engineering teams.",
+        "From startups to enterprises—build scalable, secure software with our 3+ years of expertise and high-performing engineering teams.",
       ctaText: "Hire Your Team Now",
       ctaLink: "#hire-team",
-      badgeTop: { value: "20+", label: "Years of Experience" },
-      badgeBottom: { value: "88%+", label: "Employee Retention" },
+      badgeTop: { value: "150+", label: "Projects Delivered" },
+      badgeBottom: { value: "3+", label: "Years of Experience" },
       imageTop: "/hero_developer.jpg",
       imageTopAlt: "Senior Software Developer & Tech Lead",
       imageBottom: "/hero_team_collaboration.jpg",
@@ -44,6 +44,22 @@ export default function HeroSection() {
       imageTopAlt: "AI Architect and Solution Engineer",
       imageBottom: "/hero_cloud_devops.jpg",
       imageBottomAlt: "Cloud DevOps and Infrastructure Team",
+    },
+    {
+      id: 2,
+      title: "We Build",
+      highlight: "Custom Software",
+      titleEnd: "That Scales - For Our Global Clients",
+      subtitle:
+        "From MVP to enterprise platforms, our engineers turn your vision into production-ready software, backed by 3+ years of expertise and 150+ custom software development.",
+      ctaText: "Start Your Project",
+      ctaLink: "/schedule",
+      badgeTop: { value: "150+", label: "Custom Projects Delivered" },
+      badgeBottom: { value: "3+", label: "Years of Expertise" },
+      imageTop: "/capabilities_mvp_dev.jpg",
+      imageTopAlt: "Custom Software Development",
+      imageBottom: "/capabilities_digital_trans.jpg",
+      imageBottomAlt: "Enterprise Software Platform",
     },
   ];
 

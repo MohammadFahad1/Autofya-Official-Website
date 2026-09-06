@@ -181,7 +181,6 @@ export default function CareerPage() {
         {/* ========================================================================= */}
         <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 sm:mt-20">
           <div className="flex items-center gap-3 mb-8">
-            <span className="text-2xl sm:text-3xl">💼</span>
             <h3 className="text-2xl sm:text-3xl font-extrabold text-[#0B1340]">
               Open Job Positions
             </h3>
@@ -237,7 +236,6 @@ export default function CareerPage() {
         {/* ========================================================================= */}
         <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-20 sm:mt-24">
           <div className="flex items-center gap-3 mb-8">
-            <span className="text-2xl sm:text-3xl">🚀</span>
             <h3 className="text-2xl sm:text-3xl font-extrabold text-[#0B1340]">
               Life at Autofya
             </h3>
