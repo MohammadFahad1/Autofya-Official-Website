@@ -9,7 +9,7 @@ export default function CompanyOverview() {
         
         {/* Main Headline matching Brain Station 23 screenshot */}
         <h2 className="text-3xl sm:text-4xl lg:text-[46px] font-extrabold text-[#0B1340] leading-[1.18] tracking-tight mb-16 max-w-5xl">
-          Founded in 2006, we are a global software company powering digital transformation across industries.
+          Founded in 2023, we are a global software company powering digital transformation across industries.
         </h2>
 
         {/* 3-Column Asymmetric Media & Info Layout */}

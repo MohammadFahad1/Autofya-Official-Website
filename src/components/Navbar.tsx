@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import AutofyaLogo from "./AutofyaLogo";
 
 type MegaMenuKey = "Services" | "Industries" | "Products" | "Resources" | null;
@@ -78,6 +79,15 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeMegaMenu, setActiveMegaMenu] = useState<MegaMenuKey>(null);
   const headerRef = useRef<HTMLHeadingElement>(null);
+  const pathname = usePathname();
+
+  const handleLogoClick = (e: React.MouseEvent) => {
+    setActiveMegaMenu(null);
+    if (pathname === "/") {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
 
   // Close mega menu when clicking anywhere outside header
   useEffect(() => {
@@ -296,9 +306,7 @@ export default function Navbar() {
         {/* Left: Logo */}
         <Link
           href="/"
-          onClick={() => {
-            setActiveMegaMenu(null);
-          }}
+          onClick={handleLogoClick}
           className="flex items-center gap-2 focus:outline-none cursor-pointer"
         >
           <AutofyaLogo height={44} showTagline={true} />

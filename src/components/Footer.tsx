@@ -3,6 +3,7 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import AutofyaLogo from "./AutofyaLogo";
 
 interface Office {
@@ -14,6 +15,14 @@ interface Office {
 }
 
 export default function Footer() {
+  const pathname = usePathname();
+
+  const handleLogoClick = (e: React.MouseEvent) => {
+    if (pathname === "/") {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
   const offices: Office[] = [
     {
       country: "Bangladesh",
@@ -201,6 +210,7 @@ export default function Footer() {
             <div className="lg:col-span-4 flex flex-col items-start pr-0 lg:pr-6">
               <Link
                 href="/"
+                onClick={handleLogoClick}
                 className="mb-4 bg-white p-2 rounded-lg block cursor-pointer"
               >
                 <AutofyaLogo height={44} />
