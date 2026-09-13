@@ -843,6 +843,18 @@ export default function Navbar() {
 
                     <div className="space-y-3">
                       {currentMenu.section1Col2?.map((item, idx) => {
+                        if (item === "LMS Development") {
+                          return (
+                            <Link
+                              key={idx}
+                              href="/lms-development"
+                              onClick={() => setActiveMegaMenu(null)}
+                              className="text-[15px] font-medium text-slate-700 hover:text-[#00a2ad] transition-colors block py-0.5 cursor-pointer"
+                            >
+                              {item}
+                            </Link>
+                          );
+                        }
                         if (item === "Web & Mobile App Development") {
                           return (
                             <Link
@@ -860,6 +872,66 @@ export default function Navbar() {
                             <Link
                               key={idx}
                               href="/ecommerce-development"
+                              onClick={() => setActiveMegaMenu(null)}
+                              className="text-[15px] font-medium text-slate-700 hover:text-[#00a2ad] transition-colors block py-0.5 cursor-pointer"
+                            >
+                              {item}
+                            </Link>
+                          );
+                        }
+                        if (item === "Adobe Experience Manager") {
+                          return (
+                            <Link
+                              key={idx}
+                              href="/adobe-experience-manager"
+                              onClick={() => setActiveMegaMenu(null)}
+                              className="text-[15px] font-medium text-slate-700 hover:text-[#00a2ad] transition-colors block py-0.5 cursor-pointer"
+                            >
+                              {item}
+                            </Link>
+                          );
+                        }
+                        if (item === "SharePoint Services") {
+                          return (
+                            <Link
+                              key={idx}
+                              href="/sharepoint-services"
+                              onClick={() => setActiveMegaMenu(null)}
+                              className="text-[15px] font-medium text-slate-700 hover:text-[#00a2ad] transition-colors block py-0.5 cursor-pointer"
+                            >
+                              {item}
+                            </Link>
+                          );
+                        }
+                        if (item === "Blockchain Development") {
+                          return (
+                            <Link
+                              key={idx}
+                              href="/blockchain-development"
+                              onClick={() => setActiveMegaMenu(null)}
+                              className="text-[15px] font-medium text-slate-700 hover:text-[#00a2ad] transition-colors block py-0.5 cursor-pointer"
+                            >
+                              {item}
+                            </Link>
+                          );
+                        }
+                        if (item === "Shopify Services") {
+                          return (
+                            <Link
+                              key={idx}
+                              href="/shopify-services"
+                              onClick={() => setActiveMegaMenu(null)}
+                              className="text-[15px] font-medium text-slate-700 hover:text-[#00a2ad] transition-colors block py-0.5 cursor-pointer"
+                            >
+                              {item}
+                            </Link>
+                          );
+                        }
+                        if (item === "QA Testing & Automation") {
+                          return (
+                            <Link
+                              key={idx}
+                              href="/qa-testing-automation"
                               onClick={() => setActiveMegaMenu(null)}
                               className="text-[15px] font-medium text-slate-700 hover:text-[#00a2ad] transition-colors block py-0.5 cursor-pointer"
                             >
