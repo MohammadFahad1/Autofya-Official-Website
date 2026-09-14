@@ -1072,16 +1072,90 @@ export default function Navbar() {
                   </h4>
 
                   <div className="space-y-3.5">
-                    {currentMenu.section2Col?.map((item, idx) => (
-                      <a
-                        key={idx}
-                        href={`#${item.toLowerCase().replace(/\s+/g, "-")}`}
-                        onClick={() => setActiveMegaMenu(null)}
-                        className="text-[15px] font-medium text-slate-700 hover:text-[#00a2ad] transition-colors block py-0.5 cursor-pointer"
-                      >
-                        {item}
-                      </a>
-                    ))}
+                    {currentMenu.section2Col?.map((item, idx) => {
+                      if (item === "Field Force Automation") {
+                        return (
+                          <Link
+                            key={idx}
+                            href="/field-force-automation"
+                            onClick={() => setActiveMegaMenu(null)}
+                            className="text-[15px] font-medium text-slate-700 hover:text-[#00a2ad] transition-colors block py-0.5 cursor-pointer"
+                          >
+                            {item}
+                          </Link>
+                        );
+                      }
+                      if (item === "Banking Solutions") {
+                        return (
+                          <Link
+                            key={idx}
+                            href="/banking-solutions"
+                            onClick={() => setActiveMegaMenu(null)}
+                            className="text-[15px] font-medium text-slate-700 hover:text-[#00a2ad] transition-colors block py-0.5 cursor-pointer"
+                          >
+                            {item}
+                          </Link>
+                        );
+                      }
+                      if (item === "Cloud Solutions") {
+                        return (
+                          <Link
+                            key={idx}
+                            href="/cloud-solutions"
+                            onClick={() => setActiveMegaMenu(null)}
+                            className="text-[15px] font-medium text-slate-700 hover:text-[#00a2ad] transition-colors block py-0.5 cursor-pointer"
+                          >
+                            {item}
+                          </Link>
+                        );
+                      }
+                      if (item === "Cyber Security") {
+                        return (
+                          <Link
+                            key={idx}
+                            href="/cyber-security"
+                            onClick={() => setActiveMegaMenu(null)}
+                            className="text-[15px] font-medium text-slate-700 hover:text-[#00a2ad] transition-colors block py-0.5 cursor-pointer"
+                          >
+                            {item}
+                          </Link>
+                        );
+                      }
+                      if (item === "ERP Development") {
+                        return (
+                          <Link
+                            key={idx}
+                            href="/erp-development"
+                            onClick={() => setActiveMegaMenu(null)}
+                            className="text-[15px] font-medium text-slate-700 hover:text-[#00a2ad] transition-colors block py-0.5 cursor-pointer"
+                          >
+                            {item}
+                          </Link>
+                        );
+                      }
+                      if (item === "Data Science & Business Intelligence") {
+                        return (
+                          <Link
+                            key={idx}
+                            href="/data-science-business-intelligence"
+                            onClick={() => setActiveMegaMenu(null)}
+                            className="text-[15px] font-medium text-slate-700 hover:text-[#00a2ad] transition-colors block py-0.5 cursor-pointer"
+                          >
+                            {item}
+                          </Link>
+                        );
+                      }
+                      return (
+                        <a
+                          key={idx}
+                          href={`#${item.toLowerCase().replace(/\s+/g, "-")}`}
+                          onClick={() => setActiveMegaMenu(null)}
+                          className="text-[15px] font-medium text-slate-700 hover:text-[#00a2ad] transition-colors block py-0.5 cursor-pointer"
+                        >
+                          {item}
+                        </a>
+                      );
+                    })}
                   </div>
                 </div>
 
