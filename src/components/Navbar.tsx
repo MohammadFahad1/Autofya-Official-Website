@@ -829,16 +829,114 @@ export default function Navbar() {
 
                   <div className="grid grid-cols-2 gap-x-10 gap-y-3.5">
                     <div className="space-y-3">
-                      {currentMenu.section1Col1?.map((item, idx) => (
-                        <a
-                          key={idx}
-                          href={`#${item.toLowerCase().replace(/\s+/g, "-")}`}
-                          onClick={() => setActiveMegaMenu(null)}
-                          className="text-[15px] font-medium text-slate-700 hover:text-[#00a2ad] transition-colors block py-0.5 cursor-pointer"
-                        >
-                          {item}
-                        </a>
-                      ))}
+                      {currentMenu.section1Col1?.map((item, idx) => {
+                        if (item === "AI-DLC") {
+                          return (
+                            <Link
+                              key={idx}
+                              href="/ai-dlc"
+                              onClick={() => setActiveMegaMenu(null)}
+                              className="text-[15px] font-medium text-slate-700 hover:text-[#00a2ad] transition-colors block py-0.5 cursor-pointer"
+                            >
+                              {item}
+                            </Link>
+                          );
+                        }
+                        if (item === "ML & AI Development") {
+                          return (
+                            <Link
+                              key={idx}
+                              href="/ml-ai-development"
+                              onClick={() => setActiveMegaMenu(null)}
+                              className="text-[15px] font-medium text-slate-700 hover:text-[#00a2ad] transition-colors block py-0.5 cursor-pointer"
+                            >
+                              {item}
+                            </Link>
+                          );
+                        }
+                        if (item === "Data Engineering") {
+                          return (
+                            <Link
+                              key={idx}
+                              href="/data-engineering"
+                              onClick={() => setActiveMegaMenu(null)}
+                              className="text-[15px] font-medium text-slate-700 hover:text-[#00a2ad] transition-colors block py-0.5 cursor-pointer"
+                            >
+                              {item}
+                            </Link>
+                          );
+                        }
+                        if (item === "Data Migration") {
+                          return (
+                            <Link
+                              key={idx}
+                              href="/data-migration"
+                              onClick={() => setActiveMegaMenu(null)}
+                              className="text-[15px] font-medium text-slate-700 hover:text-[#00a2ad] transition-colors block py-0.5 cursor-pointer"
+                            >
+                              {item}
+                            </Link>
+                          );
+                        }
+                        if (item === "Business Intelligence") {
+                          return (
+                            <Link
+                              key={idx}
+                              href="/business-intelligence"
+                              onClick={() => setActiveMegaMenu(null)}
+                              className="text-[15px] font-medium text-slate-700 hover:text-[#00a2ad] transition-colors block py-0.5 cursor-pointer"
+                            >
+                              {item}
+                            </Link>
+                          );
+                        }
+                        if (item === "Insurtech") {
+                          return (
+                            <Link
+                              key={idx}
+                              href="/insurtech"
+                              onClick={() => setActiveMegaMenu(null)}
+                              className="text-[15px] font-medium text-slate-700 hover:text-[#00a2ad] transition-colors block py-0.5 cursor-pointer"
+                            >
+                              {item}
+                            </Link>
+                          );
+                        }
+                        if (item === "3D Modeling Services") {
+                          return (
+                            <Link
+                              key={idx}
+                              href="/3d-modeling-services"
+                              onClick={() => setActiveMegaMenu(null)}
+                              className="text-[15px] font-medium text-slate-700 hover:text-[#00a2ad] transition-colors block py-0.5 cursor-pointer"
+                            >
+                              {item}
+                            </Link>
+                          );
+                        }
+                        if (item === "Game Studio") {
+                          return (
+                            <Link
+                              key={idx}
+                              href="/game-studio"
+                              onClick={() => setActiveMegaMenu(null)}
+                              className="text-[15px] font-medium text-slate-700 hover:text-[#00a2ad] transition-colors block py-0.5 cursor-pointer"
+                            >
+                              {item}
+                            </Link>
+                          );
+                        }
+                        return (
+                          <a
+                            key={idx}
+                            href={`#${item.toLowerCase().replace(/\s+/g, "-")}`}
+                            onClick={() => setActiveMegaMenu(null)}
+                            className="text-[15px] font-medium text-slate-700 hover:text-[#00a2ad] transition-colors block py-0.5 cursor-pointer"
+                          >
+                            {item}
+                          </a>
+                        );
+                      })}
                     </div>
 
                     <div className="space-y-3">
