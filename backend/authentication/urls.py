@@ -12,4 +12,9 @@ urlpatterns = [
     path('profile/', views.UserProfileAPIView.as_view(), name='profile'),
     path('profile/update/', views.UpdateUserProfileAPIView.as_view(), name='update-profile'),
     path('change-password/', views.ChangePasswordAPIView.as_view(), name='change-password'),
+    # Admin Panel APIs
+    path('admin/stats/', views.AdminDashboardStatsView.as_view(), name='admin-stats'),
+    path('admin/users/', views.AdminUserListView.as_view(), name='admin-user-list'),
+    path('admin/users/<int:pk>/', views.AdminUserDetailView.as_view(), name='admin-user-detail'),
 ]
+

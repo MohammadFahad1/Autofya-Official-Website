@@ -5,9 +5,11 @@ from rest_framework.response import Response
 from autofya.base import NewAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from authentication import serializers
+from authentication.permissions import IsAdminUser
 from django.contrib.auth import authenticate, get_user_model
 from django.utils import timezone
 from django.db import transaction
+from django.db.models import Q
 from datetime import timedelta
 from rest_framework_simplejwt.tokens import RefreshToken
 from drf_yasg.utils import swagger_auto_schema
@@ -323,7 +325,7 @@ class LoginAPIView(NewAPIView):
                 'full_name': user.full_name,
                 'profile_picture': request.build_absolute_uri(user.profile_picture.url) if user.profile_picture else None,
                 'email': user.email,
-                'role': 'admin' if user.is_superuser else 'user',
+                'role': 'admin' if (user.is_superuser or user.is_staff) else 'user',
             }
             return Response(respose, status=status.HTTP_200_OK)
         return Response({'success': False, 'message': 'Invalid email or password.'}, status = status.HTTP_400_BAD_REQUEST)
@@ -681,7 +683,136 @@ class UpdateUserProfileAPIView(NewAPIView):
             'full_name': user.full_name,
             'profile_picture': request.build_absolute_uri(user.profile_picture.url) if user.profile_picture else None,
             'email': user.email,
-            'role': 'admin' if user.is_superuser else 'user',
+            'role': 'admin' if (user.is_superuser or user.is_staff) else 'user',
         }, status=status.HTTP_200_OK)
+
+
+class AdminDashboardStatsView(NewAPIView):
+    permission_classes = [IsAdminUser]
+    serializer_class = serializers.EmptySerializer
+    http_method_names = ['get']
+
+    @swagger_auto_schema(tags=['Admin Panel'])
+    def get(self, request):
+        """
+        **Get Admin Dashboard Stats**\n
+        Retrieves aggregate platform user stats for the admin panel dashboard.
+        """
+        now = timezone.now()
+        thirty_days_ago = now - timedelta(days=30)
+
+        total_users = User.objects.count()
+        active_users = User.objects.filter(is_active=True).count()
+        inactive_users = User.objects.filter(is_active=False).count()
+        staff_users = User.objects.filter(Q(is_staff=True) | Q(is_superuser=True)).count()
+        new_users_30d = User.objects.filter(created_at__gte=thirty_days_ago).count()
+
+        # Monthly registration chart data for last 6 months
+        chart_data = []
+        for i in range(5, -1, -1):
+            month_start = (now.replace(day=1) - timedelta(days=i * 30)).replace(day=1)
+            next_month_start = (month_start + timedelta(days=32)).replace(day=1)
+            count = User.objects.filter(created_at__gte=month_start, created_at__lt=next_month_start).count()
+            chart_data.append({
+                'month': month_start.strftime('%b %Y'),
+                'count': count
+            })
+
+        return Response({
+            'success': True,
+            'stats': {
+                'total_users': total_users,
+                'active_users': active_users,
+                'inactive_users': inactive_users,
+                'staff_users': staff_users,
+                'new_users_30d': new_users_30d,
+                'chart_data': chart_data
+            }
+        }, status=status.HTTP_200_OK)
+
+
+class AdminUserListView(NewAPIView):
+    permission_classes = [IsAdminUser]
+    serializer_class = serializers.AdminUserSerializer
+    http_method_names = ['get']
+
+    @swagger_auto_schema(tags=['Admin Panel'])
+    def get(self, request):
+        """
+        **Get List of Users for Admin**\n
+        Supports searching by email or full_name, and filtering by role or is_active status.
+        """
+        search_query = request.query_params.get('search', '').strip()
+        role_filter = request.query_params.get('role', '').strip()
+        status_filter = request.query_params.get('status', '').strip()
+
+        users = User.objects.all()
+
+        if search_query:
+            users = users.filter(
+                Q(email__icontains=search_query) | Q(full_name__icontains=search_query)
+            )
+
+        if role_filter == 'admin':
+            users = users.filter(Q(is_staff=True) | Q(is_superuser=True))
+        elif role_filter == 'user':
+            users = users.filter(is_staff=False, is_superuser=False)
+
+        if status_filter == 'active':
+            users = users.filter(is_active=True)
+        elif status_filter == 'inactive':
+            users = users.filter(is_active=False)
+
+        serializer = self.serializer_class(users, many=True, context={'request': request})
+        return Response({
+            'success': True,
+            'count': users.count(),
+            'users': serializer.data
+        }, status=status.HTTP_200_OK)
+
+
+class AdminUserDetailView(NewAPIView):
+    permission_classes = [IsAdminUser]
+    serializer_class = serializers.AdminUserUpdateSerializer
+    http_method_names = ['get', 'patch', 'delete']
+
+    @swagger_auto_schema(tags=['Admin Panel'])
+    def get(self, request, pk):
+        user = get_object_or_404(User, pk=pk)
+        serializer = serializers.AdminUserSerializer(user, context={'request': request})
+        return Response({'success': True, 'user': serializer.data}, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(tags=['Admin Panel'])
+    def patch(self, request, pk):
+        user = get_object_or_404(User, pk=pk)
+        serializer = self.serializer_class(user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            updated_user = serializers.AdminUserSerializer(user, context={'request': request})
+            return Response({
+                'success': True,
+                'message': 'User updated successfully.',
+                'user': updated_user.data
+            }, status=status.HTTP_200_OK)
+        return Response({
+            'success': False,
+            'message': f'Validation error: {serializer.errors}'
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    @swagger_auto_schema(tags=['Admin Panel'])
+    def delete(self, request, pk):
+        user = get_object_or_404(User, pk=pk)
+        if user == request.user:
+            return Response({
+                'success': False,
+                'message': 'You cannot delete your own admin account.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        user.delete()
+        return Response({
+            'success': True,
+            'message': 'User deleted successfully.'
+        }, status=status.HTTP_200_OK)
+
 
 
