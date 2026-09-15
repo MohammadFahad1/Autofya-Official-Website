@@ -345,31 +345,43 @@ export default function SchedulePage() {
     setIsSubmitting(true);
 
     const bookingPayload = {
-      meetingTitle: "Autofya Meeting — 30 Minute Meeting",
+      meeting_title: "Autofya Meeting — 30 Minute Meeting",
       date: `${monthNames[currentMonth]} ${selectedDay}, ${currentYear}`,
-      timeSlot: activeSlotForNext || "04:00pm BDT",
+      time_slot: activeSlotForNext || "04:00pm BDT",
       timezone: selectedTz.name,
       name,
       email,
-      guestEmails: guestEmails.filter((g) => g.trim().length > 0),
+      guest_emails: guestEmails.filter((g) => g.trim().length > 0),
       phone: `${countryCode} ${phone}`,
-      companyName,
+      company_name: companyName,
       role,
       situation,
-      investmentRange,
-      engagementType,
+      investment_range: investmentRange,
+      engagement_type: engagementType,
       outcomes,
-      hearAboutUs,
-      mustWorkNotes,
-      submittedAt: new Date().toISOString(),
+      hear_about_us: hearAboutUs,
+      must_work_notes: mustWorkNotes,
     };
 
-    console.log("🚀 [Autofya Booking Submitted]:", bookingPayload);
+    try {
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const res = await fetch(`${API_BASE_URL}/bookings/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(bookingPayload),
+      });
 
-    // Simulate backend response
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    setIsSubmitting(false);
-    setStep(3);
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setStep(3);
+      } else {
+        setFormErrors({ submit: data.message || "Failed to schedule booking. Please try again." });
+      }
+    } catch (err) {
+      setFormErrors({ submit: "Network error. Please check your connection and try again." });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Format date display for right sidebar & step 2

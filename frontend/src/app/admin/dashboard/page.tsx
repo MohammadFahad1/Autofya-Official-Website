@@ -27,6 +27,37 @@ interface StatsData {
   chart_data: { month: string; count: number }[];
 }
 
+interface BookingItem {
+  id: number;
+  meeting_title: string;
+  date: string;
+  time_slot: string;
+  timezone: string;
+  name: string;
+  email: string;
+  guest_emails: string[];
+  phone: string;
+  company_name: string | null;
+  role: string | null;
+  situation: string | null;
+  investment_range: string | null;
+  engagement_type: string | null;
+  outcomes: string[];
+  hear_about_us: string | null;
+  must_work_notes: string | null;
+  status: "pending" | "confirmed" | "completed" | "cancelled";
+  admin_notes: string | null;
+  created_at: string;
+}
+
+interface BookingStatsData {
+  total_bookings: number;
+  pending_bookings: number;
+  confirmed_bookings: number;
+  completed_bookings: number;
+  cancelled_bookings: number;
+}
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export default function AdminDashboardPage() {
@@ -34,14 +65,22 @@ export default function AdminDashboardPage() {
   const router = useRouter();
 
   // Navigation Tabs State
-  const [activeTab, setActiveTab] = useState<"overview" | "users" | "analytics" | "settings" | "profile">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "users" | "bookings" | "analytics" | "settings" | "profile">("overview");
 
-  // Dashboard Data State
+  // User Dashboard Data State
   const [stats, setStats] = useState<StatsData | null>(null);
   const [users, setUsers] = useState<UserItem[]>([]);
   const [loadingData, setLoadingData] = useState(true);
 
-  // Filters & Search
+  // Booking Data State
+  const [bookings, setBookings] = useState<BookingItem[]>([]);
+  const [bookingStats, setBookingStats] = useState<BookingStatsData | null>(null);
+  const [bookingSearch, setBookingSearch] = useState("");
+  const [bookingStatusFilter, setBookingStatusFilter] = useState<string>("all");
+  const [selectedBooking, setSelectedBooking] = useState<BookingItem | null>(null);
+  const [deletingBooking, setDeletingBooking] = useState<BookingItem | null>(null);
+
+  // User Filters & Search
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<"all" | "admin" | "user">("all");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
@@ -60,17 +99,18 @@ export default function AdminDashboardPage() {
     }
   }, [isAuthenticated, isLoading, router]);
 
-  // Fetch Dashboard Stats & Users
+  // Fetch Dashboard Stats, Users, & Bookings
   useEffect(() => {
     if (token) {
       fetchDashboardData();
+      fetchBookingData();
     }
-  }, [token, roleFilter, statusFilter]);
+  }, [token, roleFilter, statusFilter, bookingStatusFilter]);
 
   const fetchDashboardData = async () => {
     setLoadingData(true);
     try {
-      // Fetch stats
+      // Fetch user stats
       const statsRes = await fetch(`${API_BASE_URL}/auth/admin/stats/`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -92,19 +132,52 @@ export default function AdminDashboardPage() {
         setUsers(usersJson.users);
       }
     } catch (err) {
-      console.error("Error fetching admin data:", err);
+      console.error("Error fetching admin user data:", err);
     } finally {
       setLoadingData(false);
     }
   };
 
-  // Trigger search
+  const fetchBookingData = async () => {
+    try {
+      // Fetch booking stats
+      const statsRes = await fetch(`${API_BASE_URL}/bookings/admin/stats/`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const statsJson = await statsRes.json();
+      if (statsJson.success) {
+        setBookingStats(statsJson.stats);
+      }
+
+      // Fetch bookings list
+      let url = `${API_BASE_URL}/bookings/admin/?search=${encodeURIComponent(bookingSearch)}`;
+      if (bookingStatusFilter !== "all") url += `&status=${bookingStatusFilter}`;
+
+      const res = await fetch(url, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const json = await res.json();
+      if (json.success) {
+        setBookings(json.bookings);
+      }
+    } catch (err) {
+      console.error("Error fetching admin booking data:", err);
+    }
+  };
+
+  // Trigger User Search
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     fetchDashboardData();
   };
 
-  // Handle Edit User Submit
+  // Trigger Booking Search
+  const handleBookingSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    fetchBookingData();
+  };
+
+  // Handle Save User Edit
   const handleSaveUserEdit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingUser || !token) return;
@@ -170,6 +243,75 @@ export default function AdminDashboardPage() {
     }
   };
 
+  // Update Booking Status / Admin Notes
+  const handleUpdateBookingStatus = async (
+    bookingId: number,
+    newStatus: string,
+    adminNotes?: string
+  ) => {
+    if (!token) return;
+    setIsUpdating(true);
+    setFeedbackMsg(null);
+
+    try {
+      const bodyPayload: any = { status: newStatus };
+      if (adminNotes !== undefined) bodyPayload.admin_notes = adminNotes;
+
+      const res = await fetch(`${API_BASE_URL}/bookings/admin/${bookingId}/`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(bodyPayload),
+      });
+
+      const json = await res.json();
+      if (res.ok && json.success) {
+        setFeedbackMsg({ type: "success", text: `Booking status updated to ${newStatus}.` });
+        if (selectedBooking && selectedBooking.id === bookingId) {
+          setSelectedBooking(json.booking);
+        }
+        fetchBookingData();
+      } else {
+        setFeedbackMsg({ type: "error", text: json.message || "Failed to update booking status." });
+      }
+    } catch (err) {
+      setFeedbackMsg({ type: "error", text: "Server error while updating booking." });
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  // Delete Booking Confirm
+  const handleDeleteBookingConfirm = async () => {
+    if (!deletingBooking || !token) return;
+
+    setIsUpdating(true);
+    setFeedbackMsg(null);
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/bookings/admin/${deletingBooking.id}/`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const json = await res.json();
+      if (res.ok && json.success) {
+        setFeedbackMsg({ type: "success", text: "Booking deleted successfully." });
+        setDeletingBooking(null);
+        if (selectedBooking?.id === deletingBooking.id) setSelectedBooking(null);
+        fetchBookingData();
+      } else {
+        setFeedbackMsg({ type: "error", text: json.message || "Failed to delete booking." });
+      }
+    } catch (err) {
+      setFeedbackMsg({ type: "error", text: "Server error while deleting booking." });
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   if (isLoading || !isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#0F172A] text-slate-100">
@@ -212,7 +354,7 @@ export default function AdminDashboardPage() {
 
             <button
               onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors cursor-pointer"
               title="Toggle Sidebar"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -229,7 +371,7 @@ export default function AdminDashboardPage() {
           <nav className="p-4 space-y-1.5">
             <button
               onClick={() => setActiveTab("overview")}
-              className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
+              className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
                 activeTab === "overview"
                   ? "bg-gradient-to-r from-[#00a2ad] to-[#00808a] text-white shadow-lg shadow-[#00a2ad]/20"
                   : "text-slate-400 hover:text-white hover:bg-slate-800/50"
@@ -241,9 +383,33 @@ export default function AdminDashboardPage() {
               {!sidebarCollapsed && <span>Dashboard Overview</span>}
             </button>
 
+            {/* Bookings Tab */}
+            <button
+              onClick={() => setActiveTab("bookings")}
+              className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
+                activeTab === "bookings"
+                  ? "bg-gradient-to-r from-[#00a2ad] to-[#00808a] text-white shadow-lg shadow-[#00a2ad]/20"
+                  : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+              }`}
+            >
+              <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              {!sidebarCollapsed && (
+                <div className="flex items-center justify-between w-full">
+                  <span>Schedule Bookings</span>
+                  {bookingStats && bookingStats.pending_bookings > 0 && (
+                    <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-500 text-black animate-pulse">
+                      {bookingStats.pending_bookings}
+                    </span>
+                  )}
+                </div>
+              )}
+            </button>
+
             <button
               onClick={() => setActiveTab("users")}
-              className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
+              className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
                 activeTab === "users"
                   ? "bg-gradient-to-r from-[#00a2ad] to-[#00808a] text-white shadow-lg shadow-[#00a2ad]/20"
                   : "text-slate-400 hover:text-white hover:bg-slate-800/50"
@@ -254,7 +420,7 @@ export default function AdminDashboardPage() {
               </svg>
               {!sidebarCollapsed && (
                 <div className="flex items-center justify-between w-full">
-                  <span>User Management</span>
+                  <span>User Accounts</span>
                   {stats && (
                     <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-slate-800 text-slate-300">
                       {stats.total_users}
@@ -266,7 +432,7 @@ export default function AdminDashboardPage() {
 
             <button
               onClick={() => setActiveTab("analytics")}
-              className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
+              className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
                 activeTab === "analytics"
                   ? "bg-gradient-to-r from-[#00a2ad] to-[#00808a] text-white shadow-lg shadow-[#00a2ad]/20"
                   : "text-slate-400 hover:text-white hover:bg-slate-800/50"
@@ -275,12 +441,12 @@ export default function AdminDashboardPage() {
               <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 012-2h2a2 2 0 012 2v6a2 2 0 01-2 2h-2a2 2 0 01-2-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
               </svg>
-              {!sidebarCollapsed && <span>Analytics & Reports</span>}
+              {!sidebarCollapsed && <span>Analytics & Growth</span>}
             </button>
 
             <button
               onClick={() => setActiveTab("settings")}
-              className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
+              className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
                 activeTab === "settings"
                   ? "bg-gradient-to-r from-[#00a2ad] to-[#00808a] text-white shadow-lg shadow-[#00a2ad]/20"
                   : "text-slate-400 hover:text-white hover:bg-slate-800/50"
@@ -333,6 +499,7 @@ export default function AdminDashboardPage() {
           <div>
             <h1 className="text-xl font-bold text-white capitalize">
               {activeTab === "overview" && "Dashboard Overview"}
+              {activeTab === "bookings" && "Schedule Call Bookings"}
               {activeTab === "users" && "User Account Management"}
               {activeTab === "analytics" && "Platform Analytics & Growth"}
               {activeTab === "settings" && "System Settings"}
@@ -343,15 +510,16 @@ export default function AdminDashboardPage() {
           </div>
 
           <div className="flex items-center gap-4">
-            {/* Live Status Pill */}
             <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
               Backend API Online
             </div>
 
-            {/* Quick Refresh Button */}
             <button
-              onClick={fetchDashboardData}
+              onClick={() => {
+                fetchDashboardData();
+                fetchBookingData();
+              }}
               disabled={loadingData}
               className="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-slate-300 border border-slate-700/60 transition-all cursor-pointer"
               title="Refresh Data"
@@ -387,11 +555,35 @@ export default function AdminDashboardPage() {
           {/* ========================================== */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             
-            {/* Card 1: Total Users */}
-            <div className="p-6 rounded-2xl bg-[#0F172A] border border-slate-800 shadow-xl relative overflow-hidden group hover:border-[#00a2ad]/50 transition-all">
+            {/* Card 1: Total Bookings */}
+            <div
+              onClick={() => setActiveTab("bookings")}
+              className="p-6 rounded-2xl bg-[#0F172A] border border-slate-800 shadow-xl relative overflow-hidden group hover:border-[#00a2ad]/50 transition-all cursor-pointer"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Schedule Bookings</span>
+                <div className="w-10 h-10 rounded-xl bg-[#00a2ad]/10 border border-[#00a2ad]/20 text-[#00a2ad] flex items-center justify-center">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+              </div>
+              <div className="text-3xl font-extrabold text-white">
+                {bookingStats ? bookingStats.total_bookings : 0}
+              </div>
+              <div className="mt-2 text-xs text-amber-400 font-medium flex items-center gap-1">
+                <span>{bookingStats ? bookingStats.pending_bookings : 0} pending review</span>
+              </div>
+            </div>
+
+            {/* Card 2: Total Users */}
+            <div
+              onClick={() => setActiveTab("users")}
+              className="p-6 rounded-2xl bg-[#0F172A] border border-slate-800 shadow-xl relative overflow-hidden group hover:border-blue-500/50 transition-all cursor-pointer"
+            >
               <div className="flex items-center justify-between mb-4">
                 <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Registered Users</span>
-                <div className="w-10 h-10 rounded-xl bg-[#00a2ad]/10 border border-[#00a2ad]/20 text-[#00a2ad] flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                   </svg>
@@ -400,16 +592,15 @@ export default function AdminDashboardPage() {
               <div className="text-3xl font-extrabold text-white">
                 {stats ? stats.total_users : "—"}
               </div>
-              <div className="mt-2 text-xs text-emerald-400 font-medium flex items-center gap-1">
-                <span>↑ {stats ? stats.new_users_30d : 0} new signups</span>
-                <span className="text-slate-500">last 30 days</span>
+              <div className="mt-2 text-xs text-emerald-400 font-medium">
+                ↑ {stats ? stats.new_users_30d : 0} signups last 30d
               </div>
             </div>
 
-            {/* Card 2: Active Accounts */}
+            {/* Card 3: Active Verified Users */}
             <div className="p-6 rounded-2xl bg-[#0F172A] border border-slate-800 shadow-xl relative overflow-hidden group hover:border-emerald-500/50 transition-all">
               <div className="flex items-center justify-between mb-4">
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Active Verified Users</span>
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Active Verified Accounts</span>
                 <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -421,88 +612,184 @@ export default function AdminDashboardPage() {
               </div>
               <div className="mt-2 text-xs text-slate-400 font-medium">
                 {stats && stats.total_users > 0
-                  ? `${Math.round((stats.active_users / stats.total_users) * 100)}% of total userbase`
+                  ? `${Math.round((stats.active_users / stats.total_users) * 100)}% of userbase`
                   : "No data"}
               </div>
             </div>
 
-            {/* Card 3: Inactive / Pending */}
-            <div className="p-6 rounded-2xl bg-[#0F172A] border border-slate-800 shadow-xl relative overflow-hidden group hover:border-amber-500/50 transition-all">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Unverified Accounts</span>
-                <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                  </svg>
-                </div>
-              </div>
-              <div className="text-3xl font-extrabold text-white">
-                {stats ? stats.inactive_users : "—"}
-              </div>
-              <div className="mt-2 text-xs text-amber-400 font-medium">
-                Awaiting OTP email activation
-              </div>
-            </div>
-
-            {/* Card 4: Staff & Admins */}
+            {/* Card 4: Confirmed Meetings */}
             <div className="p-6 rounded-2xl bg-[#0F172A] border border-slate-800 shadow-xl relative overflow-hidden group hover:border-purple-500/50 transition-all">
               <div className="flex items-center justify-between mb-4">
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Admin & Staff Accounts</span>
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Confirmed Meetings</span>
                 <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                   </svg>
                 </div>
               </div>
               <div className="text-3xl font-extrabold text-white">
-                {stats ? stats.staff_users : "—"}
+                {bookingStats ? bookingStats.confirmed_bookings : 0}
               </div>
               <div className="mt-2 text-xs text-purple-300 font-medium">
-                Privileged administrative access
+                Ready for consultation call
               </div>
             </div>
 
           </div>
 
           {/* ========================================== */}
-          {/* USER REGISTRATION ANALYTICS CHART          */}
+          {/* SCHEDULE BOOKINGS MANAGEMENT SECTION       */}
           {/* ========================================== */}
-          {(activeTab === "overview" || activeTab === "analytics") && (
-            <div className="p-6 rounded-2xl bg-[#0F172A] border border-slate-800 shadow-xl">
-              <div className="flex items-center justify-between mb-6">
+          {(activeTab === "overview" || activeTab === "bookings") && (
+            <div className="p-6 rounded-2xl bg-[#0F172A] border border-slate-800 shadow-xl space-y-6">
+              
+              {/* Header & Controls */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
-                  <h2 className="text-lg font-bold text-white">User Growth Analytics</h2>
-                  <p className="text-xs text-slate-400">Monthly new user registrations over time</p>
+                  <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                    <span>Schedule Call Bookings</span>
+                    {bookingStats && bookingStats.pending_bookings > 0 && (
+                      <span className="px-2 py-0.5 rounded-full text-xs font-extrabold bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                        {bookingStats.pending_bookings} Action Required
+                      </span>
+                    )}
+                  </h2>
+                  <p className="text-xs text-slate-400">Incoming consultation booking requests from prospective clients</p>
                 </div>
-                <span className="px-3 py-1 rounded-lg bg-slate-800 text-xs font-semibold text-slate-300">
-                  Last 6 Months
-                </span>
+
+                <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                  {/* Search Bar */}
+                  <form onSubmit={handleBookingSearchSubmit} className="relative flex-1 sm:w-64">
+                    <input
+                      type="text"
+                      placeholder="Search name, email, company..."
+                      value={bookingSearch}
+                      onChange={(e) => setBookingSearch(e.target.value)}
+                      className="w-full pl-9 pr-4 py-2 bg-slate-800/80 border border-slate-700 text-xs text-white rounded-xl focus:outline-none focus:border-[#00a2ad] placeholder:text-slate-500"
+                    />
+                    <svg className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </form>
+
+                  {/* Booking Status Filter */}
+                  <select
+                    value={bookingStatusFilter}
+                    onChange={(e) => setBookingStatusFilter(e.target.value)}
+                    className="px-3 py-2 bg-slate-800/80 border border-slate-700 text-xs text-slate-300 rounded-xl focus:outline-none focus:border-[#00a2ad] cursor-pointer"
+                  >
+                    <option value="all">All Bookings ({bookingStats?.total_bookings || 0})</option>
+                    <option value="pending">Pending ({bookingStats?.pending_bookings || 0})</option>
+                    <option value="confirmed">Confirmed ({bookingStats?.confirmed_bookings || 0})</option>
+                    <option value="completed">Completed ({bookingStats?.completed_bookings || 0})</option>
+                    <option value="cancelled">Cancelled ({bookingStats?.cancelled_bookings || 0})</option>
+                  </select>
+                </div>
               </div>
 
-              {/* Visual SVG Chart */}
-              <div className="h-56 w-full flex items-end justify-between gap-4 pt-8 px-4 border-b border-slate-800">
-                {stats?.chart_data && stats.chart_data.length > 0 ? (
-                  stats.chart_data.map((item, idx) => {
-                    const maxCount = Math.max(...stats.chart_data.map((d) => d.count), 1);
-                    const heightPercent = Math.max(Math.round((item.count / maxCount) * 100), 12);
-                    return (
-                      <div key={idx} className="flex-1 flex flex-col items-center gap-2 h-full justify-end group">
-                        <span className="text-xs font-bold text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity">
-                          {item.count} users
-                        </span>
-                        <div
-                          style={{ height: `${heightPercent}%` }}
-                          className="w-full max-w-[60px] rounded-t-lg bg-gradient-to-t from-[#00a2ad]/30 to-[#00a2ad] group-hover:from-[#00b4c0] group-hover:to-cyan-400 transition-all duration-300 shadow-lg"
-                        ></div>
-                        <span className="text-xs font-semibold text-slate-400 mt-2">{item.month}</span>
-                      </div>
-                    );
-                  })
-                ) : (
-                  <div className="w-full text-center text-slate-500 py-12 text-sm">
-                    No historical chart data available.
-                  </div>
-                )}
+              {/* Bookings Table Container */}
+              <div className="overflow-x-auto rounded-xl border border-slate-800">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-slate-900/80 text-slate-400 text-[11px] font-bold uppercase tracking-wider border-b border-slate-800">
+                      <th className="py-3.5 px-4">Client Contact</th>
+                      <th className="py-3.5 px-4">Meeting Date & Time</th>
+                      <th className="py-3.5 px-4">Company / Role</th>
+                      <th className="py-3.5 px-4">Budget Range</th>
+                      <th className="py-3.5 px-4">Status</th>
+                      <th className="py-3.5 px-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/60 text-xs text-slate-300">
+                    {bookings.length > 0 ? (
+                      bookings.map((booking) => (
+                        <tr key={booking.id} className="hover:bg-slate-800/40 transition-colors">
+                          
+                          {/* Client Name & Phone */}
+                          <td className="py-3.5 px-4">
+                            <div>
+                              <p className="font-bold text-white text-sm">{booking.name}</p>
+                              <p className="text-[#00a2ad] text-xs font-semibold">{booking.email}</p>
+                              <p className="text-slate-400 text-[11px]">{booking.phone}</p>
+                            </div>
+                          </td>
+
+                          {/* Date & Slot */}
+                          <td className="py-3.5 px-4">
+                            <div>
+                              <p className="font-bold text-white">{booking.date}</p>
+                              <p className="text-amber-400 text-xs font-semibold">{booking.time_slot}</p>
+                              <p className="text-slate-400 text-[11px]">{booking.timezone}</p>
+                            </div>
+                          </td>
+
+                          {/* Company / Role */}
+                          <td className="py-3.5 px-4">
+                            <p className="font-semibold text-slate-200">{booking.company_name || "N/A"}</p>
+                            <p className="text-slate-400 text-[11px]">{booking.role || "N/A"}</p>
+                          </td>
+
+                          {/* Budget & Engagement */}
+                          <td className="py-3.5 px-4">
+                            <p className="font-bold text-emerald-400">{booking.investment_range || "N/A"}</p>
+                            <p className="text-slate-400 text-[11px]">{booking.engagement_type || "N/A"}</p>
+                          </td>
+
+                          {/* Status Badge */}
+                          <td className="py-3.5 px-4">
+                            {booking.status === "pending" && (
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-amber-500/15 text-amber-400 border border-amber-500/30 uppercase">
+                                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping"></span>
+                                Pending
+                              </span>
+                            )}
+                            {booking.status === "confirmed" && (
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-blue-500/15 text-blue-400 border border-blue-500/30 uppercase">
+                                <span className="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+                                Confirmed
+                              </span>
+                            )}
+                            {booking.status === "completed" && (
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 uppercase">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                                Completed
+                              </span>
+                            )}
+                            {booking.status === "cancelled" && (
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-rose-500/15 text-rose-400 border border-rose-500/30 uppercase">
+                                <span className="w-1.5 h-1.5 rounded-full bg-rose-400"></span>
+                                Cancelled
+                              </span>
+                            )}
+                          </td>
+
+                          {/* Actions */}
+                          <td className="py-3.5 px-4 text-right space-x-2">
+                            <button
+                              onClick={() => setSelectedBooking(booking)}
+                              className="px-3 py-1.5 rounded-lg bg-[#00a2ad]/20 hover:bg-[#00a2ad]/30 text-[#00a2ad] border border-[#00a2ad]/40 text-xs font-bold transition-colors cursor-pointer"
+                            >
+                              View Details
+                            </button>
+
+                            <button
+                              onClick={() => setDeletingBooking(booking)}
+                              className="px-3 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-xs font-medium border border-rose-500/20 transition-colors cursor-pointer"
+                            >
+                              Delete
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={6} className="py-12 text-center text-slate-500">
+                          No schedule call bookings found.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
               </div>
             </div>
           )}
@@ -510,7 +797,7 @@ export default function AdminDashboardPage() {
           {/* ========================================== */}
           {/* USER MANAGEMENT DATA TABLE                 */}
           {/* ========================================== */}
-          {(activeTab === "overview" || activeTab === "users") && (
+          {activeTab === "users" && (
             <div className="p-6 rounded-2xl bg-[#0F172A] border border-slate-800 shadow-xl space-y-6">
               
               {/* Header & Controls */}
@@ -575,7 +862,6 @@ export default function AdminDashboardPage() {
                     {users.length > 0 ? (
                       users.map((user) => (
                         <tr key={user.id} className="hover:bg-slate-800/40 transition-colors">
-                          {/* User Avatar & Name */}
                           <td className="py-3.5 px-4">
                             <div className="flex items-center gap-3">
                               <div className="w-9 h-9 rounded-full bg-slate-700 flex items-center justify-center font-bold text-white text-xs shrink-0 overflow-hidden">
@@ -596,7 +882,6 @@ export default function AdminDashboardPage() {
                             </div>
                           </td>
 
-                          {/* Role */}
                           <td className="py-3.5 px-4">
                             {user.role === "admin" ? (
                               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-purple-500/10 text-purple-400 border border-purple-500/30 uppercase">
@@ -609,7 +894,6 @@ export default function AdminDashboardPage() {
                             )}
                           </td>
 
-                          {/* Status */}
                           <td className="py-3.5 px-4">
                             {user.is_active ? (
                               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
@@ -624,7 +908,6 @@ export default function AdminDashboardPage() {
                             )}
                           </td>
 
-                          {/* Date */}
                           <td className="py-3.5 px-4 text-slate-400">
                             {new Date(user.created_at).toLocaleDateString("en-US", {
                               month: "short",
@@ -633,7 +916,6 @@ export default function AdminDashboardPage() {
                             })}
                           </td>
 
-                          {/* Actions */}
                           <td className="py-3.5 px-4 text-right space-x-2">
                             <button
                               onClick={() => setEditingUser(user)}
@@ -661,6 +943,48 @@ export default function AdminDashboardPage() {
                     )}
                   </tbody>
                 </table>
+              </div>
+            </div>
+          )}
+
+          {/* ========================================== */}
+          {/* USER REGISTRATION ANALYTICS CHART          */}
+          {/* ========================================== */}
+          {(activeTab === "overview" || activeTab === "analytics") && (
+            <div className="p-6 rounded-2xl bg-[#0F172A] border border-slate-800 shadow-xl">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-lg font-bold text-white">User Growth Analytics</h2>
+                  <p className="text-xs text-slate-400">Monthly new user registrations over time</p>
+                </div>
+                <span className="px-3 py-1 rounded-lg bg-slate-800 text-xs font-semibold text-slate-300">
+                  Last 6 Months
+                </span>
+              </div>
+
+              <div className="h-56 w-full flex items-end justify-between gap-4 pt-8 px-4 border-b border-slate-800">
+                {stats?.chart_data && stats.chart_data.length > 0 ? (
+                  stats.chart_data.map((item, idx) => {
+                    const maxCount = Math.max(...stats.chart_data.map((d) => d.count), 1);
+                    const heightPercent = Math.max(Math.round((item.count / maxCount) * 100), 12);
+                    return (
+                      <div key={idx} className="flex-1 flex flex-col items-center gap-2 h-full justify-end group">
+                        <span className="text-xs font-bold text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                          {item.count} users
+                        </span>
+                        <div
+                          style={{ height: `${heightPercent}%` }}
+                          className="w-full max-w-[60px] rounded-t-lg bg-gradient-to-t from-[#00a2ad]/30 to-[#00a2ad] group-hover:from-[#00b4c0] group-hover:to-cyan-400 transition-all duration-300 shadow-lg"
+                        ></div>
+                        <span className="text-xs font-semibold text-slate-400 mt-2">{item.month}</span>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="w-full text-center text-slate-500 py-12 text-sm">
+                    No historical chart data available.
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -693,8 +1017,186 @@ export default function AdminDashboardPage() {
       </main>
 
       {/* ========================================== */}
-      {/* EDIT USER MODAL                            */}
+      {/* VIEW BOOKING DETAILS MODAL                 */}
       {/* ========================================== */}
+      {selectedBooking && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#0F172A] border border-slate-700 rounded-2xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
+            
+            <div className="flex items-start justify-between border-b border-slate-800 pb-4">
+              <div>
+                <span className="text-xs font-bold text-[#00a2ad] uppercase tracking-wider block mb-1">
+                  Schedule Booking Details
+                </span>
+                <h3 className="text-xl font-bold text-white">{selectedBooking.meeting_title}</h3>
+              </div>
+              <button onClick={() => setSelectedBooking(null)} className="text-slate-400 hover:text-white text-lg">
+                ✕
+              </button>
+            </div>
+
+            {/* Quick Status Buttons */}
+            <div className="flex items-center gap-2 p-3 rounded-xl bg-slate-900 border border-slate-800">
+              <span className="text-xs font-bold text-slate-400 mr-2 uppercase">Set Status:</span>
+              {(['pending', 'confirmed', 'completed', 'cancelled'] as const).map((st) => (
+                <button
+                  key={st}
+                  onClick={() => handleUpdateBookingStatus(selectedBooking.id, st, selectedBooking.admin_notes || "")}
+                  disabled={isUpdating}
+                  className={`px-3 py-1 rounded-lg text-xs font-bold capitalize transition-all cursor-pointer ${
+                    selectedBooking.status === st
+                      ? st === 'pending'
+                        ? 'bg-amber-500 text-black shadow-md'
+                        : st === 'confirmed'
+                        ? 'bg-blue-600 text-white shadow-md'
+                        : st === 'completed'
+                        ? 'bg-emerald-600 text-white shadow-md'
+                        : 'bg-rose-600 text-white shadow-md'
+                      : 'bg-slate-800 text-slate-400 hover:text-white'
+                  }`}
+                >
+                  {st}
+                </button>
+              ))}
+            </div>
+
+            {/* Details Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+              <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
+                <span className="text-slate-500 font-semibold">Client Name</span>
+                <p className="font-bold text-white text-sm">{selectedBooking.name}</p>
+              </div>
+
+              <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
+                <span className="text-slate-500 font-semibold">Email & Phone</span>
+                <p className="font-bold text-[#00a2ad]">{selectedBooking.email}</p>
+                <p className="text-slate-300 font-mono">{selectedBooking.phone}</p>
+              </div>
+
+              <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
+                <span className="text-slate-500 font-semibold">Meeting Date & Time</span>
+                <p className="font-bold text-white">{selectedBooking.date}</p>
+                <p className="text-amber-400 font-semibold">{selectedBooking.time_slot} ({selectedBooking.timezone})</p>
+              </div>
+
+              <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
+                <span className="text-slate-500 font-semibold">Company & Role</span>
+                <p className="font-bold text-white">{selectedBooking.company_name || "N/A"}</p>
+                <p className="text-slate-300">{selectedBooking.role || "N/A"}</p>
+              </div>
+
+              <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
+                <span className="text-slate-500 font-semibold">Budget Range</span>
+                <p className="font-bold text-emerald-400">{selectedBooking.investment_range || "N/A"}</p>
+              </div>
+
+              <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
+                <span className="text-slate-500 font-semibold">Engagement Type</span>
+                <p className="font-bold text-white">{selectedBooking.engagement_type || "N/A"}</p>
+              </div>
+            </div>
+
+            {/* Situation & Notes */}
+            <div className="space-y-3 text-xs">
+              {selectedBooking.situation && (
+                <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
+                  <span className="text-slate-500 font-semibold">Client Situation</span>
+                  <p className="text-slate-200">{selectedBooking.situation}</p>
+                </div>
+              )}
+
+              {selectedBooking.outcomes && selectedBooking.outcomes.length > 0 && (
+                <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
+                  <span className="text-slate-500 font-semibold">Desired Outcomes</span>
+                  <ul className="list-disc list-inside text-slate-300 space-y-0.5">
+                    {selectedBooking.outcomes.map((oc, idx) => (
+                      <li key={idx}>{oc}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {selectedBooking.must_work_notes && (
+                <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
+                  <span className="text-slate-500 font-semibold">Must-Work Notes / Specific Requirements</span>
+                  <p className="text-slate-200 whitespace-pre-wrap">{selectedBooking.must_work_notes}</p>
+                </div>
+              )}
+
+              {/* Admin Internal Notes */}
+              <div>
+                <label className="block text-xs font-bold text-slate-300 uppercase mb-1.5">
+                  Admin Internal Notes
+                </label>
+                <textarea
+                  rows={3}
+                  placeholder="Add internal notes about this client call..."
+                  value={selectedBooking.admin_notes || ""}
+                  onChange={(e) => setSelectedBooking({ ...selectedBooking, admin_notes: e.target.value })}
+                  className="w-full p-3 bg-slate-900 border border-slate-800 rounded-xl text-white text-xs focus:outline-none focus:border-[#00a2ad] resize-none"
+                />
+              </div>
+            </div>
+
+            <div className="pt-4 flex items-center justify-end gap-3 border-t border-slate-800">
+              <button
+                onClick={() => setSelectedBooking(null)}
+                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold"
+              >
+                Close
+              </button>
+              <button
+                onClick={() => handleUpdateBookingStatus(selectedBooking.id, selectedBooking.status, selectedBooking.admin_notes || "")}
+                disabled={isUpdating}
+                className="px-5 py-2 rounded-xl bg-[#00a2ad] hover:bg-[#00808a] text-white text-xs font-bold shadow-lg cursor-pointer"
+              >
+                {isUpdating ? "Saving..." : "Save Admin Notes"}
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* ========================================== */}
+      {/* DELETE BOOKING MODAL                       */}
+      {/* ========================================== */}
+      {deletingBooking && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#0F172A] border border-rose-500/30 rounded-2xl max-w-sm w-full p-6 shadow-2xl space-y-4">
+            <div className="w-12 h-12 rounded-full bg-rose-500/10 text-rose-400 flex items-center justify-center mx-auto">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+
+            <div className="text-center">
+              <h3 className="text-base font-bold text-white">Delete Booking Record?</h3>
+              <p className="text-xs text-slate-400 mt-1">
+                Are you sure you want to delete booking for <span className="text-rose-300 font-semibold">{deletingBooking.name}</span> ({deletingBooking.email})?
+              </p>
+            </div>
+
+            <div className="pt-3 flex items-center justify-center gap-3">
+              <button
+                onClick={() => setDeletingBooking(null)}
+                className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteBookingConfirm}
+                disabled={isUpdating}
+                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-lg"
+              >
+                {isUpdating ? "Deleting..." : "Confirm Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* EDIT USER MODAL */}
       {editingUser && (
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-[#0F172A] border border-slate-700 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-6">
@@ -773,9 +1275,7 @@ export default function AdminDashboardPage() {
         </div>
       )}
 
-      {/* ========================================== */}
-      {/* DELETE CONFIRMATION MODAL                  */}
-      {/* ========================================== */}
+      {/* DELETE USER MODAL */}
       {deletingUser && (
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-[#0F172A] border border-rose-500/30 rounded-2xl max-w-sm w-full p-6 shadow-2xl space-y-4">
