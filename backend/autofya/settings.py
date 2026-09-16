@@ -54,8 +54,10 @@ INSTALLED_APPS = [
     "drf_yasg",
     "authentication",
     "bookings",
+    "analytics",
     'django_cleanup.apps.CleanupConfig',
 ]
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

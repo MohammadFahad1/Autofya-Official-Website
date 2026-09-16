@@ -18,6 +18,8 @@ export const metadata: Metadata = {
   },
 };
 
+import AnalyticsTracker from "@/components/AnalyticsTracker";
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
@@ -28,7 +30,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <link rel="icon" href="/favicon.png" type="image/png" />
       </head>
-      <body className="min-h-full flex flex-col font-sans text-[#0B1340] bg-white">{children}</body>
+      <body className="min-h-full flex flex-col font-sans text-[#0B1340] bg-white">
+        <AnalyticsTracker />
+        {children}
+      </body>
     </html>
   );
 }
+

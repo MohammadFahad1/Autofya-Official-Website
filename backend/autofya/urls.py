@@ -39,7 +39,9 @@ urlpatterns = [
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
     path('auth/', include('authentication.urls')),
     path('bookings/', include('bookings.urls')),
+    path('analytics/', include('analytics.urls')),
 ]
+
 
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
