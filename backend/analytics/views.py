@@ -141,6 +141,9 @@ class AdminAnalyticsStatsView(NewAPIView):
         }, status=status.HTTP_200_OK)
 
 
+import math
+
+
 class AdminVisitorLogsView(NewAPIView):
     permission_classes = [IsAdminUser]
     serializer_class = PageViewLogSerializer
@@ -149,14 +152,26 @@ class AdminVisitorLogsView(NewAPIView):
     @swagger_auto_schema(tags=['Admin Panel - Analytics'])
     def get(self, request):
         """
-        **Get Filterable & Searchable Visitor Activity Logs**
+        **Get Paginated, Filterable & Searchable Visitor Activity Logs**
         """
         search_query = request.query_params.get('search', '').strip()
+        page = request.query_params.get('page', 1)
+        page_size = request.query_params.get('page_size', 10)
 
-        logs = PageViewLog.objects.select_related('user').all()
+        try:
+            page = max(1, int(page))
+        except (ValueError, TypeError):
+            page = 1
+
+        try:
+            page_size = max(1, min(100, int(page_size)))
+        except (ValueError, TypeError):
+            page_size = 10
+
+        logs_qs = PageViewLog.objects.select_related('user').all().order_by('-updated_at')
 
         if search_query:
-            logs = logs.filter(
+            logs_qs = logs_qs.filter(
                 Q(ip_address__icontains=search_query) |
                 Q(user__email__icontains=search_query) |
                 Q(user__full_name__icontains=search_query) |
@@ -164,11 +179,21 @@ class AdminVisitorLogsView(NewAPIView):
                 Q(section_name__icontains=search_query)
             )
 
-        logs = logs[:200]  # Limit recent logs
-        serializer = self.serializer_class(logs, many=True)
+        total_count = logs_qs.count()
+        total_pages = math.ceil(total_count / page_size) if total_count > 0 else 1
+
+        start = (page - 1) * page_size
+        end = start + page_size
+        paginated_logs = logs_qs[start:end]
+
+        serializer = self.serializer_class(paginated_logs, many=True)
 
         return Response({
             'success': True,
-            'count': len(serializer.data),
+            'count': total_count,
+            'total_pages': total_pages,
+            'current_page': page,
+            'page_size': page_size,
             'logs': serializer.data
         }, status=status.HTTP_200_OK)
+

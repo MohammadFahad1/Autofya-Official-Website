@@ -85,7 +85,10 @@ class AnalyticsTestCase(TestCase):
         self.assertEqual(top_pages[0]["page_url"], "/insurtech")
         self.assertEqual(top_pages[0]["total_views"], 2)
 
-        # Logs API
-        logs_res = self.client.get("/analytics/admin/logs/?search=192.168.1.1")
+        # Paginated Logs API
+        logs_res = self.client.get("/analytics/admin/logs/?search=192.168.1.1&page=1&page_size=2")
         self.assertEqual(logs_res.status_code, status.HTTP_200_OK)
         self.assertEqual(logs_res.data["count"], 2)
+        self.assertEqual(logs_res.data["total_pages"], 1)
+        self.assertTrue("is_live" in logs_res.data["logs"][0])
+
