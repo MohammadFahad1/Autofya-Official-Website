@@ -35,6 +35,9 @@ DEBUG = config('DEBUG', default=True, cast=bool)
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='*').split(',')
 
+# Base Backend URL for media file URI generation
+BACKEND_URL = config('BACKEND_URL', default='http://localhost:8000')
+
 
 AUTH_USER_MODEL = 'authentication.User'
 

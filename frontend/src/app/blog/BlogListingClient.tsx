@@ -35,6 +35,8 @@ interface BlogListingClientProps {
   initialSearch: string;
 }
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
 export default function BlogListingClient({
   initialCategories,
   initialPosts,
@@ -71,7 +73,7 @@ export default function BlogListingClient({
     params.append("page", currentPage.toString());
     params.append("page_size", "6");
 
-    fetch(`http://127.0.0.1:8000/blogs/?${params.toString()}`)
+    fetch(`${API_BASE_URL}/blogs/?${params.toString()}`)
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {

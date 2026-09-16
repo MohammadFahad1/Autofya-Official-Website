@@ -18,6 +18,8 @@ export const metadata: Metadata = {
   },
 };
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
 interface SearchParams {
   category?: string;
   search?: string;
@@ -39,7 +41,7 @@ export default async function BlogListingPage({
   let initialTotalPages = 1;
 
   try {
-    const catRes = await fetch("http://127.0.0.1:8000/blogs/categories/", {
+    const catRes = await fetch(`${API_BASE_URL}/blogs/categories/`, {
       cache: "no-store",
     });
     if (catRes.ok) {
@@ -59,7 +61,7 @@ export default async function BlogListingPage({
     params.append("page", "1");
     params.append("page_size", "6");
 
-    const postsRes = await fetch(`http://127.0.0.1:8000/blogs/?${params.toString()}`, {
+    const postsRes = await fetch(`${API_BASE_URL}/blogs/?${params.toString()}`, {
       cache: "no-store",
     });
     if (postsRes.ok) {

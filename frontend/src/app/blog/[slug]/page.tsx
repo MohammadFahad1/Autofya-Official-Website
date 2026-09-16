@@ -34,6 +34,8 @@ interface BlogPostSummary {
   reading_time_minutes: number;
 }
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
 // DYNAMIC SEO METADATA GENERATOR (SERVER SIDE)
 export async function generateMetadata({
   params,
@@ -44,7 +46,7 @@ export async function generateMetadata({
   const slug = resolvedParams.slug;
 
   try {
-    const res = await fetch(`http://127.0.0.1:8000/blogs/${slug}/`, {
+    const res = await fetch(`${API_BASE_URL}/blogs/${slug}/`, {
       cache: "no-store",
     });
     if (res.ok) {
@@ -96,7 +98,7 @@ export default async function BlogDetailPage({
   let errorMsg: string | null = null;
 
   try {
-    const res = await fetch(`http://127.0.0.1:8000/blogs/${slug}/`, {
+    const res = await fetch(`${API_BASE_URL}/blogs/${slug}/`, {
       cache: "no-store",
     });
     if (res.ok) {
