@@ -80,6 +80,12 @@ export default function AdminDashboardPage() {
   const [selectedBooking, setSelectedBooking] = useState<BookingItem | null>(null);
   const [deletingBooking, setDeletingBooking] = useState<BookingItem | null>(null);
 
+  // Send Direct Email State
+  const [emailingBooking, setEmailingBooking] = useState<BookingItem | null>(null);
+  const [emailSubject, setEmailSubject] = useState("");
+  const [emailMessage, setEmailMessage] = useState("");
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
+
   // User Filters & Search
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<"all" | "admin" | "user">("all");
@@ -309,6 +315,48 @@ export default function AdminDashboardPage() {
       setFeedbackMsg({ type: "error", text: "Server error while deleting booking." });
     } finally {
       setIsUpdating(false);
+    }
+  };
+
+  // Send Custom Email to Booking Client
+  const handleSendCustomEmail = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!emailingBooking || !token) return;
+
+    if (!emailSubject.trim() || !emailMessage.trim()) {
+      setFeedbackMsg({ type: "error", text: "Please provide both Subject and Message." });
+      return;
+    }
+
+    setIsSendingEmail(true);
+    setFeedbackMsg(null);
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/bookings/admin/${emailingBooking.id}/send-email/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          subject: emailSubject,
+          message: emailMessage,
+        }),
+      });
+
+      const json = await res.json();
+      if (res.ok && json.success) {
+        setFeedbackMsg({ type: "success", text: `Email sent to ${emailingBooking.email} successfully!` });
+        setEmailingBooking(null);
+        setEmailSubject("");
+        setEmailMessage("");
+      } else {
+        setFeedbackMsg({ type: "error", text: json.message || "Failed to send email." });
+      }
+    } catch (err) {
+      setFeedbackMsg({ type: "error", text: "Server error occurred while sending email." });
+    } finally {
+      setIsSendingEmail(false);
     }
   };
 
@@ -766,6 +814,18 @@ export default function AdminDashboardPage() {
                           {/* Actions */}
                           <td className="py-3.5 px-4 text-right space-x-2">
                             <button
+                              onClick={() => {
+                                setEmailingBooking(booking);
+                                setEmailSubject(`Message regarding your consultation call: ${booking.meeting_title}`);
+                                setEmailMessage("");
+                              }}
+                              className="px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-bold transition-colors cursor-pointer"
+                              title="Send Email to Client"
+                            >
+                              ✉ Send Email
+                            </button>
+
+                            <button
                               onClick={() => setSelectedBooking(booking)}
                               className="px-3 py-1.5 rounded-lg bg-[#00a2ad]/20 hover:bg-[#00a2ad]/30 text-[#00a2ad] border border-[#00a2ad]/40 text-xs font-bold transition-colors cursor-pointer"
                             >
@@ -779,6 +839,7 @@ export default function AdminDashboardPage() {
                               Delete
                             </button>
                           </td>
+
                         </tr>
                       ))
                     ) : (
@@ -1138,21 +1199,115 @@ export default function AdminDashboardPage() {
               </div>
             </div>
 
-            <div className="pt-4 flex items-center justify-end gap-3 border-t border-slate-800">
+            <div className="pt-4 flex items-center justify-between border-t border-slate-800">
               <button
-                onClick={() => setSelectedBooking(null)}
-                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold"
+                onClick={() => {
+                  const target = selectedBooking;
+                  setSelectedBooking(null);
+                  setEmailingBooking(target);
+                  setEmailSubject(`Message regarding your consultation call: ${target.meeting_title}`);
+                  setEmailMessage("");
+                }}
+                className="px-4 py-2 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5"
               >
-                Close
+                <span>✉</span> Send Email to Client
               </button>
-              <button
-                onClick={() => handleUpdateBookingStatus(selectedBooking.id, selectedBooking.status, selectedBooking.admin_notes || "")}
-                disabled={isUpdating}
-                className="px-5 py-2 rounded-xl bg-[#00a2ad] hover:bg-[#00808a] text-white text-xs font-bold shadow-lg cursor-pointer"
-              >
-                {isUpdating ? "Saving..." : "Save Admin Notes"}
+
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setSelectedBooking(null)}
+                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold cursor-pointer"
+                >
+                  Close
+                </button>
+                <button
+                  onClick={() => handleUpdateBookingStatus(selectedBooking.id, selectedBooking.status, selectedBooking.admin_notes || "")}
+                  disabled={isUpdating}
+                  className="px-5 py-2 rounded-xl bg-[#00a2ad] hover:bg-[#00808a] text-white text-xs font-bold shadow-lg cursor-pointer"
+                >
+                  {isUpdating ? "Saving..." : "Save Admin Notes"}
+                </button>
+              </div>
+            </div>
+
+
+          </div>
+        </div>
+      )}
+
+      {/* ========================================== */}
+      {/* SEND CUSTOM EMAIL MODAL                    */}
+      {/* ========================================== */}
+      {emailingBooking && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#0F172A] border border-slate-700 rounded-2xl max-w-lg w-full p-6 sm:p-8 shadow-2xl space-y-6">
+            
+            <div className="flex items-start justify-between border-b border-slate-800 pb-4">
+              <div>
+                <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider block mb-1">
+                  Direct Client Email
+                </span>
+                <h3 className="text-lg font-bold text-white">Send Email to {emailingBooking.name}</h3>
+                <p className="text-xs text-slate-400 font-mono">{emailingBooking.email}</p>
+              </div>
+              <button onClick={() => setEmailingBooking(null)} className="text-slate-400 hover:text-white text-lg cursor-pointer">
+                ✕
               </button>
             </div>
+
+            <form onSubmit={handleSendCustomEmail} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-300 uppercase mb-1.5">
+                  Subject
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={emailSubject}
+                  onChange={(e) => setEmailSubject(e.target.value)}
+                  placeholder="Enter email subject line..."
+                  className="w-full p-3 bg-slate-900 border border-slate-800 rounded-xl text-white text-xs focus:outline-none focus:border-emerald-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-300 uppercase mb-1.5">
+                  Message Content
+                </label>
+                <textarea
+                  rows={6}
+                  required
+                  value={emailMessage}
+                  onChange={(e) => setEmailMessage(e.target.value)}
+                  placeholder="Type your message to the client here..."
+                  className="w-full p-3 bg-slate-900 border border-slate-800 rounded-xl text-white text-xs focus:outline-none focus:border-emerald-500 resize-none"
+                />
+              </div>
+
+              <div className="pt-4 flex items-center justify-end gap-3 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setEmailingBooking(null)}
+                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSendingEmail}
+                  className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-lg cursor-pointer flex items-center gap-2"
+                >
+                  {isSendingEmail ? (
+                    <>
+                      <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                      <span>Sending Email...</span>
+                    </>
+                  ) : (
+                    <span>Send Email Now</span>
+                  )}
+                </button>
+              </div>
+            </form>
 
           </div>
         </div>
@@ -1162,6 +1317,7 @@ export default function AdminDashboardPage() {
       {/* DELETE BOOKING MODAL                       */}
       {/* ========================================== */}
       {deletingBooking && (
+
         <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-[#0F172A] border border-rose-500/30 rounded-2xl max-w-sm w-full p-6 shadow-2xl space-y-4">
             <div className="w-12 h-12 rounded-full bg-rose-500/10 text-rose-400 flex items-center justify-center mx-auto">

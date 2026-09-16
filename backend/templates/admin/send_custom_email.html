@@ -1,0 +1,39 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<div style="max-width: 700px; margin: 20px 0;">
+    <h2>Send Email to Selected Booking(s)</h2>
+    <p>You are sending a custom email message to the following <strong>{{ bookings.count }}</strong> booking client(s):</p>
+    
+    <ul style="background: #f8fafc; padding: 15px 30px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 20px;">
+        {% for booking in bookings %}
+            <li style="margin-bottom: 6px;">
+                <strong>{{ booking.name }}</strong> &lt;{{ booking.email }}&gt; ({{ booking.meeting_title }} - {{ booking.date }})
+            </li>
+        {% endfor %}
+    </ul>
+
+    <form method="post" action="">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="send_email_to_selected" />
+        <input type="hidden" name="apply" value="1" />
+        {% for booking in bookings %}
+            <input type="hidden" name="_selected_action" value="{{ booking.id }}" />
+        {% endfor %}
+
+        <div style="margin-bottom: 15px;">
+            <label style="display: block; font-weight: bold; margin-bottom: 5px;">Subject:</label>
+            <input type="text" name="subject" required style="width: 100%; padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px;" placeholder="e.g., Update regarding your Autofya consultation booking" />
+        </div>
+
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; font-weight: bold; margin-bottom: 5px;">Message Content:</label>
+            <textarea name="message" rows="8" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px;" placeholder="Type your email message to the user here..."></textarea>
+        </div>
+
+        <div>
+            <input type="submit" value="Send Email Now" style="background: #00a2ad; color: white; padding: 10px 20px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;" />
+            <a href="../" style="margin-left: 15px; color: #666; text-decoration: none;">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

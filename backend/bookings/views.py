@@ -9,7 +9,7 @@ from drf_yasg.utils import swagger_auto_schema
 
 from bookings.models import Booking
 from bookings.serializers import BookingCreateSerializer, BookingAdminSerializer
-from bookings.tasks import send_booking_confirmation_email
+from bookings.tasks import send_booking_confirmation_email, send_custom_booking_email
 
 
 class CreateBookingView(NewAPIView):
@@ -137,3 +137,37 @@ class AdminBookingStatsView(NewAPIView):
                 'cancelled_bookings': cancelled,
             }
         }, status=status.HTTP_200_OK)
+
+
+class AdminSendBookingEmailView(NewAPIView):
+    permission_classes = [IsAdminUser]
+    serializer_class = BookingAdminSerializer
+    http_method_names = ['post']
+
+    @swagger_auto_schema(tags=['Admin Panel - Bookings'])
+    def post(self, request, pk):
+        """
+        **Send Custom Email to User**\n
+        Sends a direct email message from admin to the user who booked the schedule.
+        """
+        booking = get_object_or_404(Booking, pk=pk)
+        subject = request.data.get('subject', '').strip()
+        message = request.data.get('message', '').strip()
+
+        if not subject or not message:
+            return Response({
+                'success': False,
+                'message': 'Both subject and message are required.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            send_custom_booking_email.delay(booking.id, subject, message)
+            return Response({
+                'success': True,
+                'message': f'Email scheduled successfully for {booking.email}.'
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({
+                'success': False,
+                'message': f'Failed to trigger email task: {e}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
