@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 import AutofyaLogo from "@/components/AutofyaLogo";
@@ -94,6 +94,33 @@ interface VisitorLogItem {
   updated_at: string;
 }
 
+interface AdminCategoryItem {
+  id: number;
+  name: string;
+  slug: string;
+  description: string | null;
+  posts_count: number;
+  created_at: string;
+}
+
+interface AdminBlogPostItem {
+  id: number;
+  title: string;
+  slug: string;
+  category: AdminCategoryItem;
+  author_name: string;
+  featured_image: string | null;
+  featured_image_url: string | null;
+  image: string;
+  excerpt: string;
+  content: string;
+  reading_time_minutes: number;
+  views_count: number;
+  is_published: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -103,7 +130,7 @@ export default function AdminDashboardPage() {
   const router = useRouter();
 
   // Navigation Tabs State
-  const [activeTab, setActiveTab] = useState<"overview" | "users" | "bookings" | "analytics" | "settings" | "profile">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "users" | "bookings" | "analytics" | "blogs" | "settings" | "profile">("overview");
 
   // User Dashboard Data State
   const [stats, setStats] = useState<StatsData | null>(null);
@@ -137,6 +164,34 @@ export default function AdminDashboardPage() {
   const [logsTotalPages, setLogsTotalPages] = useState(1);
   const [logsTotalCount, setLogsTotalCount] = useState(0);
 
+  // Blog CMS State
+  const [cmsCategories, setCmsCategories] = useState<AdminCategoryItem[]>([]);
+  const [cmsPosts, setCmsPosts] = useState<AdminBlogPostItem[]>([]);
+  const [cmsSearch, setCmsSearch] = useState("");
+  const [cmsCategoryFilter, setCmsCategoryFilter] = useState("");
+  const [cmsLoading, setCmsLoading] = useState(false);
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [categoryNameInput, setCategoryNameInput] = useState("");
+  const [categoryDescInput, setCategoryDescInput] = useState("");
+  const [editingCategory, setEditingCategory] = useState<AdminCategoryItem | null>(null);
+
+  // Article Modal & Editor State
+  const [showArticleModal, setShowArticleModal] = useState(false);
+  const [editingArticle, setEditingArticle] = useState<AdminBlogPostItem | null>(null);
+  const [articleForm, setArticleForm] = useState({
+    title: "",
+    category_id: 0,
+    author_name: "Autofya Team",
+    featured_image_url: "",
+    excerpt: "",
+    content: "",
+    reading_time_minutes: 5,
+    is_published: true,
+  });
+  const [editorTab, setEditorTab] = useState<"visual" | "split" | "preview">("visual");
+  const editorTextareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const [deletingArticle, setDeletingArticle] = useState<AdminBlogPostItem | null>(null);
+
 
 
   // UI States
@@ -153,14 +208,15 @@ export default function AdminDashboardPage() {
     }
   }, [isAuthenticated, isLoading, router]);
 
-  // Fetch Dashboard Stats, Users, Bookings, & Visitor Analytics
+  // Fetch Dashboard Stats, Users, Bookings, Visitor Analytics, & Blog CMS
   useEffect(() => {
     if (token) {
       fetchDashboardData();
       fetchBookingData();
       fetchAnalyticsData();
+      fetchCMSData();
     }
-  }, [token, roleFilter, statusFilter, bookingStatusFilter, analyticsSearch]);
+  }, [token, roleFilter, statusFilter, bookingStatusFilter, analyticsSearch, cmsSearch, cmsCategoryFilter, activeTab]);
 
   const formatDuration = (seconds: number) => {
     if (!seconds || seconds <= 0) return "0s";
@@ -198,6 +254,397 @@ export default function AdminDashboardPage() {
     } catch (err) {
       console.error("Error fetching analytics data:", err);
     }
+  };
+
+  const fetchCMSData = async () => {
+    if (!token) return;
+    setCmsLoading(true);
+    try {
+      const catRes = await fetch(`${API_BASE_URL}/blogs/admin/categories/`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const catData = await catRes.json();
+      if (catData.success) {
+        setCmsCategories(catData.categories);
+      }
+
+      let postUrl = `${API_BASE_URL}/blogs/admin/posts/?search=${encodeURIComponent(cmsSearch)}`;
+      if (cmsCategoryFilter) {
+        postUrl += `&category_id=${cmsCategoryFilter}`;
+      }
+      const postRes = await fetch(postUrl, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const postData = await postRes.json();
+      if (postData.success) {
+        setCmsPosts(postData.posts);
+      }
+    } catch (err) {
+      console.error("Error fetching CMS data:", err);
+    } finally {
+      setCmsLoading(false);
+    }
+  };
+
+  const handleSaveCategory = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!categoryNameInput.trim()) return;
+    setIsUpdating(true);
+    try {
+      const url = editingCategory
+        ? `${API_BASE_URL}/blogs/admin/categories/${editingCategory.id}/`
+        : `${API_BASE_URL}/blogs/admin/categories/`;
+      const method = editingCategory ? "PATCH" : "POST";
+      const res = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name: categoryNameInput,
+          description: categoryDescInput,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setFeedbackMsg({ type: "success", text: data.message || "Category saved successfully." });
+        setCategoryNameInput("");
+        setCategoryDescInput("");
+        setEditingCategory(null);
+        fetchCMSData();
+      } else {
+        setFeedbackMsg({ type: "error", text: JSON.stringify(data.message) });
+      }
+    } catch (err: any) {
+      setFeedbackMsg({ type: "error", text: err.message || "Failed to save category." });
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleDeleteCategory = async (catId: number) => {
+    if (!confirm("Are you sure you want to delete this category?")) return;
+    try {
+      const res = await fetch(`${API_BASE_URL}/blogs/admin/categories/${catId}/`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (data.success) {
+        setFeedbackMsg({ type: "success", text: "Category deleted." });
+        fetchCMSData();
+      }
+    } catch (err) {
+      console.error("Error deleting category:", err);
+    }
+  };
+
+  const [articleImageFile, setArticleImageFile] = useState<File | null>(null);
+
+  const handleOpenNewArticleModal = () => {
+    setEditingArticle(null);
+    setArticleImageFile(null);
+    setArticleForm({
+      title: "",
+      category_id: cmsCategories.length > 0 ? cmsCategories[0].id : 0,
+      author_name: adminUser?.full_name || "Autofya Team",
+      featured_image_url: "",
+      excerpt: "",
+      content: "<h2>Introduction</h2>\n<p>Write your article content here...</p>",
+      reading_time_minutes: 5,
+      is_published: true,
+    });
+    setEditorTab("visual");
+    setShowArticleModal(true);
+  };
+
+  const handleOpenEditArticleModal = (post: AdminBlogPostItem) => {
+    setEditingArticle(post);
+    setArticleImageFile(null);
+    setArticleForm({
+      title: post.title,
+      category_id: post.category?.id || 0,
+      author_name: post.author_name || "Autofya Team",
+      featured_image_url: post.featured_image_url || "",
+      excerpt: post.excerpt || "",
+      content: post.content || "",
+      reading_time_minutes: post.reading_time_minutes || 5,
+      is_published: post.is_published,
+    });
+    setEditorTab("visual");
+    setShowArticleModal(true);
+  };
+
+  const handleSaveArticle = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!articleForm.title.trim() || !articleForm.category_id || !articleForm.content.trim()) {
+      setFeedbackMsg({ type: "error", text: "Please fill in Title, Category, and Article Content." });
+      return;
+    }
+    setIsUpdating(true);
+    try {
+      const url = editingArticle
+        ? `${API_BASE_URL}/blogs/admin/posts/${editingArticle.id}/`
+        : `${API_BASE_URL}/blogs/admin/posts/`;
+      const method = editingArticle ? "PATCH" : "POST";
+
+      let body: FormData | string;
+      let headers: Record<string, string> = { Authorization: `Bearer ${token}` };
+
+      if (articleImageFile) {
+        const formData = new FormData();
+        formData.append("title", articleForm.title);
+        formData.append("category_id", String(articleForm.category_id));
+        formData.append("author_name", articleForm.author_name);
+        formData.append("excerpt", articleForm.excerpt);
+        formData.append("content", articleForm.content);
+        formData.append("reading_time_minutes", String(articleForm.reading_time_minutes));
+        formData.append("is_published", String(articleForm.is_published));
+        formData.append("featured_image", articleImageFile);
+        if (articleForm.featured_image_url) {
+          formData.append("featured_image_url", articleForm.featured_image_url);
+        }
+        body = formData;
+      } else {
+        headers["Content-Type"] = "application/json";
+        body = JSON.stringify(articleForm);
+      }
+
+      const res = await fetch(url, { method, headers, body });
+      const data = await res.json();
+      if (data.success) {
+        setFeedbackMsg({ type: "success", text: data.message || "Article saved successfully." });
+        setShowArticleModal(false);
+        setArticleImageFile(null);
+        fetchCMSData();
+      } else {
+        setFeedbackMsg({ type: "error", text: JSON.stringify(data.message) });
+      }
+    } catch (err: any) {
+      setFeedbackMsg({ type: "error", text: err.message || "Failed to save article." });
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleTogglePublish = async (post: AdminBlogPostItem) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/blogs/admin/posts/${post.id}/`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ is_published: !post.is_published }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setFeedbackMsg({
+          type: "success",
+          text: `Article "${post.title}" ${!post.is_published ? "published" : "set to draft"}.`,
+        });
+        fetchCMSData();
+      }
+    } catch (err) {
+      console.error("Error toggling publish:", err);
+    }
+  };
+
+  const handleDeleteArticleConfirm = async () => {
+    if (!deletingArticle) return;
+    setIsUpdating(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/blogs/admin/posts/${deletingArticle.id}/`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (data.success) {
+        setFeedbackMsg({ type: "success", text: "Article deleted." });
+        setDeletingArticle(null);
+        fetchCMSData();
+      }
+    } catch (err) {
+      console.error("Error deleting article:", err);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const insertFormatTag = (openTag: string, closeTag: string = "", defaultText: string = "") => {
+    const textarea = editorTextareaRef.current;
+    if (!textarea) {
+      setArticleForm((prev) => ({
+        ...prev,
+        content: prev.content + `\n${openTag}${defaultText}${closeTag}`,
+      }));
+      return;
+    }
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const currentText = articleForm.content;
+    const selectedText = currentText.substring(start, end) || defaultText;
+
+    const replacement = `${openTag}${selectedText}${closeTag}`;
+    const newContent = currentText.substring(0, start) + replacement + currentText.substring(end);
+
+    setArticleForm((prev) => ({ ...prev, content: newContent }));
+
+    setTimeout(() => {
+      textarea.focus();
+      const newCursorPos = start + openTag.length + selectedText.length;
+      textarea.setSelectionRange(start + openTag.length, newCursorPos);
+    }, 50);
+  };
+
+  const handleInsertLink = () => {
+    const url = prompt("Enter hyperlink URL (e.g. https://autofya.com/docs):", "https://");
+    if (!url) return;
+    const text = prompt("Enter link display text:", "Click here to read more");
+    insertFormatTag(`<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-[#00a2ad] underline hover:text-[#008790]">`, "</a>", text || "Link");
+  };
+
+  const handleInsertImageFigure = () => {
+    const url = prompt("Enter image URL:", "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80");
+    if (!url) return;
+    const alt = prompt("Enter alt description:", "Illustration of AI automation platform");
+    const caption = prompt("Enter image caption text:", "Figure 1: Autofya architecture overview");
+    const figureHtml = `\n<figure class="my-6 text-center">\n  <img src="${url}" alt="${alt || ''}" class="rounded-xl border border-slate-700 w-full max-h-[450px] object-cover shadow-lg mx-auto" />\n  ${caption ? `<figcaption class="text-xs text-slate-400 mt-2 italic font-mono">${caption}</figcaption>` : ''}\n</figure>\n`;
+    insertFormatTag(figureHtml);
+  };
+
+  const handleInsertVideoEmbed = () => {
+    const videoUrl = prompt("Enter YouTube / Vimeo Video URL or Embed Link:", "https://www.youtube.com/embed/dQw4w9WgXcQ");
+    if (!videoUrl) return;
+    let finalEmbedUrl = videoUrl;
+    if (videoUrl.includes("watch?v=")) {
+      finalEmbedUrl = videoUrl.replace("watch?v=", "embed/");
+    }
+    const videoHtml = `\n<div class="relative w-full aspect-video my-6 rounded-2xl overflow-hidden border border-slate-700 shadow-2xl">\n  <iframe src="${finalEmbedUrl}" title="Video player" class="absolute top-0 left-0 w-full h-full border-0" allowfullscreen></iframe>\n</div>\n`;
+    insertFormatTag(videoHtml);
+  };
+
+  const handleInsertCodeBlock = () => {
+    const lang = prompt("Enter programming language (javascript, python, html, json, sql, bash):", "javascript") || "javascript";
+    const codeSnippet = `\n<pre class="bg-slate-950 p-4 rounded-xl border border-slate-800 my-4 font-mono text-xs text-emerald-400 overflow-x-auto"><code class="language-${lang}">// ${lang.toUpperCase()} Code Example\nfunction executePipeline() {\n  console.log("Running Autofya AI Agent Task...");\n}</code></pre>\n`;
+    insertFormatTag(codeSnippet);
+  };
+
+  const handleInsertTable = () => {
+    const rowsStr = prompt("Enter number of table rows:", "3");
+    const colsStr = prompt("Enter number of table columns:", "3");
+    const rows = parseInt(rowsStr || "3", 10);
+    const cols = parseInt(colsStr || "3", 10);
+    if (isNaN(rows) || isNaN(cols)) return;
+
+    let headers = "";
+    for (let c = 1; c <= cols; c++) {
+      headers += `        <th class="p-3 border border-slate-700 bg-slate-800/90 text-[#00a2ad] text-xs font-bold uppercase tracking-wider text-left">Header ${c}</th>\n`;
+    }
+    let bodyRows = "";
+    for (let r = 1; r <= rows; r++) {
+      bodyRows += "      <tr class=\"hover:bg-slate-800/40 transition-colors\">\n";
+      for (let c = 1; c <= cols; c++) {
+        bodyRows += `        <td class="p-3 border border-slate-800 text-xs text-slate-300 font-medium">Row ${r} Col ${c}</td>\n`;
+      }
+      bodyRows += "      </tr>\n";
+    }
+
+    const tableHtml = `\n<div class="overflow-x-auto my-6 rounded-xl border border-slate-800 shadow-lg">\n  <table class="w-full border-collapse text-left">\n    <thead>\n      <tr>\n${headers}      </tr>\n    </thead>\n    <tbody>\n${bodyRows}    </tbody>\n  </table>\n</div>\n`;
+    insertFormatTag(tableHtml);
+  };
+
+  const handleInsertCTAButton = () => {
+    const text = prompt("Enter CTA Button text:", "Get Started Free →");
+    if (!text) return;
+    const link = prompt("Enter target URL:", "https://autofya.com/contact");
+    if (!link) return;
+    const ctaHtml = `\n<div class="my-6 text-center">\n  <a href="${link}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-gradient-to-r from-[#00a2ad] to-[#008790] text-white font-bold text-sm shadow-lg hover:shadow-cyan-500/25 transition-all transform hover:-translate-y-0.5">\n    ${text}\n  </a>\n</div>\n`;
+    insertFormatTag(ctaHtml);
+  };
+
+  const handleInsertAccordion = () => {
+    const title = prompt("Enter FAQ / Collapsible Question:", "How does Autofya AI work?");
+    if (!title) return;
+    const content = prompt("Enter Answer / Detail text:", "Autofya automates your software development workflows through intelligent agent pipelines...");
+    const accordionHtml = `\n<details class="my-4 p-4 bg-slate-900/90 rounded-xl border border-slate-800 group transition-all">\n  <summary class="font-bold text-sm text-cyan-400 cursor-pointer list-none flex items-center justify-between">\n    <span>❓ ${title}</span>\n    <span class="text-xs text-slate-400 group-open:rotate-180 transition-transform">▼</span>\n  </summary>\n  <p class="mt-3 text-xs text-slate-300 leading-relaxed border-t border-slate-800/80 pt-3">${content || 'Details here...'}</p>\n</details>\n`;
+    insertFormatTag(accordionHtml);
+  };
+
+  const handleInsertStatsCard = () => {
+    const statsHtml = `\n<div class="grid grid-cols-1 md:grid-cols-3 gap-4 my-6">\n  <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 text-center shadow-lg">\n    <div class="text-2xl font-extrabold text-[#00a2ad]">99.9%</div>\n    <div class="text-xs text-slate-400 mt-1">Uptime SLA</div>\n  </div>\n  <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 text-center shadow-lg">\n    <div class="text-2xl font-extrabold text-cyan-400">10x</div>\n    <div class="text-xs text-slate-400 mt-1">Speed Advantage</div>\n  </div>\n  <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 text-center shadow-lg">\n    <div class="text-2xl font-extrabold text-amber-400">50,000+</div>\n    <div class="text-xs text-slate-400 mt-1">Workflows Automated</div>\n  </div>\n</div>\n`;
+    insertFormatTag(statsHtml);
+  };
+
+  const handleLoadSampleTemplate = () => {
+    if (articleForm.content.trim() && !confirm("Replace current editor content with full sample blog article template?")) {
+      return;
+    }
+    const sampleHtml = `<p class="lead text-lg text-slate-200">Artificial Intelligence is revolutionizing enterprise software development. Learn how Autofya empowers teams to automate complex coding tasks at scale.</p>
+
+<h2>1. Introduction to Next-Gen Automation</h2>
+<p>Modern engineering organizations face mounting pressure to deliver software faster without sacrificing security or code quality. By leveraging intelligent autonomous agent systems, developers can focus on core architecture while repetitive boilerplate is handled automatically.</p>
+
+<div class="p-4 rounded-xl border-l-4 border-cyan-500 bg-cyan-950/20 my-6">
+  <strong class="text-cyan-400 block mb-1">💡 Key Insight</strong>
+  <p class="text-xs text-slate-300">Automating integration test pipelines reduces regression cycles by up to 75% across large multi-repo codebases.</p>
+</div>
+
+<h2>2. Key Performance Metrics</h2>
+<p>Below is a comparative breakdown of traditional development workflows vs Autofya-accelerated pipelines:</p>
+
+<div class="overflow-x-auto my-6 rounded-xl border border-slate-800 shadow-lg">
+  <table class="w-full border-collapse text-left">
+    <thead>
+      <tr>
+        <th class="p-3 border border-slate-700 bg-slate-800/90 text-[#00a2ad] text-xs font-bold uppercase tracking-wider">Metric</th>
+        <th class="p-3 border border-slate-700 bg-slate-800/90 text-[#00a2ad] text-xs font-bold uppercase tracking-wider">Manual Process</th>
+        <th class="p-3 border border-slate-700 bg-slate-800/90 text-[#00a2ad] text-xs font-bold uppercase tracking-wider">Autofya AI Workflow</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="hover:bg-slate-800/40 transition-colors">
+        <td class="p-3 border border-slate-800 text-xs text-slate-200 font-semibold">Boilerplate Generation</td>
+        <td class="p-3 border border-slate-800 text-xs text-slate-400">4 - 6 Hours</td>
+        <td class="p-3 border border-slate-800 text-xs text-cyan-400 font-bold">&lt; 30 Seconds</td>
+      </tr>
+      <tr class="hover:bg-slate-800/40 transition-colors">
+        <td class="p-3 border border-slate-800 text-xs text-slate-200 font-semibold">API Test Suite Coverage</td>
+        <td class="p-3 border border-slate-800 text-xs text-slate-400">Manual Scripting</td>
+        <td class="p-3 border border-slate-800 text-xs text-cyan-400 font-bold">100% Automated</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<h2>3. Code Example: Autonomous Execution</h2>
+<p>Here is how easy it is to initialize an automated task runner using our standard SDK:</p>
+
+<pre class="bg-slate-950 p-4 rounded-xl border border-slate-800 my-4 font-mono text-xs text-emerald-400 overflow-x-auto"><code class="language-javascript">// Initialize Autofya Autonomous Engine
+import { AutofyaAgent } from "@autofya/sdk";
+
+const agent = new AutofyaAgent({ apiKey: process.env.AUTOFYA_KEY });
+const result = await agent.runTask("Optimize database queries and add indexing");
+console.log("Task Status:", result.status);</code></pre>
+
+<h2>4. Frequently Asked Questions</h2>
+<details class="my-4 p-4 bg-slate-900/90 rounded-xl border border-slate-800 group transition-all">
+  <summary class="font-bold text-sm text-cyan-400 cursor-pointer list-none flex items-center justify-between">
+    <span>❓ How does Autofya handle security and privacy?</span>
+    <span class="text-xs text-slate-400 group-open:rotate-180 transition-transform">▼</span>
+  </summary>
+  <p class="mt-3 text-xs text-slate-300 leading-relaxed border-t border-slate-800/80 pt-3">All code analysis runs within dedicated, isolated sandbox environments with zero persistent storage of proprietary customer logic.</p>
+</details>
+
+<div class="my-8 text-center">
+  <a href="https://autofya.com/contact" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-gradient-to-r from-[#00a2ad] to-[#008790] text-white font-bold text-sm shadow-lg hover:shadow-cyan-500/25 transition-all transform hover:-translate-y-0.5">
+    Schedule a Demo with Autofya Engineers →
+  </a>
+</div>`;
+
+    setArticleForm((prev) => ({ ...prev, content: sampleHtml }));
   };
 
 
@@ -579,6 +1026,30 @@ export default function AdminDashboardPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 012-2h2a2 2 0 012 2v6a2 2 0 01-2 2h-2a2 2 0 01-2-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
               </svg>
               {!sidebarCollapsed && <span>Analytics & Growth</span>}
+            </button>
+
+            {/* Blog CMS Tab */}
+            <button
+              onClick={() => setActiveTab("blogs")}
+              className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
+                activeTab === "blogs"
+                  ? "bg-gradient-to-r from-[#00a2ad] to-[#00808a] text-white shadow-lg shadow-[#00a2ad]/20"
+                  : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+              }`}
+            >
+              <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+              {!sidebarCollapsed && (
+                <div className="flex items-center justify-between w-full">
+                  <span>Blog CMS</span>
+                  {cmsPosts.length > 0 && (
+                    <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-[#00a2ad]/20 text-[#00a2ad]">
+                      {cmsPosts.length}
+                    </span>
+                  )}
+                </div>
+              )}
             </button>
 
             <button
@@ -1466,6 +1937,228 @@ export default function AdminDashboardPage() {
           )}
 
 
+          {/* ========================================== */}
+          {/* BLOG CMS TAB CONTENT                        */}
+          {/* ========================================== */}
+          {activeTab === "blogs" && (
+            <div className="space-y-8">
+              
+              {/* Top Stats Overview Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                <div className="p-5 rounded-2xl bg-[#0F172A] border border-slate-800 shadow-xl flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Articles</p>
+                    <h3 className="text-2xl font-black text-white mt-1">{cmsPosts.length}</h3>
+                  </div>
+                  <div className="w-12 h-12 rounded-xl bg-[#00a2ad]/10 text-[#00a2ad] flex items-center justify-center font-bold">
+                    📝
+                  </div>
+                </div>
+
+                <div className="p-5 rounded-2xl bg-[#0F172A] border border-slate-800 shadow-xl flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Published</p>
+                    <h3 className="text-2xl font-black text-emerald-400 mt-1">
+                      {cmsPosts.filter((p) => p.is_published).length}
+                    </h3>
+                  </div>
+                  <div className="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold">
+                    ✓
+                  </div>
+                </div>
+
+                <div className="p-5 rounded-2xl bg-[#0F172A] border border-slate-800 shadow-xl flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Categories</p>
+                    <h3 className="text-2xl font-black text-amber-400 mt-1">{cmsCategories.length}</h3>
+                  </div>
+                  <div className="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center font-bold">
+                    🏷️
+                  </div>
+                </div>
+
+                <div className="p-5 rounded-2xl bg-[#0F172A] border border-slate-800 shadow-xl flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Article Views</p>
+                    <h3 className="text-2xl font-black text-cyan-400 mt-1">
+                      {cmsPosts.reduce((sum, p) => sum + (p.views_count || 0), 0)}
+                    </h3>
+                  </div>
+                  <div className="w-12 h-12 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center font-bold">
+                    👁️
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Toolbar & Filters */}
+              <div className="p-6 rounded-2xl bg-[#0F172A] border border-slate-800 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="flex flex-1 flex-col sm:flex-row items-center gap-3">
+                  <div className="relative flex-1 w-full">
+                    <svg className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <input
+                      type="text"
+                      value={cmsSearch}
+                      onChange={(e) => setCmsSearch(e.target.value)}
+                      placeholder="Search articles by title or keyword..."
+                      className="w-full bg-slate-900 border border-slate-700/80 rounded-xl pl-10 pr-4 py-2 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-[#00a2ad]"
+                    />
+                  </div>
+
+                  <select
+                    value={cmsCategoryFilter}
+                    onChange={(e) => setCmsCategoryFilter(e.target.value)}
+                    className="w-full sm:w-48 bg-slate-900 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-slate-300 focus:outline-none focus:border-[#00a2ad]"
+                  >
+                    <option value="">All Categories</option>
+                    {cmsCategories.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name} ({c.posts_count})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setShowCategoryModal(true)}
+                    className="px-4 py-2.5 rounded-xl border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition-all cursor-pointer flex items-center gap-2"
+                  >
+                    <span>🏷️ Manage Categories</span>
+                  </button>
+
+                  <button
+                    onClick={handleOpenNewArticleModal}
+                    className="px-4 py-2.5 rounded-xl bg-[#00a2ad] hover:bg-[#008790] text-white text-xs font-bold transition-all shadow-lg cursor-pointer flex items-center gap-2"
+                  >
+                    <span>✍️ Create New Article</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Articles Data Table */}
+              <div className="rounded-2xl bg-[#0F172A] border border-slate-800 shadow-xl overflow-hidden">
+                <div className="p-5 border-b border-slate-800 flex items-center justify-between">
+                  <h3 className="text-base font-bold text-white flex items-center gap-2">
+                    <span>Articles Collection</span>
+                    <span className="text-xs px-2.5 py-0.5 rounded-full bg-[#00a2ad]/20 text-[#00a2ad]">
+                      {cmsPosts.length} posts
+                    </span>
+                  </h3>
+                  {cmsLoading && <span className="text-xs text-[#00a2ad] animate-pulse">Loading articles...</span>}
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="bg-slate-900/80 text-slate-400 text-[11px] font-bold uppercase tracking-wider border-b border-slate-800">
+                        <th className="py-3 px-4">Article</th>
+                        <th className="py-3 px-4">Category</th>
+                        <th className="py-3 px-4">Author</th>
+                        <th className="py-3 px-4">Read Time</th>
+                        <th className="py-3 px-4">Views</th>
+                        <th className="py-3 px-4">Published Status</th>
+                        <th className="py-3 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-800/60 text-xs text-slate-300">
+                      {cmsPosts.length > 0 ? (
+                        cmsPosts.map((post) => (
+                          <tr key={post.id} className="hover:bg-slate-800/40 transition-colors">
+                            
+                            {/* Article Title & Cover */}
+                            <td className="py-3.5 px-4 max-w-sm">
+                              <div className="flex items-center gap-3">
+                                <div className="w-14 h-10 rounded-lg overflow-hidden bg-slate-900 shrink-0 border border-slate-800">
+                                  <img
+                                    src={post.image}
+                                    alt={post.title}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                      (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=400&q=80";
+                                    }}
+                                  />
+                                </div>
+                                <div className="min-w-0">
+                                  <h4 className="font-bold text-white text-sm line-clamp-1 hover:text-[#00a2ad]">
+                                    {post.title}
+                                  </h4>
+                                  <p className="text-[11px] text-slate-500 font-mono line-clamp-1">/{post.slug}</p>
+                                </div>
+                              </div>
+                            </td>
+
+                            {/* Category */}
+                            <td className="py-3.5 px-4">
+                              <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#00a2ad]/15 text-[#00a2ad] border border-[#00a2ad]/30">
+                                {post.category?.name || "General"}
+                              </span>
+                            </td>
+
+                            {/* Author */}
+                            <td className="py-3.5 px-4 font-semibold text-slate-200">
+                              {post.author_name}
+                            </td>
+
+                            {/* Read Time */}
+                            <td className="py-3.5 px-4 text-slate-400">
+                              {post.reading_time_minutes} min
+                            </td>
+
+                            {/* Views */}
+                            <td className="py-3.5 px-4 font-mono font-bold text-cyan-400">
+                              {post.views_count}
+                            </td>
+
+                            {/* Toggle Publish Status */}
+                            <td className="py-3.5 px-4">
+                              <button
+                                onClick={() => handleTogglePublish(post)}
+                                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                                  post.is_published
+                                    ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 hover:bg-emerald-500/30"
+                                    : "bg-amber-500/20 text-amber-400 border border-amber-500/40 hover:bg-amber-500/30"
+                                }`}
+                              >
+                                <span>{post.is_published ? "✓ Published" : "⏳ Draft"}</span>
+                              </button>
+                            </td>
+
+                            {/* Actions */}
+                            <td className="py-3.5 px-4 text-right space-x-2">
+                              <button
+                                onClick={() => handleOpenEditArticleModal(post)}
+                                className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold cursor-pointer"
+                              >
+                                ✏️ Edit
+                              </button>
+
+                              <button
+                                onClick={() => setDeletingArticle(post)}
+                                className="px-2.5 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs font-semibold cursor-pointer"
+                              >
+                                🗑️ Delete
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan={7} className="py-12 text-center text-slate-500">
+                            No articles found matching filters.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+            </div>
+          )}
+
+
           {/* Settings Tab Content Placeholder */}
           {activeTab === "settings" && (
             <div className="p-8 rounded-2xl bg-[#0F172A] border border-slate-800 shadow-xl max-w-2xl">
@@ -1873,6 +2566,834 @@ export default function AdminDashboardPage() {
               </button>
               <button
                 onClick={handleDeleteUserConfirm}
+                disabled={isUpdating}
+                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-lg"
+              >
+                {isUpdating ? "Deleting..." : "Confirm Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================== */}
+      {/* CATEGORY MANAGER MODAL                     */}
+      {/* ========================================== */}
+      {showCategoryModal && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#0F172A] border border-slate-700 rounded-2xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+              <div>
+                <span className="text-xs font-bold text-[#00a2ad] uppercase tracking-wider block">Blog Categories</span>
+                <h3 className="text-lg font-bold text-white">Manage Blog Categories</h3>
+              </div>
+              <button
+                onClick={() => {
+                  setShowCategoryModal(false);
+                  setEditingCategory(null);
+                  setCategoryNameInput("");
+                  setCategoryDescInput("");
+                }}
+                className="text-slate-400 hover:text-white text-lg"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Category Form */}
+            <form onSubmit={handleSaveCategory} className="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-4">
+              <h4 className="text-xs font-bold text-slate-300 uppercase">
+                {editingCategory ? "Edit Category" : "Add New Category"}
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs text-slate-400 font-semibold mb-1">Category Name *</label>
+                  <input
+                    type="text"
+                    required
+                    value={categoryNameInput}
+                    onChange={(e) => setCategoryNameInput(e.target.value)}
+                    placeholder="e.g. AI & Machine Learning"
+                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white text-xs focus:outline-none focus:border-[#00a2ad]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs text-slate-400 font-semibold mb-1">Description (Optional)</label>
+                  <input
+                    type="text"
+                    value={categoryDescInput}
+                    onChange={(e) => setCategoryDescInput(e.target.value)}
+                    placeholder="Short topic overview..."
+                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white text-xs focus:outline-none focus:border-[#00a2ad]"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2">
+                {editingCategory && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingCategory(null);
+                      setCategoryNameInput("");
+                      setCategoryDescInput("");
+                    }}
+                    className="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-400 text-xs font-semibold"
+                  >
+                    Cancel Edit
+                  </button>
+                )}
+                <button
+                  type="submit"
+                  disabled={isUpdating}
+                  className="px-4 py-1.5 rounded-lg bg-[#00a2ad] hover:bg-[#008790] text-white text-xs font-bold shadow-md cursor-pointer"
+                >
+                  {isUpdating ? "Saving..." : editingCategory ? "Update Category" : "Add Category"}
+                </button>
+              </div>
+            </form>
+
+            {/* Categories Table */}
+            <div className="rounded-xl border border-slate-800 overflow-hidden">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-slate-900 text-slate-400 text-[11px] font-bold uppercase tracking-wider border-b border-slate-800">
+                    <th className="py-2.5 px-4">Name</th>
+                    <th className="py-2.5 px-4">Slug</th>
+                    <th className="py-2.5 px-4">Articles Count</th>
+                    <th className="py-2.5 px-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800/60 text-xs text-slate-300">
+                  {cmsCategories.length > 0 ? (
+                    cmsCategories.map((cat) => (
+                      <tr key={cat.id} className="hover:bg-slate-800/40">
+                        <td className="py-3 px-4 font-bold text-white">{cat.name}</td>
+                        <td className="py-3 px-4 text-slate-400 font-mono text-[11px]">{cat.slug}</td>
+                        <td className="py-3 px-4">
+                          <span className="px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 font-bold">
+                            {cat.posts_count} articles
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-right space-x-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingCategory(cat);
+                              setCategoryNameInput(cat.name);
+                              setCategoryDescInput(cat.description || "");
+                            }}
+                            className="text-[#00a2ad] hover:underline font-bold"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteCategory(cat.id)}
+                            className="text-rose-400 hover:underline font-bold"
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={4} className="py-6 text-center text-slate-500">
+                        No categories created yet.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="pt-2 flex justify-end">
+              <button
+                onClick={() => setShowCategoryModal(false)}
+                className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================== */}
+      {/* RICH TEXT ARTICLE COMPOSER MODAL           */}
+      {/* ========================================== */}
+      {showArticleModal && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-[#0F172A] border border-slate-700 rounded-2xl max-w-4xl w-full p-6 sm:p-8 shadow-2xl space-y-6 max-h-[92vh] overflow-y-auto">
+            
+            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+              <div>
+                <span className="text-xs font-bold text-[#00a2ad] uppercase tracking-wider block">
+                  {editingArticle ? "Article Editor" : "New Article Composer"}
+                </span>
+                <h3 className="text-xl font-bold text-white">
+                  {editingArticle ? `Edit: ${editingArticle.title}` : "Compose Rich Blog Article"}
+                </h3>
+              </div>
+              <button
+                onClick={() => setShowArticleModal(false)}
+                className="text-slate-400 hover:text-white text-lg"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveArticle} className="space-y-6">
+              
+              {/* Form Metadata Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-bold text-slate-300 uppercase mb-1">Article Title *</label>
+                  <input
+                    type="text"
+                    required
+                    value={articleForm.title}
+                    onChange={(e) => setArticleForm({ ...articleForm, title: e.target.value })}
+                    placeholder="e.g. Modern Software Architecture Trends in 2026"
+                    className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-sm font-semibold focus:outline-none focus:border-[#00a2ad]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-300 uppercase mb-1">Category *</label>
+                  <select
+                    required
+                    value={articleForm.category_id}
+                    onChange={(e) => setArticleForm({ ...articleForm, category_id: Number(e.target.value) })}
+                    className="w-full px-3 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs focus:outline-none focus:border-[#00a2ad]"
+                  >
+                    <option value={0}>Select Category...</option>
+                    {cmsCategories.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-300 uppercase mb-1">Author Display Name</label>
+                  <input
+                    type="text"
+                    value={articleForm.author_name}
+                    onChange={(e) => setArticleForm({ ...articleForm, author_name: e.target.value })}
+                    placeholder="Autofya Team"
+                    className="w-full px-3 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs focus:outline-none focus:border-[#00a2ad]"
+                  />
+                </div>
+
+                <div className="sm:col-span-2 space-y-2 bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <label className="block text-xs font-bold text-slate-300 uppercase">
+                    Featured Cover Image (Upload File or Enter Image URL)
+                  </label>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
+                    <div>
+                      <span className="text-[11px] text-slate-400 font-semibold block mb-1">📁 Upload Image File:</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => setArticleImageFile(e.target.files?.[0] || null)}
+                        className="w-full text-xs text-slate-300 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-[#00a2ad] file:text-white hover:file:bg-[#008790] cursor-pointer"
+                      />
+                    </div>
+
+                    <div>
+                      <span className="text-[11px] text-slate-400 font-semibold block mb-1">🔗 Or Enter Image URL:</span>
+                      <input
+                        type="url"
+                        value={articleForm.featured_image_url}
+                        onChange={(e) => setArticleForm({ ...articleForm, featured_image_url: e.target.value })}
+                        placeholder="https://images.unsplash.com/..."
+                        className="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-white text-xs focus:outline-none focus:border-[#00a2ad]"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Image Preview Thumbnail */}
+                  {(articleImageFile || articleForm.featured_image_url || editingArticle?.image) && (
+                    <div className="flex items-center gap-3 pt-2 border-t border-slate-800/80">
+                      <div className="w-16 h-10 rounded-lg overflow-hidden border border-slate-700 bg-slate-950 shrink-0">
+                        <img
+                          src={
+                            articleImageFile
+                              ? URL.createObjectURL(articleImageFile)
+                              : articleForm.featured_image_url || editingArticle?.image || ""
+                          }
+                          alt="Cover Preview"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <span className="text-xs text-emerald-400 font-bold">
+                        {articleImageFile ? `Selected file: ${articleImageFile.name}` : "Image Preview Ready"}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-bold text-slate-300 uppercase mb-1">Excerpt / Summary *</label>
+                  <textarea
+                    rows={2}
+                    required
+                    value={articleForm.excerpt}
+                    onChange={(e) => setArticleForm({ ...articleForm, excerpt: e.target.value })}
+                    placeholder="Short 2-3 sentence summary displayed on card grids..."
+                    className="w-full p-3 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs focus:outline-none focus:border-[#00a2ad] resize-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-300 uppercase mb-1">Estimated Reading Time (Minutes)</label>
+                  <input
+                    type="number"
+                    min={1}
+                    max={60}
+                    value={articleForm.reading_time_minutes}
+                    onChange={(e) => setArticleForm({ ...articleForm, reading_time_minutes: Number(e.target.value) })}
+                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs focus:outline-none focus:border-[#00a2ad]"
+                  />
+                </div>
+
+                <div className="flex items-center pt-5">
+                  <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-white">
+                    <input
+                      type="checkbox"
+                      checked={articleForm.is_published}
+                      onChange={(e) => setArticleForm({ ...articleForm, is_published: e.target.checked })}
+                      className="w-4 h-4 accent-[#00a2ad] rounded"
+                    />
+                    <span>Publish Immediately to Website</span>
+                  </label>
+                </div>
+              </div>
+
+              {/* RICH TEXT EDITOR SECTION */}
+              <div className="border border-slate-800 rounded-2xl bg-slate-900 overflow-hidden shadow-2xl">
+                
+                {/* Top Header: View Modes & Stats & Quick Templates */}
+                <div className="p-3 bg-slate-950 border-b border-slate-800 space-y-3">
+                  
+                  <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800/80 pb-2.5">
+                    
+                    {/* Mode Switcher */}
+                    <div className="flex items-center bg-slate-900 p-1 rounded-xl border border-slate-800">
+                      <button
+                        type="button"
+                        onClick={() => setEditorTab("visual")}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                          editorTab === "visual" ? "bg-[#00a2ad] text-white shadow-md" : "text-slate-400 hover:text-white"
+                        }`}
+                      >
+                        <span>✏️ Full Editor</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setEditorTab("split")}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                          editorTab === "split" ? "bg-[#00a2ad] text-white shadow-md" : "text-slate-400 hover:text-white"
+                        }`}
+                      >
+                        <span>🌓 Split View</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setEditorTab("preview")}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                          editorTab === "preview" ? "bg-[#00a2ad] text-white shadow-md" : "text-slate-400 hover:text-white"
+                        }`}
+                      >
+                        <span>👁️ Full Preview</span>
+                      </button>
+                    </div>
+
+                    {/* Template Loader & Quick Actions */}
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={handleLoadSampleTemplate}
+                        className="px-2.5 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 text-xs font-bold transition-colors cursor-pointer flex items-center gap-1"
+                        title="Load pre-designed professional blog article layout"
+                      >
+                        <span>⚡ Load Sample Template</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (confirm("Clear all editor content?")) setArticleForm((prev) => ({ ...prev, content: "" }));
+                        }}
+                        className="px-2 py-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs font-semibold transition-colors cursor-pointer"
+                        title="Clear content"
+                      >
+                        Clear
+                      </button>
+                    </div>
+
+                    {/* Word & Reading Metrics */}
+                    <div className="flex items-center gap-4 text-[11px] text-slate-400 font-mono">
+                      <span>Chars: <strong className="text-white">{articleForm.content.length}</strong></span>
+                      <span>Words: <strong className="text-[#00a2ad]">{articleForm.content.trim() ? articleForm.content.trim().split(/\s+/).length : 0}</strong></span>
+                      <span>Read Time: <strong className="text-amber-400">{Math.max(1, Math.ceil((articleForm.content.trim() ? articleForm.content.trim().split(/\s+/).length : 0) / 200))} min</strong></span>
+                    </div>
+
+                  </div>
+
+                  {/* Multi-Row Category-Grouped Rich Toolbar */}
+                  {editorTab !== "preview" && (
+                    <div className="space-y-2 pt-1">
+                      
+                      {/* Toolbar Group 1: Typography & Alignments */}
+                      <div className="flex flex-wrap items-center gap-1.5 bg-slate-900/90 p-2 rounded-xl border border-slate-800/80">
+                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pr-1">Headings:</span>
+                        <button
+                          type="button"
+                          onClick={() => insertFormatTag("<h1>", "</h1>", "Main Article Title")}
+                          className="px-2.5 py-1 bg-slate-800 hover:bg-[#00a2ad] rounded text-xs font-bold text-white transition-colors"
+                          title="Heading 1"
+                        >
+                          H1
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => insertFormatTag("<h2>", "</h2>", "Section Title")}
+                          className="px-2.5 py-1 bg-slate-800 hover:bg-[#00a2ad] rounded text-xs font-bold text-white transition-colors"
+                          title="Heading 2"
+                        >
+                          H2
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => insertFormatTag("<h3>", "</h3>", "Subsection Title")}
+                          className="px-2.5 py-1 bg-slate-800 hover:bg-[#00a2ad] rounded text-xs font-bold text-white transition-colors"
+                          title="Heading 3"
+                        >
+                          H3
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => insertFormatTag("<h4>", "</h4>", "Minor Heading")}
+                          className="px-2.5 py-1 bg-slate-800 hover:bg-[#00a2ad] rounded text-xs font-bold text-white transition-colors"
+                          title="Heading 4"
+                        >
+                          H4
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => insertFormatTag("<p>", "</p>", "Paragraph text goes here...")}
+                          className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs font-bold text-slate-200 transition-colors"
+                          title="Standard Paragraph"
+                        >
+                          P
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => insertFormatTag('<p class="lead text-lg text-slate-200">', "</p>", "Introductory lead paragraph text...")}
+                          className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs font-bold text-cyan-400 transition-colors"
+                          title="Lead Intro Paragraph"
+                        >
+                          Lead P
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => insertFormatTag('<small class="text-xs text-slate-400">', "</small>", "Fine print / small note")}
+                          className="px-2 py-1 bg-slate-800 hover:bg-slate-700 rounded text-[11px] text-slate-400"
+                          title="Small Text"
+                        >
+                          Small
+                        </button>
+
+                        <div className="h-4 w-[1px] bg-slate-700 mx-1" />
+
+                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pr-1">Inline:</span>
+                        <button
+                          type="button"
+                          onClick={() => insertFormatTag("<strong>", "</strong>", "bold text")}
+                          className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs font-bold text-white transition-colors"
+                          title="Bold Text"
+                        >
+                          <strong>B</strong>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => insertFormatTag("<em>", "</em>", "italic text")}
+                          className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs font-bold text-white italic transition-colors"
+                          title="Italic Text"
+                        >
+                          <em>I</em>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => insertFormatTag("<u>", "</u>", "underlined text")}
+                          className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs font-bold text-white underline transition-colors"
+                          title="Underline Text"
+                        >
+                          <u>U</u>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => insertFormatTag("<s>", "</s>", "strikethrough text")}
+                          className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs font-bold text-white line-through transition-colors"
+                          title="Strikethrough"
+                        >
+                          <s>S</s>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => insertFormatTag('<code class="bg-slate-800 text-cyan-300 px-1.5 py-0.5 rounded font-mono text-xs">', "</code>", "const code = true;")}
+                          className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs font-mono text-cyan-300 transition-colors"
+                          title="Inline Code"
+                        >
+                          &lt;/&gt;
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => insertFormatTag("<mark>", "</mark>", "highlighted text")}
+                          className="px-2.5 py-1 bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 rounded text-xs font-bold transition-colors"
+                          title="Highlight Text"
+                        >
+                          Mark
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => insertFormatTag("<sub>", "</sub>", "2")}
+                          className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded text-[11px] font-bold text-slate-300"
+                          title="Subscript"
+                        >
+                          X<sub>2</sub>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => insertFormatTag("<sup>", "</sup>", "2")}
+                          className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded text-[11px] font-bold text-slate-300"
+                          title="Superscript"
+                        >
+                          X<sup>2</sup>
+                        </button>
+
+                        <div className="h-4 w-[1px] bg-slate-700 mx-1" />
+
+                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pr-1">Align:</span>
+                        <button
+                          type="button"
+                          onClick={() => insertFormatTag('<div class="text-left">', "</div>", "Left aligned content")}
+                          className="px-2 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs text-slate-300"
+                          title="Align Left"
+                        >
+                          ⬅ Left
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => insertFormatTag('<div class="text-center">', "</div>", "Center aligned content")}
+                          className="px-2 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs text-slate-300"
+                          title="Align Center"
+                        >
+                          ↔ Center
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => insertFormatTag('<div class="text-right">', "</div>", "Right aligned content")}
+                          className="px-2 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs text-slate-300"
+                          title="Align Right"
+                        >
+                          ➡️ Right
+                        </button>
+                      </div>
+
+                      {/* Toolbar Group 2: Lists, Quotes, Code Blocks & Tables */}
+                      <div className="flex flex-wrap items-center gap-1.5 bg-slate-900/90 p-2 rounded-xl border border-slate-800/80">
+                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pr-1">Lists & Blocks:</span>
+                        <button
+                          type="button"
+                          onClick={() => insertFormatTag("<ul class=\"list-disc pl-5 space-y-1 text-slate-300 my-4\">\n  <li>First list item</li>\n  <li>Second list item</li>\n</ul>")}
+                          className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs font-bold text-slate-200 transition-colors"
+                          title="Unordered Bullet List"
+                        >
+                          • Bullet List
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => insertFormatTag("<ol class=\"list-decimal pl-5 space-y-1 text-slate-300 my-4\">\n  <li>First step</li>\n  <li>Second step</li>\n</ol>")}
+                          className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs font-bold text-slate-200 transition-colors"
+                          title="Ordered Numbered List"
+                        >
+                          1. Numbered List
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => insertFormatTag('<ul class="space-y-2 my-4 text-xs text-slate-300">\n  <li class="flex items-center gap-2"><span class="text-emerald-400 font-bold">✓</span> Completed task item</li>\n  <li class="flex items-center gap-2"><span class="text-slate-500">○</span> Pending task item</li>\n</ul>')}
+                          className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs font-bold text-emerald-300 transition-colors"
+                          title="Task Checklist"
+                        >
+                          ☑ Task Checklist
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => insertFormatTag('<blockquote class="border-l-4 border-[#00a2ad] bg-slate-950 p-4 rounded-r-xl italic text-slate-200 my-6">\n  "Key quote or insight goes here..."\n</blockquote>')}
+                          className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs font-bold text-cyan-300 transition-colors"
+                          title="Blockquote"
+                        >
+                          &quot; Quote
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleInsertCodeBlock}
+                          className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs font-mono text-emerald-400 transition-colors"
+                          title="Formatted Code Block"
+                        >
+                          💻 Code Block
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleInsertTable}
+                          className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs font-bold text-blue-400 transition-colors"
+                          title="Generate Data Table"
+                        >
+                          📊 Table
+                        </button>
+
+                        <div className="h-4 w-[1px] bg-slate-700 mx-1" />
+
+                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pr-1">Callouts:</span>
+                        <button
+                          type="button"
+                          onClick={() => insertFormatTag('<div class="p-4 rounded-xl border-l-4 border-cyan-500 bg-cyan-950/20 my-4 shadow-sm">\n  <strong class="text-cyan-400 block mb-1">💡 Pro Tip</strong>\n  <p class="text-xs text-slate-300">Important tip details go here...</p>\n</div>')}
+                          className="px-2 py-1 bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30 rounded text-xs font-bold transition-colors"
+                          title="Pro Tip Box"
+                        >
+                          💡 Tip Box
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => insertFormatTag('<div class="p-4 rounded-xl border-l-4 border-amber-500 bg-amber-950/20 my-4 shadow-sm">\n  <strong class="text-amber-400 block mb-1">⚠️ Warning</strong>\n  <p class="text-xs text-slate-300">Cautionary details go here...</p>\n</div>')}
+                          className="px-2 py-1 bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 rounded text-xs font-bold transition-colors"
+                          title="Warning Box"
+                        >
+                          ⚠️ Warning
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => insertFormatTag('<div class="p-4 rounded-xl border-l-4 border-emerald-500 bg-emerald-950/20 my-4 shadow-sm">\n  <strong class="text-emerald-400 block mb-1">✅ Success Note</strong>\n  <p class="text-xs text-slate-300">Verified solution details...</p>\n</div>')}
+                          className="px-2 py-1 bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 rounded text-xs font-bold transition-colors"
+                          title="Success Box"
+                        >
+                          ✅ Success
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleInsertAccordion}
+                          className="px-2 py-1 bg-purple-500/20 text-purple-300 hover:bg-purple-500/30 rounded text-xs font-bold transition-colors"
+                          title="Collapsible FAQ Accordion"
+                        >
+                          ❓ FAQ Accordion
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleInsertStatsCard}
+                          className="px-2 py-1 bg-slate-800 text-amber-300 hover:bg-slate-700 rounded text-xs font-bold transition-colors"
+                          title="3-Column Metrics Grid"
+                        >
+                          📈 Stat Cards
+                        </button>
+                      </div>
+
+                      {/* Toolbar Group 3: Links, Embeds & CTAs */}
+                      <div className="flex flex-wrap items-center gap-1.5 bg-slate-900/90 p-2 rounded-xl border border-slate-800/80">
+                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pr-1">Media & Embeds:</span>
+                        <button
+                          type="button"
+                          onClick={handleInsertLink}
+                          className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs font-bold text-cyan-400 transition-colors"
+                          title="Insert Hyperlink"
+                        >
+                          🔗 Hyperlink
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleInsertImageFigure}
+                          className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs font-bold text-amber-400 transition-colors"
+                          title="Insert Image Figure with Caption"
+                        >
+                          🖼️ Figure Image
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleInsertVideoEmbed}
+                          className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs font-bold text-rose-400 transition-colors"
+                          title="Insert YouTube / Video Player"
+                        >
+                          📹 Video Embed
+                        </button>
+
+                        <div className="h-4 w-[1px] bg-slate-700 mx-1" />
+
+                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pr-1">Actions & Dividers:</span>
+                        <button
+                          type="button"
+                          onClick={handleInsertCTAButton}
+                          className="px-2.5 py-1 bg-[#00a2ad] hover:bg-[#008790] rounded text-xs font-bold text-white transition-colors shadow"
+                          title="Insert Primary Call To Action Button"
+                        >
+                          🔘 Primary CTA Button
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => insertFormatTag('<hr class="my-8 border-slate-800" />')}
+                          className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs font-bold text-slate-300 transition-colors"
+                          title="Horizontal Divider"
+                        >
+                          — Divider Line
+                        </button>
+                      </div>
+
+                    </div>
+                  )}
+
+                </div>
+
+                {/* Editor Content Area */}
+                {editorTab === "visual" && (
+                  <textarea
+                    ref={editorTextareaRef}
+                    rows={16}
+                    required
+                    value={articleForm.content}
+                    onChange={(e) => setArticleForm({ ...articleForm, content: e.target.value })}
+                    placeholder="Compose rich HTML article content here... Highlighting text and clicking formatting toolbar buttons will wrap selected text directly."
+                    className="w-full p-4 bg-slate-900 text-slate-100 font-mono text-xs leading-relaxed focus:outline-none focus:ring-1 focus:ring-[#00a2ad]"
+                  />
+                )}
+
+                {editorTab === "split" && (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-slate-800 min-h-[420px]">
+                    <div className="p-3 bg-slate-900 flex flex-col">
+                      <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center justify-between">
+                        <span>HTML Editor Input</span>
+                        <span className="text-slate-500 font-mono text-[10px]">Real-time Sync</span>
+                      </div>
+                      <textarea
+                        ref={editorTextareaRef}
+                        rows={16}
+                        required
+                        value={articleForm.content}
+                        onChange={(e) => setArticleForm({ ...articleForm, content: e.target.value })}
+                        placeholder="Compose HTML content..."
+                        className="w-full flex-1 p-3 bg-slate-950 text-slate-100 font-mono text-xs leading-relaxed rounded-xl border border-slate-800/80 focus:outline-none focus:ring-1 focus:ring-[#00a2ad]"
+                      />
+                    </div>
+                    <div className="p-4 bg-[#070D1E] overflow-y-auto max-h-[500px]">
+                      <div className="text-[11px] font-bold text-[#00a2ad] uppercase tracking-wider mb-3 flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-[#00a2ad] animate-pulse"></span>
+                        Live Preview Output
+                      </div>
+                      <div
+                        dangerouslySetInnerHTML={{ __html: articleForm.content }}
+                        className="prose prose-invert max-w-none 
+                          [&>h1]:text-2xl [&>h1]:font-bold [&>h1]:text-white [&>h1]:mt-6 [&>h1]:mb-3
+                          [&>h2]:text-xl [&>h2]:font-bold [&>h2]:text-white [&>h2]:mt-5 [&>h2]:mb-2.5 [&>h2]:border-b [&>h2]:border-slate-800 [&>h2]:pb-1
+                          [&>h3]:text-lg [&>h3]:font-bold [&>h3]:text-[#00a2ad] [&>h3]:mt-4 [&>h3]:mb-2
+                          [&>h4]:text-base [&>h4]:font-bold [&>h4]:text-slate-300 [&>h4]:mt-3 [&>h4]:mb-2
+                          [&>p]:text-slate-300 [&>p]:leading-relaxed [&>p]:mb-3 [&>p]:text-xs
+                          [&>ul]:list-disc [&>ul]:pl-5 [&>ul]:space-y-1 [&>ul]:text-slate-300 [&>ul]:mb-3 [&>ul]:text-xs
+                          [&>ol]:list-decimal [&>ol]:pl-5 [&>ol]:space-y-1 [&>ol]:text-slate-300 [&>ol]:mb-3 [&>ol]:text-xs
+                          [&>blockquote]:border-l-4 [&>blockquote]:border-[#00a2ad] [&>blockquote]:bg-[#0F172A] [&>blockquote]:p-3 [&>blockquote]:rounded-r-xl [&>blockquote]:italic [&>blockquote]:text-slate-200 [&>blockquote]:my-3 [&>blockquote]:text-xs
+                          [&>img]:rounded-xl [&>img]:my-3 [&>img]:max-h-56 [&>img]:object-cover
+                          [&>mark]:bg-amber-400 [&>mark]:text-slate-900 [&>mark]:px-1 [&>mark]:rounded
+                          [&>pre]:bg-slate-950 [&>pre]:p-3 [&>pre]:rounded-xl [&>pre]:border [&>pre]:border-slate-800 [&>pre]:my-3 [&>pre]:overflow-x-auto [&>pre]:text-[11px]
+                          [&>table]:w-full [&>table]:border-collapse [&>table]:my-3 [&>table]:text-[11px]
+                          [&>table_th]:border [&>table_th]:border-slate-700 [&>table_th]:p-2 [&>table_th]:bg-slate-800 [&>table_th]:text-cyan-400
+                          [&>table_td]:border [&>table_td]:border-slate-800 [&>table_td]:p-2"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {editorTab === "preview" && (
+                  <div className="p-6 bg-[#070D1E] min-h-[420px] border-t border-slate-800 text-slate-200">
+                    <div className="text-xs text-[#00a2ad] font-bold mb-4 uppercase tracking-wider flex items-center gap-2 border-b border-slate-800 pb-3">
+                      <span className="w-2 h-2 rounded-full bg-[#00a2ad] animate-pulse"></span>
+                      Full Real-Time Article HTML Output Preview
+                    </div>
+                    <div
+                      dangerouslySetInnerHTML={{ __html: articleForm.content }}
+                      className="prose prose-invert max-w-none 
+                        [&>h1]:text-3xl [&>h1]:font-extrabold [&>h1]:text-white [&>h1]:mt-8 [&>h1]:mb-4
+                        [&>h2]:text-2xl [&>h2]:font-bold [&>h2]:text-white [&>h2]:mt-8 [&>h2]:mb-3 [&>h2]:border-b [&>h2]:border-slate-800 [&>h2]:pb-2
+                        [&>h3]:text-xl [&>h3]:font-bold [&>h3]:text-[#00a2ad] [&>h3]:mt-6 [&>h3]:mb-3
+                        [&>h4]:text-lg [&>h4]:font-bold [&>h4]:text-slate-200 [&>h4]:mt-4 [&>h4]:mb-2
+                        [&>p]:text-slate-300 [&>p]:leading-relaxed [&>p]:mb-4 [&>p]:text-sm
+                        [&>ul]:list-disc [&>ul]:pl-5 [&>ul]:space-y-1.5 [&>ul]:text-slate-300 [&>ul]:mb-4 [&>ul]:text-sm
+                        [&>ol]:list-decimal [&>ol]:pl-5 [&>ol]:space-y-1.5 [&>ol]:text-slate-300 [&>ol]:mb-4 [&>ol]:text-sm
+                        [&>blockquote]:border-l-4 [&>blockquote]:border-[#00a2ad] [&>blockquote]:bg-[#0F172A] [&>blockquote]:p-4 [&>blockquote]:rounded-r-2xl [&>blockquote]:italic [&>blockquote]:text-slate-200 [&>blockquote]:my-6 [&>blockquote]:text-sm
+                        [&>img]:rounded-2xl [&>img]:my-6 [&>img]:max-h-96 [&>img]:object-cover [&>img]:shadow-xl
+                        [&>mark]:bg-amber-400 [&>mark]:text-slate-900 [&>mark]:px-1.5 [&>mark]:py-0.5 [&>mark]:rounded
+                        [&>pre]:bg-slate-950 [&>pre]:p-4 [&>pre]:rounded-2xl [&>pre]:border [&>pre]:border-slate-800 [&>pre]:my-6 [&>pre]:overflow-x-auto [&>pre]:shadow-lg
+                        [&>table]:w-full [&>table]:border-collapse [&>table]:my-6 [&>table]:text-xs [&>table]:shadow-lg
+                        [&>table_th]:border [&>table_th]:border-slate-700 [&>table_th]:p-3 [&>table_th]:bg-slate-800 [&>table_th]:text-cyan-400
+                        [&>table_td]:border [&>table_td]:border-slate-800 [&>table_td]:p-3"
+                    />
+                  </div>
+                )}
+
+              </div>
+
+              {/* Modal Action Buttons */}
+              <div className="pt-4 flex items-center justify-end gap-3 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setShowArticleModal(false)}
+                  className="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isUpdating}
+                  className="px-6 py-2.5 rounded-xl bg-[#00a2ad] hover:bg-[#008790] text-white text-xs font-bold shadow-lg cursor-pointer flex items-center gap-2"
+                >
+                  {isUpdating ? "Saving Article..." : editingArticle ? "Update Article" : "Save & Publish Article"}
+                </button>
+              </div>
+
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================== */}
+      {/* DELETE ARTICLE MODAL                       */}
+      {/* ========================================== */}
+      {deletingArticle && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#0F172A] border border-rose-500/30 rounded-2xl max-w-sm w-full p-6 shadow-2xl space-y-4">
+            <div className="w-12 h-12 rounded-full bg-rose-500/10 text-rose-400 flex items-center justify-center mx-auto">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+
+            <div className="text-center">
+              <h3 className="text-base font-bold text-white">Delete Blog Article?</h3>
+              <p className="text-xs text-slate-400 mt-1">
+                Are you sure you want to delete <span className="text-rose-300 font-semibold">&ldquo;{deletingArticle.title}&rdquo;</span>?
+              </p>
+            </div>
+
+            <div className="pt-3 flex items-center justify-center gap-3">
+              <button
+                onClick={() => setDeletingArticle(null)}
+                className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteArticleConfirm}
                 disabled={isUpdating}
                 className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-lg"
               >

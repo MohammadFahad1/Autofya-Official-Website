@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     "authentication",
     "bookings",
     "analytics",
+    "blogs",
     'django_cleanup.apps.CleanupConfig',
 ]
 

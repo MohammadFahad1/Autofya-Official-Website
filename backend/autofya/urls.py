@@ -40,6 +40,7 @@ urlpatterns = [
     path('auth/', include('authentication.urls')),
     path('bookings/', include('bookings.urls')),
     path('analytics/', include('analytics.urls')),
+    path('blogs/', include('blogs.urls')),
 ]
 
 
