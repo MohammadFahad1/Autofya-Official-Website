@@ -419,7 +419,7 @@ export default function Navbar() {
                           Recommended Case Study
                         </h4>
                         <a
-                          href="#case-studies"
+                          href="/case-studies"
                           onClick={() => setActiveMegaMenu(null)}
                           className="text-[13px] font-bold text-[#00a2ad] hover:underline cursor-pointer"
                         >
@@ -431,7 +431,7 @@ export default function Navbar() {
                         {currentMenu.caseStudyRecommendations?.map((item, idx) => (
                           <a
                             key={idx}
-                            href={item.linkHref || "#case-studies"}
+                            href={item.linkHref || "/case-studies"}
                             onClick={() => setActiveMegaMenu(null)}
                             className="flex gap-3.5 group items-start cursor-pointer"
                           >
@@ -582,7 +582,7 @@ export default function Navbar() {
                     <p className="text-[13px] text-slate-700 leading-snug font-normal">
                       {currentMenu.sidebar.caseStudy}{" "}
                       <a
-                        href="#case-studies"
+                        href="/case-studies"
                         onClick={() => setActiveMegaMenu(null)}
                         className="text-slate-900 font-medium underline hover:text-[#00a2ad] transition-colors cursor-pointer"
                       >

@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 
 interface CaseStudy {
   id: string;
@@ -23,26 +24,26 @@ export default function CaseStudiesSection() {
 
   const caseStudies: CaseStudy[] = [
     {
-      id: "iiitk",
-      tabLabel: "IIITK",
-      logoBg: "bg-emerald-50",
-      category: "AI & ML, LMS",
-      title: "Streamlining Attendance at IIITK with Facial Recognition",
+      id: "jewelry-insurtech",
+      tabLabel: "Insurtech",
+      logoBg: "bg-amber-50",
+      category: "FINTECH, INSURTECH, RETAIL",
+      title: "Jewelry Insurance Claims: 15,000+ Assessments on One Platform",
       description:
-        "The Indian Institute of Information Technology, Kottayam (IIITK) is an autonomous engineering institute located in Valavoor, Palai, Kottayam District, Kerala, India.",
-      image: "/hero_ai_engineer.jpg",
-      stat1Value: "80%",
-      stat1Label: "Processing Time Reduced",
-      stat2Value: "99.5%",
-      stat2Label: "Facial Recognition Accuracy Rate",
+        "Autofya built a cloud-native appraisal workspace for Canadian jewelry insurers featuring automated image verification and pricing risk models.",
+      image: "/capabilities_digital_trans.jpg",
+      stat1Value: "15,000+",
+      stat1Label: "Assessments Processed",
+      stat2Value: "75%",
+      stat2Label: "Faster Claim Approvals",
       renderLogo: () => (
-        <div className="flex items-center space-x-1.5 text-[#0D9488]">
-          <svg className="w-6 h-6 shrink-0" fill="currentColor" viewBox="0 0 24 24">
+        <div className="flex items-center space-x-1.5 text-[#00a2ad]">
+          <svg className="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 24 24">
             <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
           </svg>
           <div className="flex flex-col text-left">
-            <span className="text-[10px] font-black leading-tight text-slate-800">IIITK</span>
-            <span className="text-[7px] text-slate-500 font-medium leading-none">Kottayam</span>
+            <span className="text-[10px] font-black leading-tight text-slate-800">Autofya</span>
+            <span className="text-[7px] text-slate-500 font-medium leading-none">Insurtech</span>
           </div>
         </div>
       ),
@@ -52,10 +53,10 @@ export default function CaseStudiesSection() {
       tabLabel: "City Bank",
       logoBg: "bg-red-50",
       category: "FINTECH, CLOUD",
-      title: "Next-Gen Digital Banking Platform for City Bank",
+      title: "Next-Gen Digital Banking Core Platform for City Bank",
       description:
         "Transforming legacy core banking infrastructure into a high-speed cloud-native microservices ecosystem serving over 10 million daily active transactions.",
-      image: "/capabilities_digital_trans.jpg",
+      image: "/cs_digital_wallet.jpg",
       stat1Value: "10M+",
       stat1Label: "Daily Transactions Processed",
       stat2Value: "99.99%",
@@ -71,13 +72,13 @@ export default function CaseStudiesSection() {
     },
     {
       id: "biotech",
-      tabLabel: "European Biotechnology",
+      tabLabel: "European Bio",
       logoBg: "bg-amber-50",
       category: "HEALTHTECH, AI",
-      title: "AI-Powered Genomic Data Analysis & Pipeline",
+      title: "AI-Powered Genomic Data Analysis & Pipeline Modernization",
       description:
         "Accelerating life science research and drug discovery workflows through automated deep learning models and scalable cloud computing pipelines.",
-      image: "/ai_development_collaboration.jpg",
+      image: "/about_team_collaboration.jpg",
       stat1Value: "5x",
       stat1Label: "Faster Pipeline Execution",
       stat2Value: "60%",
@@ -99,7 +100,7 @@ export default function CaseStudiesSection() {
       tabLabel: "Retail ERP",
       logoBg: "bg-slate-100",
       category: "ERP, COMMERCE",
-      title: "Automating Global Supply Chain with Odoo ERP",
+      title: "Automating Global Supply Chain with Autofya Odoo ERP",
       description:
         "Empowering multi-region enterprise retail networks with automated inventory forecasting, real-time telemetry, and seamless warehouse operations.",
       image: "/capabilities_mvp_dev.jpg",
@@ -109,8 +110,8 @@ export default function CaseStudiesSection() {
       stat2Label: "Real-Time Stock Accuracy",
       renderLogo: () => (
         <div className="flex items-center space-x-1">
-          <div className="w-5 h-5 bg-slate-900 rounded text-white font-bold text-[10px] flex items-center justify-center">
-            23
+          <div className="w-5 h-5 bg-[#00a2ad] rounded text-white font-bold text-[10px] flex items-center justify-center">
+            A
           </div>
           <span className="text-[11px] font-black text-slate-900 tracking-tighter">RETAIL</span>
         </div>
@@ -131,16 +132,16 @@ export default function CaseStudiesSection() {
               Case Studies
             </h2>
             <p className="text-slate-600 text-base sm:text-lg max-w-xl font-normal leading-relaxed">
-              Check out our case studies that show how innovative solutions transformed businesses.
+              Check out our case studies that show how Autofya's innovative AI and software solutions transformed businesses.
             </p>
           </div>
           <div className="mt-6 md:mt-0">
-            <a
-              href="#case-studies"
-              className="inline-flex items-center justify-center px-7 py-3 rounded-full bg-[#F59E0B] hover:bg-[#D97706] text-white font-semibold text-sm sm:text-base shadow-sm transition-all duration-200"
+            <Link
+              href="/case-studies"
+              className="inline-flex items-center justify-center px-7 py-3 rounded-full bg-[#F59E0B] hover:bg-[#D97706] text-white font-semibold text-sm sm:text-base shadow-sm transition-all duration-200 cursor-pointer"
             >
               See all Case Studies
-            </a>
+            </Link>
           </div>
         </div>
 
@@ -152,7 +153,7 @@ export default function CaseStudiesSection() {
               <button
                 key={study.id}
                 onClick={() => setActiveTab(index)}
-                className={`flex items-center justify-center w-36 h-20 px-4 rounded-xl transition-all duration-200 shrink-0 ${
+                className={`flex items-center justify-center w-36 h-20 px-4 rounded-xl transition-all duration-200 shrink-0 cursor-pointer ${
                   isActive
                     ? "bg-white border-t border-x border-slate-200/80 border-b-[3px] border-b-[#00a2ad]"
                     : "bg-[#F1F5F9]/70 border border-slate-200/60 hover:bg-white hover:border-slate-300"
@@ -198,13 +199,13 @@ export default function CaseStudiesSection() {
 
             {/* View Case Study Link */}
             <div className="mb-8">
-              <a
-                href={`#case-study-${current.id}`}
-                className="inline-flex items-center text-[#F59E0B] hover:text-[#D97706] font-bold text-base sm:text-lg transition-colors group"
+              <Link
+                href="/case-studies"
+                className="inline-flex items-center text-[#F59E0B] hover:text-[#D97706] font-bold text-base sm:text-lg transition-colors group cursor-pointer"
               >
                 <span>View Case Study</span>
                 <span className="ml-1.5 transition-transform group-hover:translate-x-1">→</span>
-              </a>
+              </Link>
             </div>
 
             {/* Divider Line */}
