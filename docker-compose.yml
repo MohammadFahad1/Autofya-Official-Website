@@ -23,12 +23,13 @@ services:
     image: redis:7-alpine
     container_name: autofya-redis
     restart: unless-stopped
+    command: ["redis-server", "--port", "6380"]
     ports:
-      - "6380:6379"
+      - "6380:6380"
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "redis-cli", "-p", "6380", "ping"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -50,8 +51,8 @@ services:
       - POSTGRES_DB=autofya_db
       - POSTGRES_USER=autofya_user
       - POSTGRES_PASSWORD=autofya_password
-      - CELERY_BROKER_URL=redis://redis:6379/0
-      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6380/0
+      - CELERY_RESULT_BACKEND=redis://redis:6380/0
       - CELERY_TASK_ALWAYS_EAGER=False
       - MEDIA_ROOT=/app/media
       - BACKEND_URL=${BACKEND_URL:-https://api.autofya.com}
@@ -78,8 +79,8 @@ services:
       - POSTGRES_DB=autofya_db
       - POSTGRES_USER=autofya_user
       - POSTGRES_PASSWORD=autofya_password
-      - CELERY_BROKER_URL=redis://redis:6379/0
-      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6380/0
+      - CELERY_RESULT_BACKEND=redis://redis:6380/0
       - CELERY_TASK_ALWAYS_EAGER=False
       - MEDIA_ROOT=/app/media
       - BACKEND_URL=${BACKEND_URL:-https://api.autofya.com}
