@@ -18,5 +18,10 @@ fi
 echo "Applying database migrations..."
 python manage.py migrate --noinput
 
-echo "Starting Django server on port 8011..."
-exec python manage.py runserver 0.0.0.0:8011
+if [ $# -gt 0 ]; then
+    echo "Executing container command: $@"
+    exec "$@"
+else
+    echo "Starting Django server on port 8011..."
+    exec python manage.py runserver 0.0.0.0:8011
+fi
