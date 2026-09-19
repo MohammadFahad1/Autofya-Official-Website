@@ -364,7 +364,7 @@ export default function SchedulePage() {
     };
 
     try {
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.autofya.com";
       const res = await fetch(`${API_BASE_URL}/bookings/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

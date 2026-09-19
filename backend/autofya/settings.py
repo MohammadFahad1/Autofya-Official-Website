@@ -21,7 +21,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 MEDIA_URL = '/media/'
 
 # Absolute filesystem path to the directory that will hold user-uploaded files
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = config('MEDIA_ROOT', default=str(BASE_DIR / 'media'))
 
 
 # Quick-start development settings - unsuitable for production
@@ -36,7 +36,7 @@ DEBUG = config('DEBUG', default=True, cast=bool)
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='*').split(',')
 
 # Base Backend URL for media file URI generation
-BACKEND_URL = config('BACKEND_URL', default='http://localhost:8000')
+BACKEND_URL = config('BACKEND_URL', default='https://api.autofya.com')
 
 
 AUTH_USER_MODEL = 'authentication.User'
@@ -97,12 +97,27 @@ WSGI_APPLICATION = 'autofya.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+POSTGRES_HOST = config('POSTGRES_HOST', default=None)
+POSTGRES_DB = config('POSTGRES_DB', default=None)
+
+if POSTGRES_HOST or POSTGRES_DB:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': config('POSTGRES_DB', default='autofya_db'),
+            'USER': config('POSTGRES_USER', default='autofya_user'),
+            'PASSWORD': config('POSTGRES_PASSWORD', default='autofya_pass'),
+            'HOST': config('POSTGRES_HOST', default='db'),
+            'PORT': config('POSTGRES_PORT', default='5432'),
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': config('DATABASE_PATH', default=str(BASE_DIR / 'db.sqlite3')),
+        }
+    }
 
 
 # Password validation

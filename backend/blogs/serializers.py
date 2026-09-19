@@ -37,7 +37,7 @@ class BlogPostListSerializer(serializers.ModelSerializer):
         if obj.featured_image:
             if request:
                 return request.build_absolute_uri(obj.featured_image.url)
-            backend_url = getattr(settings, 'BACKEND_URL', 'http://localhost:8000').rstrip('/')
+            backend_url = getattr(settings, 'BACKEND_URL', 'https://api.autofya.com').rstrip('/')
             return f"{backend_url}{obj.featured_image.url}"
         return obj.featured_image_url or "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80"
 
@@ -64,6 +64,6 @@ class BlogPostDetailSerializer(serializers.ModelSerializer):
         if obj.featured_image:
             if request:
                 return request.build_absolute_uri(obj.featured_image.url)
-            backend_url = getattr(settings, 'BACKEND_URL', 'http://localhost:8000').rstrip('/')
+            backend_url = getattr(settings, 'BACKEND_URL', 'https://api.autofya.com').rstrip('/')
             return f"{backend_url}{obj.featured_image.url}"
         return obj.featured_image_url or "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80"

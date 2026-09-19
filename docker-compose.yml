@@ -1,0 +1,65 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: autofya-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: autofya_db
+      POSTGRES_USER: autofya_user
+      POSTGRES_PASSWORD: autofya_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U autofya_user -d autofya_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: autofya-backend
+    restart: unless-stopped
+    ports:
+      - "8011:8011"
+    env_file:
+      - ./backend/.env
+    environment:
+      - PORT=8011
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=autofya_db
+      - POSTGRES_USER=autofya_user
+      - POSTGRES_PASSWORD=autofya_password
+      - MEDIA_ROOT=/app/media
+      - BACKEND_URL=${BACKEND_URL:-https://api.autofya.com}
+    volumes:
+      - autofya_media:/app/media
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://api.autofya.com}
+    container_name: autofya-frontend
+    restart: unless-stopped
+    ports:
+      - "8012:8012"
+    environment:
+      - PORT=8012
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-https://api.autofya.com}
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+    name: postgres_data
+  autofya_media:
+    name: autofya_media

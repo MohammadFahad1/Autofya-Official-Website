@@ -34,7 +34,7 @@ interface BlogPostSummary {
   reading_time_minutes: number;
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.autofya.com";
 
 // DYNAMIC SEO METADATA GENERATOR (SERVER SIDE)
 export async function generateMetadata({

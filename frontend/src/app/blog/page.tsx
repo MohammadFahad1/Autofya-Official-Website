@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   },
 };
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.autofya.com";
 
 interface SearchParams {
   category?: string;
