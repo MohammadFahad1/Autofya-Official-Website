@@ -108,7 +108,7 @@ if POSTGRES_HOST or POSTGRES_DB:
             'USER': config('POSTGRES_USER', default='autofya_user'),
             'PASSWORD': config('POSTGRES_PASSWORD', default='autofya_pass'),
             'HOST': config('POSTGRES_HOST', default='db'),
-            'PORT': config('POSTGRES_PORT', default='5432'),
+            'PORT': config('POSTGRES_PORT', default='9013'),
         }
     }
 else:

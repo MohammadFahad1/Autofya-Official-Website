@@ -8,8 +8,8 @@ fi
 
 # Wait for PostgreSQL to be ready if configured
 if [ -n "$POSTGRES_HOST" ]; then
-    echo "Waiting for PostgreSQL at $POSTGRES_HOST:${POSTGRES_PORT:-5432}..."
-    while ! nc -z "$POSTGRES_HOST" "${POSTGRES_PORT:-5432}"; do
+    echo "Waiting for PostgreSQL at $POSTGRES_HOST:${POSTGRES_PORT:-9013}..."
+    while ! nc -z "$POSTGRES_HOST" "${POSTGRES_PORT:-9013}"; do
         sleep 1
     done
     echo "PostgreSQL is up and accepting connections."

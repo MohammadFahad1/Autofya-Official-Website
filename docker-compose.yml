@@ -3,16 +3,18 @@ services:
     image: postgres:16-alpine
     container_name: autofya-db
     restart: unless-stopped
+    command: ["postgres", "-p", "9013"]
     environment:
       POSTGRES_DB: autofya_db
       POSTGRES_USER: autofya_user
       POSTGRES_PASSWORD: autofya_password
+      PGPORT: 9013
     ports:
-      - "5432:5432"
+      - "9013:9013"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U autofya_user -d autofya_db"]
+      test: ["CMD-SHELL", "pg_isready -p 9013 -U autofya_user -d autofya_db"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -30,7 +32,7 @@ services:
     environment:
       - PORT=8011
       - POSTGRES_HOST=db
-      - POSTGRES_PORT=5432
+      - POSTGRES_PORT=9013
       - POSTGRES_DB=autofya_db
       - POSTGRES_USER=autofya_user
       - POSTGRES_PASSWORD=autofya_password
