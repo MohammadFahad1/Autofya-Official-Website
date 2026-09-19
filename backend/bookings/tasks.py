@@ -115,3 +115,42 @@ def send_custom_booking_email(booking_id, subject, message):
         return f"Error sending custom booking email: {e}"
 
 
+@shared_task
+def send_marketing_batch_email(recipients, subject, message, button_text=None, button_url=None):
+    from_email = getattr(settings, 'EMAIL_HOST_USER', None) or "no-reply@autofya.com"
+    
+    if isinstance(recipients, str):
+        recipients = [r.strip() for r in recipients.split(',') if r.strip()]
+
+    if not recipients:
+        return "No valid recipients provided."
+
+    context = {
+        "subject": subject,
+        "message": message,
+        "button_text": button_text,
+        "button_url": button_url or "https://autofya.com",
+    }
+    html_content = render_to_string("marketing_email_template.html", context)
+    text_content = strip_tags(html_content)
+
+    sent_count = 0
+    errors = []
+
+    for recipient in recipients:
+        try:
+            msg = EmailMultiAlternatives(
+                subject,
+                text_content,
+                from_email,
+                [recipient]
+            )
+            msg.attach_alternative(html_content, "text/html")
+            msg.send()
+            sent_count += 1
+        except Exception as e:
+            errors.append(f"{recipient}: {str(e)}")
+
+    return f"Batch marketing email sent to {sent_count}/{len(recipients)} recipients. Errors: {errors}"
+
+

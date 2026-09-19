@@ -9,7 +9,61 @@ from drf_yasg.utils import swagger_auto_schema
 
 from bookings.models import Booking
 from bookings.serializers import BookingCreateSerializer, BookingAdminSerializer
-from bookings.tasks import send_booking_confirmation_email, send_custom_booking_email
+from bookings.tasks import send_booking_confirmation_email, send_custom_booking_email, send_marketing_batch_email
+
+
+class AdminSendBatchEmailView(NewAPIView):
+    permission_classes = [IsAdminUser]
+    http_method_names = ['post']
+
+    @swagger_auto_schema(tags=['Admin Panel - Marketing Emails'])
+    def post(self, request):
+        """
+        **Send Batch Marketing Email on Autofya Pad**\n
+        Sends custom branded HTML emails to a list/batch of recipient email addresses.
+        """
+        recipients = request.data.get('recipients', [])
+        subject = request.data.get('subject', '').strip()
+        message = request.data.get('message', '').strip()
+        button_text = request.data.get('button_text', '').strip()
+        button_url = request.data.get('button_url', '').strip()
+
+        # Handle recipients passed as string (comma or newline separated) or array
+        if isinstance(recipients, str):
+            recipients = [r.strip() for r in recipients.replace('\n', ',').split(',') if r.strip()]
+
+        if not isinstance(recipients, list) or not recipients:
+            return Response({
+                'success': False,
+                'message': 'At least one recipient email address is required.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        if not subject or not message:
+            return Response({
+                'success': False,
+                'message': 'Both subject and message content are required.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            send_marketing_batch_email.delay(recipients, subject, message, button_text, button_url)
+            return Response({
+                'success': True,
+                'message': f'Marketing email queued successfully for {len(recipients)} recipient(s).',
+                'recipient_count': len(recipients)
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            try:
+                result = send_marketing_batch_email(recipients, subject, message, button_text, button_url)
+                return Response({
+                    'success': True,
+                    'message': f'Emails sent directly. Result: {result}',
+                    'recipient_count': len(recipients)
+                }, status=status.HTTP_200_OK)
+            except Exception as sync_err:
+                return Response({
+                    'success': False,
+                    'message': f'Failed to send batch emails: {sync_err}'
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class CreateBookingView(NewAPIView):

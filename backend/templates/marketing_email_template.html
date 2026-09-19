@@ -1,0 +1,74 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ subject }} - Autofya</title>
+    <style>
+        body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+        table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+        img { -ms-interpolation-mode: bicubic; border: 0; outline: none; text-decoration: none; }
+        body { height: 100% !important; margin: 0 !important; padding: 0 !important; width: 100% !important; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f4f7f6; color: #334155; }
+        .main-container { max-width: 620px; margin: 0 auto; width: 100%; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); }
+    </style>
+</head>
+<body style="background-color: #f4f7f6; margin: 0 !important; padding: 0 !important; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="padding: 40px 0;">
+        <tr>
+            <td align="center">
+                <!-- Main Pad Container -->
+                <table class="main-container" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 620px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.06); border: 1px solid #e2e8f0;">
+                    
+                    <!-- Header -->
+                    <tr>
+                        <td align="center" style="background-color: #00a2ad; padding: 36px 30px; text-align: center;">
+                            <div style="background-color: #ffffff; padding: 12px 26px; border-radius: 12px; display: inline-block; box-shadow: 0 4px 14px rgba(0,0,0,0.12); margin-bottom: 14px;">
+                                <img src="https://autofya.com/logo.png" alt="Autofya Logo" style="height: 38px; width: auto; max-width: 190px; display: block; margin: 0 auto; border: 0;" />
+                            </div>
+                            <h2 style="font-size: 22px; font-weight: 800; color: #ffffff; letter-spacing: 0.5px; margin: 0;">{{ subject }}</h2>
+                            <p style="color: rgba(255,255,255,0.92); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin: 8px 0 0 0;">Official Announcement • Autofya Inc.</p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Content Body -->
+                    <tr>
+                        <td style="padding: 40px 36px; font-size: 15px; line-height: 1.7; color: #334155;">
+                            
+                            <!-- Letter Message Content -->
+                            <div style="background-color: #ffffff; color: #1e293b; font-size: 15px; line-height: 1.8;">
+                                {{ message|linebreaksbr }}
+                            </div>
+
+                            {% if button_url %}
+                            <!-- Action Button -->
+                            <div style="text-align: center; margin-top: 36px; margin-bottom: 10px;">
+                                <a href="{{ button_url }}" target="_blank" style="background-color: #00a2ad; color: #ffffff; text-decoration: none; padding: 15px 32px; border-radius: 30px; font-weight: 700; font-size: 15px; display: inline-block; box-shadow: 0 4px 14px rgba(0, 162, 173, 0.35); transition: all 0.2s;">
+                                    {% if button_text %}{{ button_text }}{% else %}Explore Autofya Platform &rarr;{% endif %}
+                                </a>
+                            </div>
+                            {% endif %}
+
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td align="center" style="background-color: #f8fafc; padding: 28px; text-align: center; font-size: 12px; color: #94a3b8; border-top: 1px solid #f1f5f9;">
+                            <p style="margin: 0 0 6px 0; font-weight: 800; color: #475569; font-size: 13px;">Autofya — Next-Gen AI & Software Engineering Platform</p>
+                            <p style="margin: 0 0 12px 0; color: #64748b;">Delivering scalable AI solutions, enterprise microservices, & automated workflows.</p>
+                            <div style="margin-bottom: 12px;">
+                                <a href="https://autofya.com" style="color: #00a2ad; text-decoration: none; font-weight: 700; margin: 0 8px;">Official Website</a> •
+                                <a href="https://autofya.com/schedule" style="color: #00a2ad; text-decoration: none; font-weight: 700; margin: 0 8px;">Schedule a Call</a> •
+                                <a href="https://autofya.com/blog" style="color: #00a2ad; text-decoration: none; font-weight: 700; margin: 0 8px;">Blog</a>
+                            </div>
+                            <p style="margin: 0; font-size: 11px; color: #cbd5e1;">&copy; 2026 Autofya Inc. All rights reserved.</p>
+                        </td>
+                    </tr>
+                    
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

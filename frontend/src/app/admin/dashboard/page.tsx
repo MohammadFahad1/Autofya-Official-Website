@@ -130,7 +130,16 @@ export default function AdminDashboardPage() {
   const router = useRouter();
 
   // Navigation Tabs State
-  const [activeTab, setActiveTab] = useState<"overview" | "users" | "bookings" | "analytics" | "blogs" | "settings" | "profile">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "users" | "bookings" | "analytics" | "blogs" | "marketing" | "settings" | "profile">("overview");
+
+  // Batch Marketing Email Broadcast State
+  const [batchRecipients, setBatchRecipients] = useState("");
+  const [batchSubject, setBatchSubject] = useState("");
+  const [batchMessage, setBatchMessage] = useState("");
+  const [batchButtonText, setBatchButtonText] = useState("Explore Autofya Platform →");
+  const [batchButtonUrl, setBatchButtonUrl] = useState("https://autofya.com/schedule");
+  const [isSendingBatch, setIsSendingBatch] = useState(false);
+  const [emailPreviewTab, setEmailPreviewTab] = useState<"edit" | "preview">("edit");
 
   // User Dashboard Data State
   const [stats, setStats] = useState<StatsData | null>(null);
@@ -896,6 +905,62 @@ console.log("Task Status:", result.status);</code></pre>
     }
   };
 
+  // Import all booking client emails
+  const handleLoadClientEmails = () => {
+    if (!bookings || bookings.length === 0) {
+      setFeedbackMsg({ type: "error", text: "No booking client emails available to import." });
+      return;
+    }
+    const uniqueEmails = Array.from(new Set(bookings.map((b) => b.email).filter(Boolean)));
+    setBatchRecipients(uniqueEmails.join(", "));
+    setFeedbackMsg({ type: "success", text: `Imported ${uniqueEmails.length} unique client email address(es).` });
+  };
+
+  // Send Marketing Batch Broadcast Email
+  const handleSendBatchEmail = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!token) return;
+
+    if (!batchRecipients.trim() || !batchSubject.trim() || !batchMessage.trim()) {
+      setFeedbackMsg({ type: "error", text: "Please enter Recipients, Subject, and Message." });
+      return;
+    }
+
+    setIsSendingBatch(true);
+    setFeedbackMsg(null);
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/bookings/admin/send-batch-email/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          recipients: batchRecipients,
+          subject: batchSubject,
+          message: batchMessage,
+          button_text: batchButtonText,
+          button_url: batchButtonUrl,
+        }),
+      });
+
+      const json = await res.json();
+      if (res.ok && json.success) {
+        setFeedbackMsg({ type: "success", text: json.message || "Marketing email batch dispatched successfully!" });
+        setBatchRecipients("");
+        setBatchSubject("");
+        setBatchMessage("");
+      } else {
+        setFeedbackMsg({ type: "error", text: json.message || "Failed to send marketing batch emails." });
+      }
+    } catch (err) {
+      setFeedbackMsg({ type: "error", text: "Server error occurred while sending batch emails." });
+    } finally {
+      setIsSendingBatch(false);
+    }
+  };
+
   if (isLoading || !isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#0F172A] text-slate-100">
@@ -1050,6 +1115,21 @@ console.log("Task Status:", result.status);</code></pre>
                   )}
                 </div>
               )}
+            </button>
+
+            {/* Marketing Email Broadcast Tab */}
+            <button
+              onClick={() => setActiveTab("marketing")}
+              className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
+                activeTab === "marketing"
+                  ? "bg-gradient-to-r from-[#00a2ad] to-[#00808a] text-white shadow-lg shadow-[#00a2ad]/20"
+                  : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+              }`}
+            >
+              <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              {!sidebarCollapsed && <span>Marketing Broadcast</span>}
             </button>
 
             <button
@@ -2154,6 +2234,278 @@ console.log("Task Status:", result.status);</code></pre>
                   </table>
                 </div>
               </div>
+
+            </div>
+          )}
+
+
+          {/* ========================================== */}
+          {/* MARKETING BROADCAST EMAIL TAB CONTENT     */}
+          {/* ========================================== */}
+          {activeTab === "marketing" && (
+            <div className="space-y-8">
+              
+              {/* Header Banner */}
+              <div className="p-6 sm:p-8 rounded-2xl bg-gradient-to-r from-[#070D1E] via-[#0F172A] to-[#00a2ad]/20 border border-slate-800 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#00a2ad]/20 text-[#00a2ad] border border-[#00a2ad]/30 uppercase tracking-wider">
+                      Marketing & Communications
+                    </span>
+                    <span className="text-xs text-slate-400 font-mono">Autofya Pad Branding</span>
+                  </div>
+                  <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                    Batch Email Broadcast Studio
+                  </h2>
+                  <p className="text-sm text-slate-300 max-w-2xl mt-1 leading-relaxed">
+                    Compose and send custom HTML marketing emails formatted on Autofya’s official letterhead pad to single or bulk client email addresses.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-3 shrink-0">
+                  <button
+                    onClick={() => setEmailPreviewTab("edit")}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      emailPreviewTab === "edit"
+                        ? "bg-[#00a2ad] text-white shadow-lg"
+                        : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+                    }`}
+                  >
+                    ✏️ Compose Studio
+                  </button>
+                  <button
+                    onClick={() => setEmailPreviewTab("preview")}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      emailPreviewTab === "preview"
+                        ? "bg-[#00a2ad] text-white shadow-lg"
+                        : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+                    }`}
+                  >
+                    👁️ Live Pad Preview
+                  </button>
+                </div>
+              </div>
+
+              {emailPreviewTab === "edit" ? (
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                  
+                  {/* Left Column: Composer Controls */}
+                  <form onSubmit={handleSendBatchEmail} className="lg:col-span-7 bg-[#0F172A] p-6 sm:p-8 rounded-2xl border border-slate-800 shadow-xl space-y-6">
+                    
+                    {/* Recipients */}
+                    <div>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">
+                          Recipient Email Address(es) *
+                        </label>
+                        <button
+                          type="button"
+                          onClick={handleLoadClientEmails}
+                          className="text-[11px] font-bold text-[#00a2ad] hover:underline cursor-pointer flex items-center gap-1"
+                        >
+                          <span>📥 Import All Client Emails ({bookings.length})</span>
+                        </button>
+                      </div>
+                      <textarea
+                        rows={3}
+                        required
+                        value={batchRecipients}
+                        onChange={(e) => setBatchRecipients(e.target.value)}
+                        placeholder="Enter email addresses separated by commas or newlines (e.g. client1@company.com, client2@enterprise.io)..."
+                        className="w-full p-3.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs font-mono focus:outline-none focus:border-[#00a2ad]"
+                      />
+                      <p className="text-[11px] text-slate-500 mt-1">
+                        Enter a single email address or multiple emails separated by commas or line breaks.
+                      </p>
+                    </div>
+
+                    {/* Email Subject */}
+                    <div>
+                      <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                        Email Subject Line *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={batchSubject}
+                        onChange={(e) => setBatchSubject(e.target.value)}
+                        placeholder="e.g. Exclusive Update: Next-Gen AI Automation Platform by Autofya"
+                        className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white text-sm font-semibold focus:outline-none focus:border-[#00a2ad]"
+                      />
+                    </div>
+
+                    {/* Message Body */}
+                    <div>
+                      <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                        Message Content (Autofya Letterhead Body) *
+                      </label>
+                      <textarea
+                        rows={8}
+                        required
+                        value={batchMessage}
+                        onChange={(e) => setBatchMessage(e.target.value)}
+                        placeholder="Write your email body here. Paragraphs and line breaks will be formatted on the Autofya pad..."
+                        className="w-full p-4 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs leading-relaxed focus:outline-none focus:border-[#00a2ad]"
+                      />
+                    </div>
+
+                    {/* Optional Call To Action Button */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl bg-slate-900/80 border border-slate-800">
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-400 uppercase mb-1">
+                          Action Button Label (Optional)
+                        </label>
+                        <input
+                          type="text"
+                          value={batchButtonText}
+                          onChange={(e) => setBatchButtonText(e.target.value)}
+                          placeholder="Explore Products →"
+                          className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-xs focus:outline-none focus:border-[#00a2ad]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-400 uppercase mb-1">
+                          Action Button Target URL
+                        </label>
+                        <input
+                          type="url"
+                          value={batchButtonUrl}
+                          onChange={(e) => setBatchButtonUrl(e.target.value)}
+                          placeholder="https://autofya.com/schedule"
+                          className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-xs focus:outline-none focus:border-[#00a2ad]"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Submit Button */}
+                    <div className="pt-2 flex items-center justify-between">
+                      <button
+                        type="button"
+                        onClick={() => setEmailPreviewTab("preview")}
+                        className="px-4 py-2.5 rounded-xl border border-slate-700 text-slate-300 hover:text-white hover:bg-slate-800 text-xs font-bold cursor-pointer"
+                      >
+                        Preview Autofya Letterhead
+                      </button>
+
+                      <button
+                        type="submit"
+                        disabled={isSendingBatch}
+                        className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#00a2ad] to-[#008790] hover:from-[#00b4c0] hover:to-[#009ca6] text-white font-bold text-sm shadow-xl hover:shadow-cyan-500/20 disabled:opacity-50 cursor-pointer flex items-center gap-2"
+                      >
+                        {isSendingBatch ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            <span>Dispatching Email Batch...</span>
+                          </>
+                        ) : (
+                          <>
+                            <span>🚀 Send Marketing Broadcast</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+
+                  </form>
+
+                  {/* Right Column: Live Letterhead Interactive Pad Preview */}
+                  <div className="lg:col-span-5 bg-slate-900 p-4 sm:p-6 rounded-2xl border border-slate-800 shadow-xl space-y-3">
+                    <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+                      <span className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        Live Pad Preview
+                      </span>
+                      <span className="text-[11px] text-slate-500 font-mono">autofya.com</span>
+                    </div>
+
+                    {/* Letterhead Render Simulation */}
+                    <div className="bg-[#f4f7f6] p-4 rounded-xl border border-slate-200/50 shadow-inner max-h-[600px] overflow-y-auto text-slate-800">
+                      <div className="bg-white rounded-2xl overflow-hidden shadow-lg border border-slate-200/60 max-w-md mx-auto text-left">
+                        
+                        {/* Header */}
+                        <div className="bg-[#00a2ad] p-6 text-center">
+                          <div className="bg-white px-5 py-2 rounded-xl inline-block shadow-md mb-2">
+                            <AutofyaLogo height={28} showTagline={false} />
+                          </div>
+                          <h3 className="text-base font-extrabold text-white mt-1 leading-snug">
+                            {batchSubject || "Subject Line Preview"}
+                          </h3>
+                          <p className="text-[10px] text-white/90 font-bold uppercase tracking-wider mt-1">
+                            Official Announcement • Autofya Inc.
+                          </p>
+                        </div>
+
+                        {/* Message Body */}
+                        <div className="p-6 text-xs text-slate-700 leading-relaxed whitespace-pre-wrap">
+                          {batchMessage || "Your marketing message body will be displayed here formatted on Autofya's official pad..."}
+
+                          {batchButtonUrl && (
+                            <div className="text-center mt-6 mb-2">
+                              <span className="inline-block bg-[#00a2ad] text-white font-bold text-xs px-6 py-2.5 rounded-full shadow-md">
+                                {batchButtonText || "Explore Autofya Platform →"}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Footer */}
+                        <div className="bg-slate-50 p-4 border-t border-slate-100 text-center text-[10px] text-slate-400">
+                          <p className="font-bold text-slate-600">Autofya — Next-Gen AI & Software Engineering Platform</p>
+                          <p className="mt-1">&copy; 2026 Autofya Inc. All rights reserved.</p>
+                        </div>
+
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              ) : (
+                /* FULL PREVIEW TAB */
+                <div className="bg-slate-900 p-6 sm:p-10 rounded-2xl border border-slate-800 shadow-xl flex justify-center">
+                  <div className="bg-[#f4f7f6] p-6 sm:p-10 rounded-2xl border border-slate-200/50 shadow-2xl max-w-2xl w-full text-slate-800">
+                    <div className="bg-white rounded-2xl overflow-hidden shadow-xl border border-slate-200 text-left">
+                      
+                      {/* Header */}
+                      <div className="bg-[#00a2ad] p-8 text-center">
+                        <div className="bg-white px-6 py-2.5 rounded-xl inline-block shadow-lg mb-3">
+                          <AutofyaLogo height={36} showTagline={false} />
+                        </div>
+                        <h2 className="text-xl font-extrabold text-white leading-snug">
+                          {batchSubject || "Subject Line Preview"}
+                        </h2>
+                        <p className="text-xs text-white/90 font-bold uppercase tracking-wider mt-1">
+                          Official Announcement • Autofya Inc.
+                        </p>
+                      </div>
+
+                      {/* Message Body */}
+                      <div className="p-8 text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">
+                        {batchMessage || "Your marketing message body will be displayed here formatted on Autofya's official letterhead pad..."}
+
+                        {batchButtonUrl && (
+                          <div className="text-center mt-8 mb-4">
+                            <a
+                              href={batchButtonUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-block bg-[#00a2ad] text-white font-bold text-sm px-8 py-3.5 rounded-full shadow-lg"
+                            >
+                              {batchButtonText || "Explore Autofya Platform →"}
+                            </a>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Footer */}
+                      <div className="bg-slate-50 p-6 border-t border-slate-100 text-center text-xs text-slate-400">
+                        <p className="font-bold text-slate-600">Autofya — Next-Gen AI & Software Engineering Platform</p>
+                        <p className="mt-1 text-slate-500">Delivering scalable AI solutions, enterprise microservices, & automated workflows.</p>
+                        <p className="mt-2 text-[11px] text-slate-400">&copy; 2026 Autofya Inc. All rights reserved.</p>
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+              )}
 
             </div>
           )}
