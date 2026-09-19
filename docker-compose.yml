@@ -25,7 +25,7 @@ services:
     restart: unless-stopped
     command: ["redis-server", "--port", "6380"]
     ports:
-      - "6380:6380"
+      - "6390:6380"
     volumes:
       - redis_data:/data
     healthcheck:
