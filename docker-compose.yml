@@ -19,6 +19,20 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    image: redis:7-alpine
+    container_name: autofya-redis
+    restart: unless-stopped
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   backend:
     build:
       context: ./backend
@@ -36,12 +50,47 @@ services:
       - POSTGRES_DB=autofya_db
       - POSTGRES_USER=autofya_user
       - POSTGRES_PASSWORD=autofya_password
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - CELERY_TASK_ALWAYS_EAGER=False
       - MEDIA_ROOT=/app/media
       - BACKEND_URL=${BACKEND_URL:-https://api.autofya.com}
     volumes:
       - autofya_media:/app/media
     depends_on:
       db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  celery:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: autofya-celery
+    restart: unless-stopped
+    command: celery -A autofya worker -l info
+    env_file:
+      - ./backend/.env
+    environment:
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=9013
+      - POSTGRES_DB=autofya_db
+      - POSTGRES_USER=autofya_user
+      - POSTGRES_PASSWORD=autofya_password
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - CELERY_TASK_ALWAYS_EAGER=False
+      - MEDIA_ROOT=/app/media
+      - BACKEND_URL=${BACKEND_URL:-https://api.autofya.com}
+    volumes:
+      - autofya_media:/app/media
+    depends_on:
+      backend:
+        condition: service_started
+      db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
 
   frontend:
@@ -63,5 +112,7 @@ services:
 volumes:
   postgres_data:
     name: postgres_data
+  redis_data:
+    name: redis_data
   autofya_media:
     name: autofya_media
