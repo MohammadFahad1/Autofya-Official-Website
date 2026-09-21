@@ -548,6 +548,28 @@ export default function AdminDashboardPage() {
     }
   };
 
+  const handleDeleteApp = async (appId: number, candidateName: string) => {
+    if (!window.confirm(`Are you sure you want to delete application for "${candidateName}"? This will also permanently delete their uploaded resume file.`)) {
+      return;
+    }
+    try {
+      const res = await fetch(`${API_BASE_URL}/careers/admin/applications/${appId}/`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await res.json();
+      if (data.success) {
+        setFeedbackMsg({ type: "success", text: "Application and attached resume file deleted." });
+        handleViewApplications(selectedJobForApps || undefined);
+        fetchJobsData();
+      }
+    } catch (err) {
+      console.error("Error deleting application:", err);
+    }
+  };
+
   const handleSaveCategory = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!categoryNameInput.trim()) return;
@@ -4602,24 +4624,34 @@ console.log("Task Status:", result.status);</code></pre>
                         {new Date(app.created_at).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}
                       </span>
 
-                      <select
-                        value={app.status}
-                        onChange={(e) => handleUpdateAppStatus(app.id, e.target.value)}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 border cursor-pointer ${
-                          app.status === "accepted"
-                            ? "text-emerald-400 border-emerald-500/40"
-                            : app.status === "reviewed"
-                            ? "text-blue-400 border-blue-500/40"
-                            : app.status === "rejected"
-                            ? "text-rose-400 border-rose-500/40"
-                            : "text-amber-400 border-amber-500/40"
-                        }`}
-                      >
-                        <option value="pending">⏳ Pending</option>
-                        <option value="reviewed">👀 Reviewed</option>
-                        <option value="accepted">✅ Accepted</option>
-                        <option value="rejected">❌ Rejected</option>
-                      </select>
+                      <div className="flex items-center gap-2">
+                        <select
+                          value={app.status}
+                          onChange={(e) => handleUpdateAppStatus(app.id, e.target.value)}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 border cursor-pointer ${
+                            app.status === "accepted"
+                              ? "text-emerald-400 border-emerald-500/40"
+                              : app.status === "reviewed"
+                              ? "text-blue-400 border-blue-500/40"
+                              : app.status === "rejected"
+                              ? "text-rose-400 border-rose-500/40"
+                              : "text-amber-400 border-amber-500/40"
+                          }`}
+                        >
+                          <option value="pending">⏳ Pending</option>
+                          <option value="reviewed">👀 Reviewed</option>
+                          <option value="accepted">✅ Accepted</option>
+                          <option value="rejected">❌ Rejected</option>
+                        </select>
+
+                        <button
+                          onClick={() => handleDeleteApp(app.id, app.name)}
+                          className="px-2.5 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs font-semibold cursor-pointer transition-all"
+                          title="Delete Candidate Application & Resume File"
+                        >
+                          🗑️ Delete
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}

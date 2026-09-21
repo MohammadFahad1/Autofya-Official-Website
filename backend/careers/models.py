@@ -45,3 +45,9 @@ class JobApplication(models.Model):
 
     def __str__(self):
         return f"{self.name} - {self.job.title}"
+
+    def delete(self, *args, **kwargs):
+        if self.resume:
+            self.resume.delete(save=False)
+        super().delete(*args, **kwargs)
+

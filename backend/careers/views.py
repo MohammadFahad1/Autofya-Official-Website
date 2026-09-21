@@ -176,4 +176,5 @@ class AdminApplicationDetailView(NewAPIView):
     def delete(self, request, pk):
         app_obj = get_object_or_404(JobApplication, pk=pk)
         app_obj.delete()
-        return Response({'success': True, 'message': 'Application deleted.'}, status=status.HTTP_200_OK)
+        return Response({'success': True, 'message': 'Application and resume file deleted successfully.'}, status=status.HTTP_200_OK)
+
