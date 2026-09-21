@@ -235,6 +235,29 @@ export default function AdminDashboardPage() {
     is_active: true,
   });
   const [deletingJob, setDeletingJob] = useState<AdminJobPosition | null>(null);
+  const [jobDescTab, setJobDescTab] = useState<"edit" | "preview">("edit");
+
+  const insertJobFormatTag = (openTag: string, closeTag: string = "") => {
+    const textarea = document.getElementById("job_description_editor") as HTMLTextAreaElement | null;
+    if (!textarea) {
+      setJobForm((prev) => ({
+        ...prev,
+        description: prev.description + openTag + closeTag,
+      }));
+      return;
+    }
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const text = textarea.value;
+    const selectedText = text.substring(start, end);
+    const replacement = openTag + selectedText + closeTag;
+    const newText = text.substring(0, start) + replacement + text.substring(end);
+    setJobForm((prev) => ({ ...prev, description: newText }));
+    setTimeout(() => {
+      textarea.focus();
+      textarea.setSelectionRange(start + openTag.length, start + openTag.length + selectedText.length);
+    }, 5);
+  };
 
   // Job Applications View State
   const [jobApplications, setJobApplications] = useState<AdminJobApplication[]>([]);
@@ -383,6 +406,7 @@ export default function AdminDashboardPage() {
       description: "",
       is_active: true,
     });
+    setJobDescTab("edit");
     setShowJobModal(true);
   };
 
@@ -398,6 +422,7 @@ export default function AdminDashboardPage() {
       description: job.description || "",
       is_active: job.is_active,
     });
+    setJobDescTab("edit");
     setShowJobModal(true);
   };
 
@@ -4182,7 +4207,7 @@ console.log("Task Status:", result.status);</code></pre>
       {/* ========================================== */}
       {showJobModal && (
         <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#0F172A] border border-slate-700 rounded-2xl max-w-lg w-full p-6 sm:p-8 shadow-2xl space-y-6">
+          <div className="bg-[#0F172A] border border-slate-700 rounded-2xl max-w-3xl w-full p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-800 pb-4">
               <div>
                 <span className="text-xs font-bold text-[#00a2ad] uppercase tracking-wider block">
@@ -4192,7 +4217,7 @@ console.log("Task Status:", result.status);</code></pre>
                   {editingJob ? "Update Job Details" : "New Job Position"}
                 </h3>
               </div>
-              <button onClick={() => setShowJobModal(false)} className="text-slate-400 hover:text-white text-lg">
+              <button onClick={() => setShowJobModal(false)} className="text-slate-400 hover:text-white text-lg cursor-pointer">
                 ✕
               </button>
             </div>
@@ -4274,16 +4299,138 @@ console.log("Task Status:", result.status);</code></pre>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1">
-                  Short Description / Requirements
-                </label>
-                <textarea
-                  rows={3}
-                  value={jobForm.description}
-                  onChange={(e) => setJobForm({ ...jobForm, description: e.target.value })}
-                  placeholder="Describe key responsibilities or tech stack..."
-                  className="w-full p-3.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs leading-relaxed focus:outline-none focus:border-[#00a2ad]"
-                />
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">
+                    Detailed Job Description & Requirements (Rich Text HTML)
+                  </label>
+                  <div className="flex items-center gap-1 bg-slate-900 p-1 rounded-lg border border-slate-800">
+                    <button
+                      type="button"
+                      onClick={() => setJobDescTab("edit")}
+                      className={`px-3 py-1 rounded-md text-xs font-bold transition-all cursor-pointer ${
+                        jobDescTab === "edit"
+                          ? "bg-[#00a2ad] text-white shadow-xs"
+                          : "text-slate-400 hover:text-slate-200"
+                      }`}
+                    >
+                      ✏️ Edit
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setJobDescTab("preview")}
+                      className={`px-3 py-1 rounded-md text-xs font-bold transition-all cursor-pointer ${
+                        jobDescTab === "preview"
+                          ? "bg-[#00a2ad] text-white shadow-xs"
+                          : "text-slate-400 hover:text-slate-200"
+                      }`}
+                    >
+                      👁️ Preview
+                    </button>
+                  </div>
+                </div>
+
+                {jobDescTab === "edit" ? (
+                  <div className="space-y-2">
+                    {/* TOOLBAR */}
+                    <div className="flex flex-wrap items-center gap-1.5 p-2 bg-slate-900/90 border border-slate-800 rounded-xl text-xs">
+                      <button
+                        type="button"
+                        onClick={() => insertJobFormatTag("<b>", "</b>")}
+                        className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded cursor-pointer"
+                        title="Bold"
+                      >
+                        B
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => insertJobFormatTag("<i>", "</i>")}
+                        className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 italic font-serif rounded cursor-pointer"
+                        title="Italic"
+                      >
+                        I
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => insertJobFormatTag("<h2>", "</h2>")}
+                        className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-cyan-400 font-bold rounded cursor-pointer"
+                        title="Heading 2"
+                      >
+                        H2
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => insertJobFormatTag("<h3>", "</h3>")}
+                        className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-cyan-400 font-bold rounded cursor-pointer"
+                        title="Heading 3"
+                      >
+                        H3
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => insertJobFormatTag("<ul>\n  <li>", "</li>\n  <li>Item 2</li>\n</ul>")}
+                        className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold rounded cursor-pointer"
+                        title="Bullet List"
+                      >
+                        • Bullet List
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => insertJobFormatTag("<ol>\n  <li>", "</li>\n  <li>Step 2</li>\n</ol>")}
+                        className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold rounded cursor-pointer"
+                        title="Numbered List"
+                      >
+                        1. Numbered List
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => insertJobFormatTag("<blockquote>", "</blockquote>")}
+                        className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-amber-300 font-semibold rounded cursor-pointer"
+                        title="Callout Box"
+                      >
+                        ❝ Quote / Box
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => insertJobFormatTag("<mark>", "</mark>")}
+                        className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-yellow-400 font-semibold rounded cursor-pointer"
+                        title="Highlight"
+                      >
+                        Highlight
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => insertJobFormatTag("<hr/>\n")}
+                        className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-400 font-semibold rounded cursor-pointer"
+                        title="Horizontal Line"
+                      >
+                        ― Line
+                      </button>
+                    </div>
+
+                    <textarea
+                      id="job_description_editor"
+                      rows={8}
+                      value={jobForm.description}
+                      onChange={(e) => setJobForm({ ...jobForm, description: e.target.value })}
+                      placeholder="Write detailed responsibilities, key requirements, tech stack, and benefits using HTML tags..."
+                      className="w-full p-4 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs font-mono leading-relaxed focus:outline-none focus:border-[#00a2ad]"
+                    />
+                  </div>
+                ) : (
+                  <div
+                    className="w-full p-4 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs leading-relaxed min-h-[220px] max-h-[350px] overflow-y-auto
+                      [&>h2]:text-base [&>h2]:font-bold [&>h2]:text-cyan-400 [&>h2]:mt-3 [&>h2]:mb-1.5 [&>h2]:border-b [&>h2]:border-slate-800 [&>h2]:pb-1
+                      [&>h3]:text-sm [&>h3]:font-bold [&>h3]:text-[#00a2ad] [&>h3]:mt-2.5 [&>h3]:mb-1
+                      [&>p]:text-slate-300 [&>p]:leading-relaxed [&>p]:mb-2.5
+                      [&>ul]:list-disc [&>ul]:pl-5 [&>ul]:space-y-1 [&>ul]:text-slate-300 [&>ul]:mb-3
+                      [&>ol]:list-decimal [&>ol]:pl-5 [&>ol]:space-y-1 [&>ol]:text-slate-300 [&>ol]:mb-3
+                      [&>blockquote]:border-l-4 [&>blockquote]:border-[#00a2ad] [&>blockquote]:bg-slate-950 [&>blockquote]:p-3 [&>blockquote]:rounded-r-lg [&>blockquote]:italic [&>blockquote]:text-slate-300 [&>blockquote]:my-3
+                      [&>mark]:bg-amber-400 [&>mark]:text-slate-900 [&>mark]:px-1.5 [&>mark]:py-0.5 [&>mark]:rounded"
+                    dangerouslySetInnerHTML={{
+                      __html: jobForm.description || "<p class='text-slate-500 italic'>No description text entered yet. Switch to Edit tab to write job details.</p>",
+                    }}
+                  />
+                )}
               </div>
 
               <div className="flex items-center gap-3 pt-2">

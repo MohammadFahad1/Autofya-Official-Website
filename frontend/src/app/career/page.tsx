@@ -22,10 +22,19 @@ interface JobPosition {
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.autofya.com";
 
+const isDeadlinePassed = (deadlineStr?: string): boolean => {
+  if (!deadlineStr) return false;
+  const deadlineDate = new Date(deadlineStr);
+  if (isNaN(deadlineDate.getTime())) return false;
+  deadlineDate.setHours(23, 59, 59, 999);
+  return deadlineDate < new Date();
+};
+
 export default function CareerPage() {
   const [openPositions, setOpenPositions] = useState<JobPosition[]>([]);
   const [loadingJobs, setLoadingJobs] = useState(true);
   const [selectedJob, setSelectedJob] = useState<JobPosition | null>(null);
+  const [viewingDetailJob, setViewingDetailJob] = useState<JobPosition | null>(null);
   const [appliedSuccess, setAppliedSuccess] = useState(false);
   const [submittingApp, setSubmittingApp] = useState(false);
 
@@ -61,6 +70,7 @@ export default function CareerPage() {
   };
 
   const handleApplyClick = (job: JobPosition) => {
+    if (isDeadlinePassed(job.application_deadline || job.applicationDeadline)) return;
     setSelectedJob(job);
     setAppliedSuccess(false);
   };
@@ -250,52 +260,80 @@ export default function CareerPage() {
                 <p className="text-sm font-semibold text-slate-600">Loading open job positions...</p>
               </div>
             ) : openPositions.length > 0 ? (
-              openPositions.map((job) => (
-                <div
-                  key={job.id}
-                  className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/80 hover:shadow-md hover:border-[#00a2ad]/40 transition-all duration-300 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-                >
-                  {/* LEFT: JOB TITLE & BADGES */}
-                  <div className="flex-1">
-                    <h4 className="text-lg sm:text-xl font-extrabold text-[#0B1340] mb-2 group-hover:text-[#00a2ad] transition-colors">
-                      {job.title}
-                    </h4>
-                    <div className="flex flex-wrap items-center gap-2 text-xs">
-                      <span className="font-semibold text-slate-500">Autofya</span>
-                      <span className="text-slate-300">•</span>
-                      <span className="px-2.5 py-0.5 rounded-md bg-[#00a2ad]/10 text-[#00a2ad] font-bold">
-                        {job.category}
-                      </span>
-                      <span className="px-2.5 py-0.5 rounded-md bg-slate-100 text-slate-600 font-semibold">
-                        {job.type}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* MIDDLE: DATE, DEADLINE & VACANCIES */}
-                  <div className="flex sm:flex-col items-center sm:items-end justify-between text-xs text-slate-500 gap-1 border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-100">
-                    <div className="font-medium">Posted: {job.datePosted || job.date_posted}</div>
-                    {(job.applicationDeadline || job.application_deadline) && (
-                      <div className="font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded text-[11px]">
-                        Deadline: {job.applicationDeadline || job.application_deadline}
+              openPositions.map((job) => {
+                const deadlineStr = job.applicationDeadline || job.application_deadline;
+                const isExpired = isDeadlinePassed(deadlineStr);
+                return (
+                  <div
+                    key={job.id}
+                    className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/80 hover:shadow-md hover:border-[#00a2ad]/40 transition-all duration-300 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                  >
+                    {/* LEFT: JOB TITLE & BADGES */}
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h4 className="text-lg sm:text-xl font-extrabold text-[#0B1340] group-hover:text-[#00a2ad] transition-colors">
+                          {job.title}
+                        </h4>
+                        {isExpired && (
+                          <span className="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-rose-100 text-rose-700 border border-rose-200 uppercase tracking-wider">
+                            Expired
+                          </span>
+                        )}
                       </div>
-                    )}
-                    <div className="font-bold text-[#0B1340]">
-                      No of Vacancies: {job.vacancies}
+                      <div className="flex flex-wrap items-center gap-2 text-xs">
+                        <span className="font-semibold text-slate-500">Autofya</span>
+                        <span className="text-slate-300">•</span>
+                        <span className="px-2.5 py-0.5 rounded-md bg-[#00a2ad]/10 text-[#00a2ad] font-bold">
+                          {job.category}
+                        </span>
+                        <span className="px-2.5 py-0.5 rounded-md bg-slate-100 text-slate-600 font-semibold">
+                          {job.type}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* MIDDLE: DATE, DEADLINE & VACANCIES */}
+                    <div className="flex sm:flex-col items-center sm:items-end justify-between text-xs text-slate-500 gap-1 border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-100">
+                      <div className="font-medium">Posted: {job.datePosted || job.date_posted || "Recent"}</div>
+                      {deadlineStr ? (
+                        <div className={`font-bold px-2.5 py-0.5 rounded text-[11px] ${
+                          isExpired 
+                            ? "bg-rose-50 text-rose-600 border border-rose-200/60" 
+                            : "bg-amber-50 text-amber-700 border border-amber-200/60"
+                        }`}>
+                          Deadline: {deadlineStr}
+                        </div>
+                      ) : (
+                        <div className="text-[11px] text-slate-400 font-medium">No deadline limit</div>
+                      )}
+                      <div className="font-bold text-[#0B1340]">
+                        No of Vacancies: {job.vacancies}
+                      </div>
+                    </div>
+
+                    {/* RIGHT: VIEW DETAILS & APPLY NOW BUTTONS */}
+                    <div className="pt-2 sm:pt-0 flex items-center gap-2.5">
+                      <button
+                        onClick={() => setViewingDetailJob(job)}
+                        className="px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-[#00a2ad] bg-[#00a2ad]/10 hover:bg-[#00a2ad]/20 active:scale-95 transition-all duration-200 cursor-pointer text-center"
+                      >
+                        View Details
+                      </button>
+                      <button
+                        disabled={isExpired}
+                        onClick={() => handleApplyClick(job)}
+                        className={`px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all duration-200 text-center ${
+                          isExpired
+                            ? "bg-slate-200 text-slate-400 border border-slate-300 cursor-not-allowed shadow-none"
+                            : "text-white bg-[#00a2ad] hover:bg-[#008a94] active:scale-95 shadow-sm cursor-pointer"
+                        }`}
+                      >
+                        {isExpired ? "Deadline Expired" : "Apply Now"}
+                      </button>
                     </div>
                   </div>
-
-                  {/* RIGHT: APPLY NOW BUTTON */}
-                  <div className="pt-2 sm:pt-0">
-                    <button
-                      onClick={() => handleApplyClick(job)}
-                      className="w-full sm:w-auto px-6 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-white bg-[#00a2ad] hover:bg-[#008a94] active:scale-95 shadow-sm transition-all duration-200 cursor-pointer text-center"
-                    >
-                      Apply Now
-                    </button>
-                  </div>
-                </div>
-              ))
+                );
+              })
             ) : (
               <div className="bg-white rounded-2xl p-12 text-center text-slate-500 border border-slate-200/80 shadow-xs">
                 <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3 text-xl">
@@ -570,6 +608,113 @@ export default function CareerPage() {
                   </form>
                 </>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* DETAILED JOB ROLE DESCRIPTION MODAL                                       */}
+        {/* ========================================================================= */}
+        {viewingDetailJob && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0B1340]/60 backdrop-blur-xs animate-fade-in">
+            <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-2xl w-full shadow-2xl border border-slate-200 relative max-h-[90vh] flex flex-col">
+              <button
+                onClick={() => setViewingDetailJob(null)}
+                className="absolute top-5 right-5 text-slate-400 hover:text-slate-600 text-xl font-bold p-1 cursor-pointer"
+              >
+                ✕
+              </button>
+
+              {/* MODAL HEADER */}
+              <div className="pb-4 border-b border-slate-100">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xs font-bold uppercase tracking-wider text-[#00a2ad]">
+                    Job Position Details
+                  </span>
+                  {isDeadlinePassed(viewingDetailJob.applicationDeadline || viewingDetailJob.application_deadline) && (
+                    <span className="px-2 py-0.5 rounded text-[10px] font-extrabold bg-rose-100 text-rose-700 border border-rose-200 uppercase tracking-wider">
+                      Deadline Passed
+                    </span>
+                  )}
+                </div>
+                <h3 className="text-2xl font-extrabold text-[#0B1340]">
+                  {viewingDetailJob.title}
+                </h3>
+                
+                <div className="flex flex-wrap items-center gap-3 mt-3 text-xs text-slate-600 font-medium">
+                  <span className="px-2.5 py-1 rounded-md bg-[#00a2ad]/10 text-[#00a2ad] font-bold">
+                    {viewingDetailJob.category}
+                  </span>
+                  <span className="px-2.5 py-1 rounded-md bg-slate-100 text-slate-700 font-bold">
+                    {viewingDetailJob.type}
+                  </span>
+                  <span className="text-slate-500">
+                    Vacancies: <strong className="text-[#0B1340]">{viewingDetailJob.vacancies}</strong>
+                  </span>
+                  {(viewingDetailJob.applicationDeadline || viewingDetailJob.application_deadline) && (
+                    <span className={`font-bold px-2 py-0.5 rounded text-xs ${
+                      isDeadlinePassed(viewingDetailJob.applicationDeadline || viewingDetailJob.application_deadline)
+                        ? "bg-rose-50 text-rose-600"
+                        : "bg-amber-50 text-amber-700"
+                    }`}>
+                      Deadline: {viewingDetailJob.applicationDeadline || viewingDetailJob.application_deadline}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* MODAL BODY (RICH TEXT DESCRIPTION) */}
+              <div className="flex-1 overflow-y-auto py-5 pr-2 my-2 space-y-4 text-slate-700 text-sm leading-relaxed">
+                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                  Full Role Description & Requirements
+                </h4>
+                {viewingDetailJob.description ? (
+                  <div
+                    className="prose prose-slate max-w-none text-slate-700 text-sm leading-relaxed
+                      [&>h2]:text-lg [&>h2]:font-bold [&>h2]:text-[#0B1340] [&>h2]:mt-4 [&>h2]:mb-2 [&>h2]:border-b [&>h2]:border-slate-100 [&>h2]:pb-1
+                      [&>h3]:text-base [&>h3]:font-bold [&>h3]:text-[#00a2ad] [&>h3]:mt-3 [&>h3]:mb-1.5
+                      [&>h4]:text-sm [&>h4]:font-bold [&>h4]:text-[#0B1340] [&>h4]:mt-2 [&>h4]:mb-1
+                      [&>p]:mb-3 [&>p]:leading-relaxed
+                      [&>ul]:list-disc [&>ul]:pl-5 [&>ul]:space-y-1.5 [&>ul]:mb-4
+                      [&>ol]:list-decimal [&>ol]:pl-5 [&>ol]:space-y-1.5 [&>ol]:mb-4
+                      [&>blockquote]:border-l-4 [&>blockquote]:border-[#00a2ad] [&>blockquote]:bg-slate-50 [&>blockquote]:p-3.5 [&>blockquote]:rounded-r-xl [&>blockquote]:italic [&>blockquote]:text-slate-600 [&>blockquote]:my-4
+                      [&>mark]:bg-amber-100 [&>mark]:text-amber-900 [&>mark]:px-1.5 [&>mark]:py-0.5 [&>mark]:rounded
+                      [&>pre]:bg-slate-900 [&>pre]:text-slate-100 [&>pre]:p-3 [&>pre]:rounded-xl [&>pre]:text-xs [&>pre]:my-3"
+                    dangerouslySetInnerHTML={{ __html: viewingDetailJob.description }}
+                  />
+                ) : (
+                  <p className="text-slate-400 italic text-sm">
+                    No detailed description provided for this role.
+                  </p>
+                )}
+              </div>
+
+              {/* MODAL FOOTER */}
+              <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-3 shrink-0">
+                <button
+                  onClick={() => setViewingDetailJob(null)}
+                  className="px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-slate-600 bg-slate-100 hover:bg-slate-200 transition-all cursor-pointer"
+                >
+                  Close
+                </button>
+                <button
+                  disabled={isDeadlinePassed(viewingDetailJob.applicationDeadline || viewingDetailJob.application_deadline)}
+                  onClick={() => {
+                    const jobToApply = viewingDetailJob;
+                    setViewingDetailJob(null);
+                    handleApplyClick(jobToApply);
+                  }}
+                  className={`px-6 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all duration-200 text-center ${
+                    isDeadlinePassed(viewingDetailJob.applicationDeadline || viewingDetailJob.application_deadline)
+                      ? "bg-slate-200 text-slate-400 border border-slate-300 cursor-not-allowed shadow-none"
+                      : "text-white bg-[#00a2ad] hover:bg-[#008a94] active:scale-95 shadow-sm cursor-pointer"
+                  }`}
+                >
+                  {isDeadlinePassed(viewingDetailJob.applicationDeadline || viewingDetailJob.application_deadline)
+                    ? "Deadline Expired"
+                    : "Apply For This Role"}
+                </button>
+              </div>
             </div>
           </div>
         )}
