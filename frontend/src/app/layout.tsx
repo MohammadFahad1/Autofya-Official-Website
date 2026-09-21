@@ -1,13 +1,6 @@
 import type { Metadata } from "next";
-import { Manrope } from "next/font/google";
 import "./globals.css";
 import AnalyticsTracker from "@/components/AnalyticsTracker";
-
-const manrope = Manrope({
-  subsets: ["latin"],
-  variable: "--font-manrope",
-  weight: ["300", "400", "500", "600", "700", "800"],
-});
 
 export const metadata: Metadata = {
   title: "Autofya | Software • AI • Automation",
@@ -65,7 +58,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${manrope.variable} h-full antialiased font-sans`}
+      className="h-full antialiased font-sans"
     >
       <head>
         <link rel="icon" href="/favicon.png" type="image/png" />
