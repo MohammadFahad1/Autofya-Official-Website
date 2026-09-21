@@ -10,7 +10,6 @@ interface Office {
   country: string;
   address: string;
   email: string;
-  phone?: string;
   renderSkyline: () => React.ReactNode;
 }
 
@@ -28,7 +27,6 @@ export default function Footer() {
       country: "Bangladesh",
       address: "8th Floor, 2 Bir Uttam AK Khandakar Road, Mohakhali C/A,Dhaka 1212, Bangladesh",
       email: "sales@autofya.com",
-      phone: "+8801406792827",
       renderSkyline: () => (
         <svg viewBox="0 0 160 100" className="w-36 sm:w-44 h-auto text-slate-500/80 stroke-current fill-none stroke-[1.25]" strokeLinecap="round" strokeLinejoin="round">
           <path d="M10 90h140M20 94h120M35 97h90" opacity="0.4" />
@@ -45,7 +43,6 @@ export default function Footer() {
       country: "USA",
       address: "7426 Alban Station Blvd, Suite a101, Springfield, VA 22150",
       email: "sales@autofya.com",
-      phone: "+1 606 773 7443",
       renderSkyline: () => (
         <svg viewBox="0 0 160 100" className="w-36 sm:w-44 h-auto text-slate-500/80 stroke-current fill-none stroke-[1.25]" strokeLinecap="round" strokeLinejoin="round">
           <path d="M10 90h140M20 94h120" opacity="0.4" />
@@ -62,7 +59,6 @@ export default function Footer() {
       country: "Germany",
       address: "Bad Zwischenahn",
       email: "sales@autofya.de",
-      phone: "+4944036999839",
       renderSkyline: () => (
         <svg viewBox="0 0 160 100" className="w-36 sm:w-44 h-auto text-slate-500/80 stroke-current fill-none stroke-[1.25]" strokeLinecap="round" strokeLinejoin="round">
           <path d="M10 90h140M25 94h110" opacity="0.4" />
@@ -78,7 +74,6 @@ export default function Footer() {
       country: "UAE",
       address: "903, Damac XL Tower, Business Bay, P.O. Box: 29544, Dubai, UAE.",
       email: "sales@autofya.com",
-      phone: "+971 42420223",
       renderSkyline: () => (
         <svg viewBox="0 0 160 100" className="w-36 sm:w-44 h-auto text-slate-500/80 stroke-current fill-none stroke-[1.25]" strokeLinecap="round" strokeLinejoin="round">
           <path d="M10 90h140M30 94h100" opacity="0.4" />
@@ -94,7 +89,6 @@ export default function Footer() {
       country: "Malaysia",
       address: "Level 9, Integra Tower, The Intermark, No. 348, Jalan Tun Razak, 50400 Kuala Lumpur, Malaysia",
       email: "sales@autofya.com",
-      phone: "+601111708999",
       renderSkyline: () => (
         <svg viewBox="0 0 160 100" className="w-36 sm:w-44 h-auto text-slate-500/80 stroke-current fill-none stroke-[1.25]" strokeLinecap="round" strokeLinejoin="round">
           <path d="M10 90h140M20 94h120" opacity="0.4" />
@@ -164,12 +158,6 @@ export default function Footer() {
                   >
                     {office.email}
                   </a>
-
-                  {office.phone && (
-                    <span className="text-[#00a2ad] text-sm font-medium">
-                      {office.phone}
-                    </span>
-                  )}
                 </div>
 
               </div>
@@ -222,10 +210,10 @@ export default function Footer() {
               
               {/* Social Icons */}
               <div className="flex items-center space-x-8 sm:space-x-10 text-white text-3xl sm:text-[32px]">
-                <a href="https://facebook.com" target="_blank" rel="noreferrer" aria-label="Facebook" className="hover:text-[#00a2ad] transition-colors font-extrabold">
+                <a href="https://www.facebook.com/autofya/" target="_blank" rel="noreferrer" aria-label="Facebook" className="hover:text-[#00a2ad] transition-colors font-extrabold">
                   f
                 </a>
-                <a href="https://linkedin.com" target="_blank" rel="noreferrer" aria-label="LinkedIn" className="hover:text-[#00a2ad] transition-colors font-extrabold">
+                <a href="https://www.linkedin.com/company/autofya/" target="_blank" rel="noreferrer" aria-label="LinkedIn" className="hover:text-[#00a2ad] transition-colors font-extrabold">
                   in
                 </a>
                 <a href="https://twitter.com" target="_blank" rel="noreferrer" aria-label="X" className="hover:text-[#00a2ad] transition-colors font-extrabold">
