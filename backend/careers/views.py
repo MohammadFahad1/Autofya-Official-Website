@@ -12,56 +12,6 @@ from .models import JobPosition, JobApplication
 from .serializers import JobPositionSerializer, JobApplicationSerializer
 
 
-INITIAL_JOBS = [
-    {
-        "title": "Senior AI/ML Engineer",
-        "category": "AI & Machine Learning",
-        "type": "Full-time",
-        "date_posted": "05 Sep, 2026",
-        "vacancies": 2,
-        "description": "Drive end-to-end AI agent architectures and deep learning models at Autofya.",
-    },
-    {
-        "title": "Full Stack Next.js Developer",
-        "category": "Software Engineering",
-        "type": "Full-time",
-        "date_posted": "04 Sep, 2026",
-        "vacancies": 3,
-        "description": "Build modern, high-performance web applications using Next.js and React.",
-    },
-    {
-        "title": "Senior Cloud & DevOps Engineer",
-        "category": "Cloud & Infrastructure",
-        "type": "Full-time",
-        "date_posted": "02 Sep, 2026",
-        "vacancies": 1,
-        "description": "Architect scalable cloud infrastructure, Kubernetes clusters, and automated CI/CD pipelines.",
-    },
-    {
-        "title": "Product Designer (UI/UX)",
-        "category": "Product & Design",
-        "type": "Full-time",
-        "date_posted": "01 Sep, 2026",
-        "vacancies": 2,
-        "description": "Craft intuitive user experiences and state-of-the-art UI designs.",
-    },
-    {
-        "title": "Technical Project Manager",
-        "category": "Agile Leadership",
-        "type": "Full-time",
-        "date_posted": "28 Aug, 2026",
-        "vacancies": 1,
-        "description": "Lead cross-functional engineering teams and deliver client projects smoothly.",
-    },
-]
-
-
-def seed_initial_jobs():
-    if JobPosition.objects.count() == 0:
-        for job_data in INITIAL_JOBS:
-            JobPosition.objects.create(**job_data)
-
-
 class PublicJobListView(NewAPIView):
     permission_classes = [AllowAny]
     serializer_class = JobPositionSerializer
@@ -69,7 +19,6 @@ class PublicJobListView(NewAPIView):
 
     @swagger_auto_schema(tags=['Careers'])
     def get(self, request):
-        seed_initial_jobs()
         jobs = JobPosition.objects.filter(is_active=True)
         serializer = self.serializer_class(jobs, many=True)
         return Response({
@@ -110,7 +59,6 @@ class AdminJobListCreateView(NewAPIView):
 
     @swagger_auto_schema(tags=['Admin Panel - Careers'])
     def get(self, request):
-        seed_initial_jobs()
         search_query = request.query_params.get('search', '').strip()
         jobs = JobPosition.objects.all()
 

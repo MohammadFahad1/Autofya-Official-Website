@@ -22,56 +22,8 @@ interface JobPosition {
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.autofya.com";
 
-const initialPositions: JobPosition[] = [
-  {
-    id: "ai-ml-engineer",
-    title: "Senior AI/ML Engineer",
-    category: "AI & Machine Learning",
-    type: "Full-time",
-    datePosted: "05 Sep, 2026",
-    applicationDeadline: "15 Oct, 2026",
-    vacancies: 2,
-  },
-  {
-    id: "fullstack-developer",
-    title: "Full Stack Next.js Developer",
-    category: "Software Engineering",
-    type: "Full-time",
-    datePosted: "04 Sep, 2026",
-    applicationDeadline: "12 Oct, 2026",
-    vacancies: 3,
-  },
-  {
-    id: "cloud-devops-engineer",
-    title: "Senior Cloud & DevOps Engineer",
-    category: "Cloud & Infrastructure",
-    type: "Full-time",
-    datePosted: "02 Sep, 2026",
-    applicationDeadline: "10 Oct, 2026",
-    vacancies: 1,
-  },
-  {
-    id: "product-designer",
-    title: "Product Designer (UI/UX)",
-    category: "Product & Design",
-    type: "Full-time",
-    datePosted: "01 Sep, 2026",
-    applicationDeadline: "08 Oct, 2026",
-    vacancies: 2,
-  },
-  {
-    id: "project-manager",
-    title: "Technical Project Manager",
-    category: "Agile Leadership",
-    type: "Full-time",
-    datePosted: "28 Aug, 2026",
-    applicationDeadline: "05 Oct, 2026",
-    vacancies: 1,
-  },
-];
-
 export default function CareerPage() {
-  const [openPositions, setOpenPositions] = useState<JobPosition[]>(initialPositions);
+  const [openPositions, setOpenPositions] = useState<JobPosition[]>([]);
   const [loadingJobs, setLoadingJobs] = useState(true);
   const [selectedJob, setSelectedJob] = useState<JobPosition | null>(null);
   const [appliedSuccess, setAppliedSuccess] = useState(false);
@@ -97,7 +49,7 @@ export default function CareerPage() {
       const res = await fetch(`${API_BASE_URL}/careers/jobs/`);
       if (res.ok) {
         const data = await res.json();
-        if (data.success && data.jobs && data.jobs.length > 0) {
+        if (data.success && Array.isArray(data.jobs)) {
           setOpenPositions(data.jobs);
         }
       }
@@ -292,47 +244,71 @@ export default function CareerPage() {
           </div>
 
           <div className="space-y-4">
-            {openPositions.map((job) => (
-              <div
-                key={job.id}
-                className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/80 hover:shadow-md hover:border-[#00a2ad]/40 transition-all duration-300 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-              >
-                {/* LEFT: JOB TITLE & BADGES */}
-                <div className="flex-1">
-                  <h4 className="text-lg sm:text-xl font-extrabold text-[#0B1340] mb-2 group-hover:text-[#00a2ad] transition-colors">
-                    {job.title}
-                  </h4>
-                  <div className="flex flex-wrap items-center gap-2 text-xs">
-                    <span className="font-semibold text-slate-500">Autofya</span>
-                    <span className="text-slate-300">•</span>
-                    <span className="px-2.5 py-0.5 rounded-md bg-[#00a2ad]/10 text-[#00a2ad] font-bold">
-                      {job.category}
-                    </span>
-                    <span className="px-2.5 py-0.5 rounded-md bg-slate-100 text-slate-600 font-semibold">
-                      {job.type}
-                    </span>
-                  </div>
-                </div>
-
-                {/* MIDDLE: DATE & VACANCIES */}
-                <div className="flex sm:flex-col items-center sm:items-end justify-between text-xs text-slate-500 gap-1 border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-100">
-                  <div className="font-medium">{job.datePosted || job.date_posted}</div>
-                  <div className="font-bold text-[#0B1340]">
-                    No of Vacancies: {job.vacancies}
-                  </div>
-                </div>
-
-                {/* RIGHT: APPLY NOW BUTTON */}
-                <div className="pt-2 sm:pt-0">
-                  <button
-                    onClick={() => handleApplyClick(job)}
-                    className="w-full sm:w-auto px-6 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-white bg-[#00a2ad] hover:bg-[#008a94] active:scale-95 shadow-sm transition-all duration-200 cursor-pointer text-center"
-                  >
-                    Apply Now
-                  </button>
-                </div>
+            {loadingJobs ? (
+              <div className="bg-white rounded-2xl p-12 text-center text-slate-500 border border-slate-200">
+                <div className="w-8 h-8 border-4 border-[#00a2ad] border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+                <p className="text-sm font-semibold text-slate-600">Loading open job positions...</p>
               </div>
-            ))}
+            ) : openPositions.length > 0 ? (
+              openPositions.map((job) => (
+                <div
+                  key={job.id}
+                  className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/80 hover:shadow-md hover:border-[#00a2ad]/40 transition-all duration-300 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                >
+                  {/* LEFT: JOB TITLE & BADGES */}
+                  <div className="flex-1">
+                    <h4 className="text-lg sm:text-xl font-extrabold text-[#0B1340] mb-2 group-hover:text-[#00a2ad] transition-colors">
+                      {job.title}
+                    </h4>
+                    <div className="flex flex-wrap items-center gap-2 text-xs">
+                      <span className="font-semibold text-slate-500">Autofya</span>
+                      <span className="text-slate-300">•</span>
+                      <span className="px-2.5 py-0.5 rounded-md bg-[#00a2ad]/10 text-[#00a2ad] font-bold">
+                        {job.category}
+                      </span>
+                      <span className="px-2.5 py-0.5 rounded-md bg-slate-100 text-slate-600 font-semibold">
+                        {job.type}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* MIDDLE: DATE, DEADLINE & VACANCIES */}
+                  <div className="flex sm:flex-col items-center sm:items-end justify-between text-xs text-slate-500 gap-1 border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-100">
+                    <div className="font-medium">Posted: {job.datePosted || job.date_posted}</div>
+                    {(job.applicationDeadline || job.application_deadline) && (
+                      <div className="font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded text-[11px]">
+                        Deadline: {job.applicationDeadline || job.application_deadline}
+                      </div>
+                    )}
+                    <div className="font-bold text-[#0B1340]">
+                      No of Vacancies: {job.vacancies}
+                    </div>
+                  </div>
+
+                  {/* RIGHT: APPLY NOW BUTTON */}
+                  <div className="pt-2 sm:pt-0">
+                    <button
+                      onClick={() => handleApplyClick(job)}
+                      className="w-full sm:w-auto px-6 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-white bg-[#00a2ad] hover:bg-[#008a94] active:scale-95 shadow-sm transition-all duration-200 cursor-pointer text-center"
+                    >
+                      Apply Now
+                    </button>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="bg-white rounded-2xl p-12 text-center text-slate-500 border border-slate-200/80 shadow-xs">
+                <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3 text-xl">
+                  💼
+                </div>
+                <h4 className="text-base font-extrabold text-[#0B1340] mb-1">
+                  No Open Positions Currently
+                </h4>
+                <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                  We are not actively recruiting for new roles right now. Please check back later or send your CV to <a href="mailto:contact@autofya.com" className="text-[#00a2ad] font-bold hover:underline">contact@autofya.com</a>.
+                </p>
+              </div>
+            )}
           </div>
         </section>
 
