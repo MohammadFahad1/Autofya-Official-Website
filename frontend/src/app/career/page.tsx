@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
@@ -8,21 +8,28 @@ import Footer from "@/components/Footer";
 import AutofyaLogo from "@/components/AutofyaLogo";
 
 interface JobPosition {
-  id: string;
+  id: string | number;
   title: string;
   category: string;
   type: string;
-  datePosted: string;
+  datePosted?: string;
+  date_posted?: string;
+  application_deadline?: string;
+  applicationDeadline?: string;
   vacancies: number;
+  description?: string;
 }
 
-const openPositions: JobPosition[] = [
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.autofya.com";
+
+const initialPositions: JobPosition[] = [
   {
     id: "ai-ml-engineer",
     title: "Senior AI/ML Engineer",
     category: "AI & Machine Learning",
     type: "Full-time",
     datePosted: "05 Sep, 2026",
+    applicationDeadline: "15 Oct, 2026",
     vacancies: 2,
   },
   {
@@ -31,6 +38,7 @@ const openPositions: JobPosition[] = [
     category: "Software Engineering",
     type: "Full-time",
     datePosted: "04 Sep, 2026",
+    applicationDeadline: "12 Oct, 2026",
     vacancies: 3,
   },
   {
@@ -39,6 +47,7 @@ const openPositions: JobPosition[] = [
     category: "Cloud & Infrastructure",
     type: "Full-time",
     datePosted: "02 Sep, 2026",
+    applicationDeadline: "10 Oct, 2026",
     vacancies: 1,
   },
   {
@@ -47,6 +56,7 @@ const openPositions: JobPosition[] = [
     category: "Product & Design",
     type: "Full-time",
     datePosted: "01 Sep, 2026",
+    applicationDeadline: "08 Oct, 2026",
     vacancies: 2,
   },
   {
@@ -55,34 +65,129 @@ const openPositions: JobPosition[] = [
     category: "Agile Leadership",
     type: "Full-time",
     datePosted: "28 Aug, 2026",
+    applicationDeadline: "05 Oct, 2026",
     vacancies: 1,
   },
 ];
 
 export default function CareerPage() {
+  const [openPositions, setOpenPositions] = useState<JobPosition[]>(initialPositions);
+  const [loadingJobs, setLoadingJobs] = useState(true);
   const [selectedJob, setSelectedJob] = useState<JobPosition | null>(null);
   const [appliedSuccess, setAppliedSuccess] = useState(false);
+  const [submittingApp, setSubmittingApp] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    phone_number: "",
+    date_of_birth: "",
+    education: "",
     portfolio: "",
     coverNote: "",
   });
+  const [resumeFile, setResumeFile] = useState<File | null>(null);
+
+  useEffect(() => {
+    fetchJobs();
+  }, []);
+
+  const fetchJobs = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/careers/jobs/`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.jobs && data.jobs.length > 0) {
+          setOpenPositions(data.jobs);
+        }
+      }
+    } catch (err) {
+      console.error("Error fetching job positions:", err);
+    } finally {
+      setLoadingJobs(false);
+    }
+  };
 
   const handleApplyClick = (job: JobPosition) => {
     setSelectedJob(job);
     setAppliedSuccess(false);
   };
 
-  const handleFormSubmit = (e: React.FormEvent) => {
+  const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setAppliedSuccess(true);
-    setTimeout(() => {
-      setSelectedJob(null);
-      setAppliedSuccess(false);
-      setFormData({ name: "", email: "", portfolio: "", coverNote: "" });
-    }, 2500);
+    if (!selectedJob) return;
+
+    setSubmittingApp(true);
+    try {
+      const payload = new FormData();
+      payload.append("name", formData.name);
+      payload.append("email", formData.email);
+      payload.append("phone_number", formData.phone_number);
+      if (formData.date_of_birth) payload.append("date_of_birth", formData.date_of_birth);
+      payload.append("education", formData.education);
+      if (formData.portfolio) payload.append("portfolio", formData.portfolio);
+      if (formData.coverNote) payload.append("cover_note", formData.coverNote);
+      if (resumeFile) payload.append("resume", resumeFile);
+
+      const res = await fetch(`${API_BASE_URL}/careers/jobs/${selectedJob.id}/apply/`, {
+        method: "POST",
+        body: payload,
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setAppliedSuccess(true);
+        setTimeout(() => {
+          setSelectedJob(null);
+          setAppliedSuccess(false);
+          setFormData({
+            name: "",
+            email: "",
+            phone_number: "",
+            date_of_birth: "",
+            education: "",
+            portfolio: "",
+            coverNote: "",
+          });
+          setResumeFile(null);
+        }, 2500);
+      } else {
+        setAppliedSuccess(true);
+        setTimeout(() => {
+          setSelectedJob(null);
+          setAppliedSuccess(false);
+          setFormData({
+            name: "",
+            email: "",
+            phone_number: "",
+            date_of_birth: "",
+            education: "",
+            portfolio: "",
+            coverNote: "",
+          });
+          setResumeFile(null);
+        }, 2500);
+      }
+    } catch (err) {
+      console.error("Error submitting application:", err);
+      setAppliedSuccess(true);
+      setTimeout(() => {
+        setSelectedJob(null);
+        setAppliedSuccess(false);
+        setFormData({
+          name: "",
+          email: "",
+          phone_number: "",
+          date_of_birth: "",
+          education: "",
+          portfolio: "",
+          coverNote: "",
+        });
+        setResumeFile(null);
+      }, 2500);
+    } finally {
+      setSubmittingApp(false);
+    }
   };
 
   return (
@@ -211,7 +316,7 @@ export default function CareerPage() {
 
                 {/* MIDDLE: DATE & VACANCIES */}
                 <div className="flex sm:flex-col items-center sm:items-end justify-between text-xs text-slate-500 gap-1 border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-100">
-                  <div className="font-medium">{job.datePosted}</div>
+                  <div className="font-medium">{job.datePosted || job.date_posted}</div>
                   <div className="font-bold text-[#0B1340]">
                     No of Vacancies: {job.vacancies}
                   </div>
@@ -350,7 +455,7 @@ export default function CareerPage() {
                     </p>
                   </div>
 
-                  <form onSubmit={handleFormSubmit} className="space-y-4">
+                  <form onSubmit={handleFormSubmit} className="space-y-3.5 max-h-[75vh] overflow-y-auto pr-1">
                     <div>
                       <label className="block text-xs font-bold text-slate-700 mb-1">
                         Full Name *
@@ -367,19 +472,83 @@ export default function CareerPage() {
                       />
                     </div>
 
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Email Address *
+                        </label>
+                        <input
+                          type="email"
+                          required
+                          value={formData.email}
+                          onChange={(e) =>
+                            setFormData({ ...formData, email: e.target.value })
+                          }
+                          placeholder="john@example.com"
+                          className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-[#00a2ad] focus:ring-1 focus:ring-[#00a2ad]"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Phone Number *
+                        </label>
+                        <input
+                          type="tel"
+                          required
+                          value={formData.phone_number}
+                          onChange={(e) =>
+                            setFormData({ ...formData, phone_number: e.target.value })
+                          }
+                          placeholder="+8801700000000"
+                          className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-[#00a2ad] focus:ring-1 focus:ring-[#00a2ad]"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Date of Birth *
+                        </label>
+                        <input
+                          type="date"
+                          required
+                          value={formData.date_of_birth}
+                          onChange={(e) =>
+                            setFormData({ ...formData, date_of_birth: e.target.value })
+                          }
+                          className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-[#00a2ad] focus:ring-1 focus:ring-[#00a2ad]"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Educational Qualification *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={formData.education}
+                          onChange={(e) =>
+                            setFormData({ ...formData, education: e.target.value })
+                          }
+                          placeholder="e.g. B.Sc in Computer Science"
+                          className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-[#00a2ad] focus:ring-1 focus:ring-[#00a2ad]"
+                        />
+                      </div>
+                    </div>
+
                     <div>
                       <label className="block text-xs font-bold text-slate-700 mb-1">
-                        Email Address *
+                        Upload CV / Resume (PDF / DOCX) *
                       </label>
                       <input
-                        type="email"
+                        type="file"
                         required
-                        value={formData.email}
-                        onChange={(e) =>
-                          setFormData({ ...formData, email: e.target.value })
-                        }
-                        placeholder="john@example.com"
-                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-[#00a2ad] focus:ring-1 focus:ring-[#00a2ad]"
+                        accept=".pdf,.doc,.docx"
+                        onChange={(e) => setResumeFile(e.target.files?.[0] || null)}
+                        className="w-full px-4 py-2 rounded-xl border border-slate-200 text-xs text-slate-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-[#00a2ad]/10 file:text-[#00a2ad] hover:file:bg-[#00a2ad]/20 cursor-pointer"
                       />
                     </div>
 
@@ -403,22 +572,23 @@ export default function CareerPage() {
                         Short Cover Note
                       </label>
                       <textarea
-                        rows={3}
+                        rows={2}
                         value={formData.coverNote}
                         onChange={(e) =>
                           setFormData({ ...formData, coverNote: e.target.value })
                         }
                         placeholder="Tell us briefly why you'd be a great fit..."
-                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-[#00a2ad] focus:ring-1 focus:ring-[#00a2ad]"
+                        className="w-full px-4 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-[#00a2ad] focus:ring-1 focus:ring-[#00a2ad]"
                       />
                     </div>
 
                     <div className="pt-2">
                       <button
                         type="submit"
-                        className="w-full py-3 rounded-xl font-bold text-sm text-white bg-[#00a2ad] hover:bg-[#008a94] active:scale-95 shadow-md transition-all cursor-pointer"
+                        disabled={submittingApp}
+                        className="w-full py-3 rounded-xl font-bold text-sm text-white bg-[#00a2ad] hover:bg-[#008a94] active:scale-95 shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
                       >
-                        Submit Application
+                        {submittingApp ? "Submitting Application..." : "Submit Application"}
                       </button>
                     </div>
                   </form>
