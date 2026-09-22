@@ -73,6 +73,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/game-studio",
     "/insurtech",
     "/lms-development",
+    "/pharma",
     "/ml-ai-development",
     "/qa-testing-automation",
     "/sharepoint-services",
