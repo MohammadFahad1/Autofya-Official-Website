@@ -63,6 +63,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/business-intelligence",
     "/cloud-solutions",
     "/cyber-security",
+    "/fintech",
     "/data-engineering",
     "/data-migration",
     "/data-science-business-intelligence",

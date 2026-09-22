@@ -710,16 +710,30 @@ export default function Navbar() {
 
                   <div className="grid grid-cols-2 gap-x-16 gap-y-4 max-w-2xl">
                     <div className="space-y-3.5">
-                      {currentMenu.industriesCol1?.map((item, idx) => (
-                        <a
-                          key={idx}
-                          href={`#${item.toLowerCase().replace(/\s+/g, "-")}`}
-                          onClick={() => setActiveMegaMenu(null)}
-                          className="text-[16px] font-semibold text-slate-700 hover:text-[#00a2ad] transition-colors block py-0.5 cursor-pointer"
-                        >
-                          {item}
-                        </a>
-                      ))}
+                      {currentMenu.industriesCol1?.map((item, idx) => {
+                        if (item === "Fintech") {
+                          return (
+                            <Link
+                              key={idx}
+                              href="/fintech"
+                              onClick={() => setActiveMegaMenu(null)}
+                              className="text-[16px] font-semibold text-slate-700 hover:text-[#00a2ad] transition-colors block py-0.5 cursor-pointer"
+                            >
+                              {item}
+                            </Link>
+                          );
+                        }
+                        return (
+                          <a
+                            key={idx}
+                            href={`#${item.toLowerCase().replace(/\s+/g, "-")}`}
+                            onClick={() => setActiveMegaMenu(null)}
+                            className="text-[16px] font-semibold text-slate-700 hover:text-[#00a2ad] transition-colors block py-0.5 cursor-pointer"
+                          >
+                            {item}
+                          </a>
+                        );
+                      })}
                     </div>
 
                     <div className="space-y-3.5">
