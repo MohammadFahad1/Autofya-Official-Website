@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 import AutofyaLogo from "@/components/AutofyaLogo";
+import RichTextEditor from "@/components/RichTextEditor";
 
 interface UserItem {
   id: number;
@@ -2897,9 +2898,6 @@ console.log("Task Status:", result.status);</code></pre>
                           <h3 className="text-base font-extrabold text-white mt-1 leading-snug">
                             {batchSubject || "Subject Line Preview"}
                           </h3>
-                          <p className="text-[10px] text-white/90 font-bold uppercase tracking-wider mt-1">
-                            Official Announcement • Autofya Inc.
-                          </p>
                         </div>
 
                         {/* Message Body */}
@@ -2917,8 +2915,8 @@ console.log("Task Status:", result.status);</code></pre>
 
                         {/* Footer */}
                         <div className="bg-slate-50 p-4 border-t border-slate-100 text-center text-[10px] text-slate-400">
-                          <p className="font-bold text-slate-600">Autofya — Next-Gen AI & Software Engineering Platform</p>
-                          <p className="mt-1">&copy; 2026 Autofya Inc. All rights reserved.</p>
+                          <p className="font-bold text-slate-600">Autofya - Next-Gen AI & Software Engineering Platform</p>
+                          <p className="mt-1">&copy; {new Date().getFullYear()} Autofya Inc. All rights reserved.</p>
                         </div>
 
                       </div>
@@ -2940,9 +2938,6 @@ console.log("Task Status:", result.status);</code></pre>
                         <h2 className="text-xl font-extrabold text-white leading-snug">
                           {batchSubject || "Subject Line Preview"}
                         </h2>
-                        <p className="text-xs text-white/90 font-bold uppercase tracking-wider mt-1">
-                          Official Announcement • Autofya Inc.
-                        </p>
                       </div>
 
                       {/* Message Body */}
@@ -2965,9 +2960,9 @@ console.log("Task Status:", result.status);</code></pre>
 
                       {/* Footer */}
                       <div className="bg-slate-50 p-6 border-t border-slate-100 text-center text-xs text-slate-400">
-                        <p className="font-bold text-slate-600">Autofya — Next-Gen AI & Software Engineering Platform</p>
+                        <p className="font-bold text-slate-600">Autofya - Next-Gen AI & Software Engineering Platform</p>
                         <p className="mt-1 text-slate-500">Delivering scalable AI solutions, enterprise microservices, & automated workflows.</p>
-                        <p className="mt-2 text-[11px] text-slate-400">&copy; 2026 Autofya Inc. All rights reserved.</p>
+                        <p className="mt-2 text-[11px] text-slate-400">&copy; {new Date().getFullYear()} Autofya Inc. All rights reserved.</p>
                       </div>
 
                     </div>
@@ -3695,473 +3690,14 @@ console.log("Task Status:", result.status);</code></pre>
                 </div>
               </div>
 
-              {/* RICH TEXT EDITOR SECTION */}
-              <div className="border border-slate-800 rounded-2xl bg-slate-900 overflow-hidden shadow-2xl">
-                
-                {/* Top Header: View Modes & Stats & Quick Templates */}
-                <div className="p-3 bg-slate-950 border-b border-slate-800 space-y-3">
-                  
-                  <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800/80 pb-2.5">
-                    
-                    {/* Mode Switcher */}
-                    <div className="flex items-center bg-slate-900 p-1 rounded-xl border border-slate-800">
-                      <button
-                        type="button"
-                        onClick={() => setEditorTab("visual")}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                          editorTab === "visual" ? "bg-[#00a2ad] text-white shadow-md" : "text-slate-400 hover:text-white"
-                        }`}
-                      >
-                        <span>✏️ Full Editor</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setEditorTab("split")}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                          editorTab === "split" ? "bg-[#00a2ad] text-white shadow-md" : "text-slate-400 hover:text-white"
-                        }`}
-                      >
-                        <span>🌓 Split View</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setEditorTab("preview")}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                          editorTab === "preview" ? "bg-[#00a2ad] text-white shadow-md" : "text-slate-400 hover:text-white"
-                        }`}
-                      >
-                        <span>👁️ Full Preview</span>
-                      </button>
-                    </div>
-
-                    {/* Template Loader & Quick Actions */}
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={handleLoadSampleTemplate}
-                        className="px-2.5 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 text-xs font-bold transition-colors cursor-pointer flex items-center gap-1"
-                        title="Load pre-designed professional blog article layout"
-                      >
-                        <span>⚡ Load Sample Template</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (confirm("Clear all editor content?")) setArticleForm((prev) => ({ ...prev, content: "" }));
-                        }}
-                        className="px-2 py-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs font-semibold transition-colors cursor-pointer"
-                        title="Clear content"
-                      >
-                        Clear
-                      </button>
-                    </div>
-
-                    {/* Word & Reading Metrics */}
-                    <div className="flex items-center gap-4 text-[11px] text-slate-400 font-mono">
-                      <span>Chars: <strong className="text-white">{articleForm.content.length}</strong></span>
-                      <span>Words: <strong className="text-[#00a2ad]">{articleForm.content.trim() ? articleForm.content.trim().split(/\s+/).length : 0}</strong></span>
-                      <span>Read Time: <strong className="text-amber-400">{Math.max(1, Math.ceil((articleForm.content.trim() ? articleForm.content.trim().split(/\s+/).length : 0) / 200))} min</strong></span>
-                    </div>
-
-                  </div>
-
-                  {/* Multi-Row Category-Grouped Rich Toolbar */}
-                  {editorTab !== "preview" && (
-                    <div className="space-y-2 pt-1">
-                      
-                      {/* Toolbar Group 1: Typography & Alignments */}
-                      <div className="flex flex-wrap items-center gap-1.5 bg-slate-900/90 p-2 rounded-xl border border-slate-800/80">
-                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pr-1">Headings:</span>
-                        <button
-                          type="button"
-                          onClick={() => insertFormatTag("<h1>", "</h1>", "Main Article Title")}
-                          className="px-2.5 py-1 bg-slate-800 hover:bg-[#00a2ad] rounded text-xs font-bold text-white transition-colors"
-                          title="Heading 1"
-                        >
-                          H1
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => insertFormatTag("<h2>", "</h2>", "Section Title")}
-                          className="px-2.5 py-1 bg-slate-800 hover:bg-[#00a2ad] rounded text-xs font-bold text-white transition-colors"
-                          title="Heading 2"
-                        >
-                          H2
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => insertFormatTag("<h3>", "</h3>", "Subsection Title")}
-                          className="px-2.5 py-1 bg-slate-800 hover:bg-[#00a2ad] rounded text-xs font-bold text-white transition-colors"
-                          title="Heading 3"
-                        >
-                          H3
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => insertFormatTag("<h4>", "</h4>", "Minor Heading")}
-                          className="px-2.5 py-1 bg-slate-800 hover:bg-[#00a2ad] rounded text-xs font-bold text-white transition-colors"
-                          title="Heading 4"
-                        >
-                          H4
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => insertFormatTag("<p>", "</p>", "Paragraph text goes here...")}
-                          className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs font-bold text-slate-200 transition-colors"
-                          title="Standard Paragraph"
-                        >
-                          P
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => insertFormatTag('<p class="lead text-lg text-slate-200">', "</p>", "Introductory lead paragraph text...")}
-                          className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs font-bold text-cyan-400 transition-colors"
-                          title="Lead Intro Paragraph"
-                        >
-                          Lead P
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => insertFormatTag('<small class="text-xs text-slate-400">', "</small>", "Fine print / small note")}
-                          className="px-2 py-1 bg-slate-800 hover:bg-slate-700 rounded text-[11px] text-slate-400"
-                          title="Small Text"
-                        >
-                          Small
-                        </button>
-
-                        <div className="h-4 w-[1px] bg-slate-700 mx-1" />
-
-                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pr-1">Inline:</span>
-                        <button
-                          type="button"
-                          onClick={() => insertFormatTag("<strong>", "</strong>", "bold text")}
-                          className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs font-bold text-white transition-colors"
-                          title="Bold Text"
-                        >
-                          <strong>B</strong>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => insertFormatTag("<em>", "</em>", "italic text")}
-                          className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs font-bold text-white italic transition-colors"
-                          title="Italic Text"
-                        >
-                          <em>I</em>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => insertFormatTag("<u>", "</u>", "underlined text")}
-                          className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs font-bold text-white underline transition-colors"
-                          title="Underline Text"
-                        >
-                          <u>U</u>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => insertFormatTag("<s>", "</s>", "strikethrough text")}
-                          className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs font-bold text-white line-through transition-colors"
-                          title="Strikethrough"
-                        >
-                          <s>S</s>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => insertFormatTag('<code class="bg-slate-800 text-cyan-300 px-1.5 py-0.5 rounded font-mono text-xs">', "</code>", "const code = true;")}
-                          className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs font-mono text-cyan-300 transition-colors"
-                          title="Inline Code"
-                        >
-                          &lt;/&gt;
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => insertFormatTag("<mark>", "</mark>", "highlighted text")}
-                          className="px-2.5 py-1 bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 rounded text-xs font-bold transition-colors"
-                          title="Highlight Text"
-                        >
-                          Mark
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => insertFormatTag("<sub>", "</sub>", "2")}
-                          className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded text-[11px] font-bold text-slate-300"
-                          title="Subscript"
-                        >
-                          X<sub>2</sub>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => insertFormatTag("<sup>", "</sup>", "2")}
-                          className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded text-[11px] font-bold text-slate-300"
-                          title="Superscript"
-                        >
-                          X<sup>2</sup>
-                        </button>
-
-                        <div className="h-4 w-[1px] bg-slate-700 mx-1" />
-
-                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pr-1">Align:</span>
-                        <button
-                          type="button"
-                          onClick={() => insertFormatTag('<div class="text-left">', "</div>", "Left aligned content")}
-                          className="px-2 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs text-slate-300"
-                          title="Align Left"
-                        >
-                          ⬅ Left
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => insertFormatTag('<div class="text-center">', "</div>", "Center aligned content")}
-                          className="px-2 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs text-slate-300"
-                          title="Align Center"
-                        >
-                          ↔ Center
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => insertFormatTag('<div class="text-right">', "</div>", "Right aligned content")}
-                          className="px-2 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs text-slate-300"
-                          title="Align Right"
-                        >
-                          ➡️ Right
-                        </button>
-                      </div>
-
-                      {/* Toolbar Group 2: Lists, Quotes, Code Blocks & Tables */}
-                      <div className="flex flex-wrap items-center gap-1.5 bg-slate-900/90 p-2 rounded-xl border border-slate-800/80">
-                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pr-1">Lists & Blocks:</span>
-                        <button
-                          type="button"
-                          onClick={() => insertFormatTag("<ul class=\"list-disc pl-5 space-y-1 text-slate-300 my-4\">\n  <li>First list item</li>\n  <li>Second list item</li>\n</ul>")}
-                          className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs font-bold text-slate-200 transition-colors"
-                          title="Unordered Bullet List"
-                        >
-                          • Bullet List
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => insertFormatTag("<ol class=\"list-decimal pl-5 space-y-1 text-slate-300 my-4\">\n  <li>First step</li>\n  <li>Second step</li>\n</ol>")}
-                          className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs font-bold text-slate-200 transition-colors"
-                          title="Ordered Numbered List"
-                        >
-                          1. Numbered List
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => insertFormatTag('<ul class="space-y-2 my-4 text-xs text-slate-300">\n  <li class="flex items-center gap-2"><span class="text-emerald-400 font-bold">✓</span> Completed task item</li>\n  <li class="flex items-center gap-2"><span class="text-slate-500">○</span> Pending task item</li>\n</ul>')}
-                          className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs font-bold text-emerald-300 transition-colors"
-                          title="Task Checklist"
-                        >
-                          ☑ Task Checklist
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => insertFormatTag('<blockquote class="border-l-4 border-[#00a2ad] bg-slate-950 p-4 rounded-r-xl italic text-slate-200 my-6">\n  "Key quote or insight goes here..."\n</blockquote>')}
-                          className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs font-bold text-cyan-300 transition-colors"
-                          title="Blockquote"
-                        >
-                          &quot; Quote
-                        </button>
-                        <button
-                          type="button"
-                          onClick={handleInsertCodeBlock}
-                          className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs font-mono text-emerald-400 transition-colors"
-                          title="Formatted Code Block"
-                        >
-                          💻 Code Block
-                        </button>
-                        <button
-                          type="button"
-                          onClick={handleInsertTable}
-                          className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs font-bold text-blue-400 transition-colors"
-                          title="Generate Data Table"
-                        >
-                          📊 Table
-                        </button>
-
-                        <div className="h-4 w-[1px] bg-slate-700 mx-1" />
-
-                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pr-1">Callouts:</span>
-                        <button
-                          type="button"
-                          onClick={() => insertFormatTag('<div class="p-4 rounded-xl border-l-4 border-cyan-500 bg-cyan-950/20 my-4 shadow-sm">\n  <strong class="text-cyan-400 block mb-1">💡 Pro Tip</strong>\n  <p class="text-xs text-slate-300">Important tip details go here...</p>\n</div>')}
-                          className="px-2 py-1 bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30 rounded text-xs font-bold transition-colors"
-                          title="Pro Tip Box"
-                        >
-                          💡 Tip Box
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => insertFormatTag('<div class="p-4 rounded-xl border-l-4 border-amber-500 bg-amber-950/20 my-4 shadow-sm">\n  <strong class="text-amber-400 block mb-1">⚠️ Warning</strong>\n  <p class="text-xs text-slate-300">Cautionary details go here...</p>\n</div>')}
-                          className="px-2 py-1 bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 rounded text-xs font-bold transition-colors"
-                          title="Warning Box"
-                        >
-                          ⚠️ Warning
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => insertFormatTag('<div class="p-4 rounded-xl border-l-4 border-emerald-500 bg-emerald-950/20 my-4 shadow-sm">\n  <strong class="text-emerald-400 block mb-1">✅ Success Note</strong>\n  <p class="text-xs text-slate-300">Verified solution details...</p>\n</div>')}
-                          className="px-2 py-1 bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 rounded text-xs font-bold transition-colors"
-                          title="Success Box"
-                        >
-                          ✅ Success
-                        </button>
-                        <button
-                          type="button"
-                          onClick={handleInsertAccordion}
-                          className="px-2 py-1 bg-purple-500/20 text-purple-300 hover:bg-purple-500/30 rounded text-xs font-bold transition-colors"
-                          title="Collapsible FAQ Accordion"
-                        >
-                          ❓ FAQ Accordion
-                        </button>
-                        <button
-                          type="button"
-                          onClick={handleInsertStatsCard}
-                          className="px-2 py-1 bg-slate-800 text-amber-300 hover:bg-slate-700 rounded text-xs font-bold transition-colors"
-                          title="3-Column Metrics Grid"
-                        >
-                          📈 Stat Cards
-                        </button>
-                      </div>
-
-                      {/* Toolbar Group 3: Links, Embeds & CTAs */}
-                      <div className="flex flex-wrap items-center gap-1.5 bg-slate-900/90 p-2 rounded-xl border border-slate-800/80">
-                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pr-1">Media & Embeds:</span>
-                        <button
-                          type="button"
-                          onClick={handleInsertLink}
-                          className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs font-bold text-cyan-400 transition-colors"
-                          title="Insert Hyperlink"
-                        >
-                          🔗 Hyperlink
-                        </button>
-                        <button
-                          type="button"
-                          onClick={handleInsertImageFigure}
-                          className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs font-bold text-amber-400 transition-colors"
-                          title="Insert Image Figure with Caption"
-                        >
-                          🖼️ Figure Image
-                        </button>
-                        <button
-                          type="button"
-                          onClick={handleInsertVideoEmbed}
-                          className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs font-bold text-rose-400 transition-colors"
-                          title="Insert YouTube / Video Player"
-                        >
-                          📹 Video Embed
-                        </button>
-
-                        <div className="h-4 w-[1px] bg-slate-700 mx-1" />
-
-                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider pr-1">Actions & Dividers:</span>
-                        <button
-                          type="button"
-                          onClick={handleInsertCTAButton}
-                          className="px-2.5 py-1 bg-[#00a2ad] hover:bg-[#008790] rounded text-xs font-bold text-white transition-colors shadow"
-                          title="Insert Primary Call To Action Button"
-                        >
-                          🔘 Primary CTA Button
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => insertFormatTag('<hr class="my-8 border-slate-800" />')}
-                          className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs font-bold text-slate-300 transition-colors"
-                          title="Horizontal Divider"
-                        >
-                          — Divider Line
-                        </button>
-                      </div>
-
-                    </div>
-                  )}
-
-                </div>
-
-                {/* Editor Content Area */}
-                {editorTab === "visual" && (
-                  <textarea
-                    ref={editorTextareaRef}
-                    rows={16}
-                    required
-                    value={articleForm.content}
-                    onChange={(e) => setArticleForm({ ...articleForm, content: e.target.value })}
-                    placeholder="Compose rich HTML article content here... Highlighting text and clicking formatting toolbar buttons will wrap selected text directly."
-                    className="w-full p-4 bg-slate-900 text-slate-100 font-mono text-xs leading-relaxed focus:outline-none focus:ring-1 focus:ring-[#00a2ad]"
-                  />
-                )}
-
-                {editorTab === "split" && (
-                  <div className="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-slate-800 min-h-[420px]">
-                    <div className="p-3 bg-slate-900 flex flex-col">
-                      <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center justify-between">
-                        <span>HTML Editor Input</span>
-                        <span className="text-slate-500 font-mono text-[10px]">Real-time Sync</span>
-                      </div>
-                      <textarea
-                        ref={editorTextareaRef}
-                        rows={16}
-                        required
-                        value={articleForm.content}
-                        onChange={(e) => setArticleForm({ ...articleForm, content: e.target.value })}
-                        placeholder="Compose HTML content..."
-                        className="w-full flex-1 p-3 bg-slate-950 text-slate-100 font-mono text-xs leading-relaxed rounded-xl border border-slate-800/80 focus:outline-none focus:ring-1 focus:ring-[#00a2ad]"
-                      />
-                    </div>
-                    <div className="p-4 bg-[#070D1E] overflow-y-auto max-h-[500px]">
-                      <div className="text-[11px] font-bold text-[#00a2ad] uppercase tracking-wider mb-3 flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-[#00a2ad] animate-pulse"></span>
-                        Live Preview Output
-                      </div>
-                      <div
-                        dangerouslySetInnerHTML={{ __html: articleForm.content }}
-                        className="prose prose-invert max-w-none 
-                          [&>h1]:text-2xl [&>h1]:font-bold [&>h1]:text-white [&>h1]:mt-6 [&>h1]:mb-3
-                          [&>h2]:text-xl [&>h2]:font-bold [&>h2]:text-white [&>h2]:mt-5 [&>h2]:mb-2.5 [&>h2]:border-b [&>h2]:border-slate-800 [&>h2]:pb-1
-                          [&>h3]:text-lg [&>h3]:font-bold [&>h3]:text-[#00a2ad] [&>h3]:mt-4 [&>h3]:mb-2
-                          [&>h4]:text-base [&>h4]:font-bold [&>h4]:text-slate-300 [&>h4]:mt-3 [&>h4]:mb-2
-                          [&>p]:text-slate-300 [&>p]:leading-relaxed [&>p]:mb-3 [&>p]:text-xs
-                          [&>ul]:list-disc [&>ul]:pl-5 [&>ul]:space-y-1 [&>ul]:text-slate-300 [&>ul]:mb-3 [&>ul]:text-xs
-                          [&>ol]:list-decimal [&>ol]:pl-5 [&>ol]:space-y-1 [&>ol]:text-slate-300 [&>ol]:mb-3 [&>ol]:text-xs
-                          [&>blockquote]:border-l-4 [&>blockquote]:border-[#00a2ad] [&>blockquote]:bg-[#0F172A] [&>blockquote]:p-3 [&>blockquote]:rounded-r-xl [&>blockquote]:italic [&>blockquote]:text-slate-200 [&>blockquote]:my-3 [&>blockquote]:text-xs
-                          [&>img]:rounded-xl [&>img]:my-3 [&>img]:max-h-56 [&>img]:object-cover
-                          [&>mark]:bg-amber-400 [&>mark]:text-slate-900 [&>mark]:px-1 [&>mark]:rounded
-                          [&>pre]:bg-slate-950 [&>pre]:p-3 [&>pre]:rounded-xl [&>pre]:border [&>pre]:border-slate-800 [&>pre]:my-3 [&>pre]:overflow-x-auto [&>pre]:text-[11px]
-                          [&>table]:w-full [&>table]:border-collapse [&>table]:my-3 [&>table]:text-[11px]
-                          [&>table_th]:border [&>table_th]:border-slate-700 [&>table_th]:p-2 [&>table_th]:bg-slate-800 [&>table_th]:text-cyan-400
-                          [&>table_td]:border [&>table_td]:border-slate-800 [&>table_td]:p-2"
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {editorTab === "preview" && (
-                  <div className="p-6 bg-[#070D1E] min-h-[420px] border-t border-slate-800 text-slate-200">
-                    <div className="text-xs text-[#00a2ad] font-bold mb-4 uppercase tracking-wider flex items-center gap-2 border-b border-slate-800 pb-3">
-                      <span className="w-2 h-2 rounded-full bg-[#00a2ad] animate-pulse"></span>
-                      Full Real-Time Article HTML Output Preview
-                    </div>
-                    <div
-                      dangerouslySetInnerHTML={{ __html: articleForm.content }}
-                      className="prose prose-invert max-w-none 
-                        [&>h1]:text-3xl [&>h1]:font-extrabold [&>h1]:text-white [&>h1]:mt-8 [&>h1]:mb-4
-                        [&>h2]:text-2xl [&>h2]:font-bold [&>h2]:text-white [&>h2]:mt-8 [&>h2]:mb-3 [&>h2]:border-b [&>h2]:border-slate-800 [&>h2]:pb-2
-                        [&>h3]:text-xl [&>h3]:font-bold [&>h3]:text-[#00a2ad] [&>h3]:mt-6 [&>h3]:mb-3
-                        [&>h4]:text-lg [&>h4]:font-bold [&>h4]:text-slate-200 [&>h4]:mt-4 [&>h4]:mb-2
-                        [&>p]:text-slate-300 [&>p]:leading-relaxed [&>p]:mb-4 [&>p]:text-sm
-                        [&>ul]:list-disc [&>ul]:pl-5 [&>ul]:space-y-1.5 [&>ul]:text-slate-300 [&>ul]:mb-4 [&>ul]:text-sm
-                        [&>ol]:list-decimal [&>ol]:pl-5 [&>ol]:space-y-1.5 [&>ol]:text-slate-300 [&>ol]:mb-4 [&>ol]:text-sm
-                        [&>blockquote]:border-l-4 [&>blockquote]:border-[#00a2ad] [&>blockquote]:bg-[#0F172A] [&>blockquote]:p-4 [&>blockquote]:rounded-r-2xl [&>blockquote]:italic [&>blockquote]:text-slate-200 [&>blockquote]:my-6 [&>blockquote]:text-sm
-                        [&>img]:rounded-2xl [&>img]:my-6 [&>img]:max-h-96 [&>img]:object-cover [&>img]:shadow-xl
-                        [&>mark]:bg-amber-400 [&>mark]:text-slate-900 [&>mark]:px-1.5 [&>mark]:py-0.5 [&>mark]:rounded
-                        [&>pre]:bg-slate-950 [&>pre]:p-4 [&>pre]:rounded-2xl [&>pre]:border [&>pre]:border-slate-800 [&>pre]:my-6 [&>pre]:overflow-x-auto [&>pre]:shadow-lg
-                        [&>table]:w-full [&>table]:border-collapse [&>table]:my-6 [&>table]:text-xs [&>table]:shadow-lg
-                        [&>table_th]:border [&>table_th]:border-slate-700 [&>table_th]:p-3 [&>table_th]:bg-slate-800 [&>table_th]:text-cyan-400
-                        [&>table_td]:border [&>table_td]:border-slate-800 [&>table_td]:p-3"
-                    />
-                  </div>
-                )}
-
-              </div>
+              {/* RICH TEXT EDITOR SECTION WITH SMART CHATGPT & WEB PASTE */}
+              <RichTextEditor
+                value={articleForm.content}
+                onChange={(newContent) => setArticleForm((prev) => ({ ...prev, content: newContent }))}
+                label="Article Body Content Editor"
+                placeholder="Compose blog article here or paste content directly from ChatGPT, Notion, Word, or web pages..."
+                minHeight="420px"
+              />
 
               {/* Modal Action Buttons */}
               <div className="pt-4 flex items-center justify-end gap-3 border-t border-slate-800">
@@ -4321,138 +3857,13 @@ console.log("Task Status:", result.status);</code></pre>
               </div>
 
               <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">
-                    Detailed Job Description & Requirements (Rich Text HTML)
-                  </label>
-                  <div className="flex items-center gap-1 bg-slate-900 p-1 rounded-lg border border-slate-800">
-                    <button
-                      type="button"
-                      onClick={() => setJobDescTab("edit")}
-                      className={`px-3 py-1 rounded-md text-xs font-bold transition-all cursor-pointer ${
-                        jobDescTab === "edit"
-                          ? "bg-[#00a2ad] text-white shadow-xs"
-                          : "text-slate-400 hover:text-slate-200"
-                      }`}
-                    >
-                      ✏️ Edit
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setJobDescTab("preview")}
-                      className={`px-3 py-1 rounded-md text-xs font-bold transition-all cursor-pointer ${
-                        jobDescTab === "preview"
-                          ? "bg-[#00a2ad] text-white shadow-xs"
-                          : "text-slate-400 hover:text-slate-200"
-                      }`}
-                    >
-                      👁️ Preview
-                    </button>
-                  </div>
-                </div>
-
-                {jobDescTab === "edit" ? (
-                  <div className="space-y-2">
-                    {/* TOOLBAR */}
-                    <div className="flex flex-wrap items-center gap-1.5 p-2 bg-slate-900/90 border border-slate-800 rounded-xl text-xs">
-                      <button
-                        type="button"
-                        onClick={() => insertJobFormatTag("<b>", "</b>")}
-                        className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded cursor-pointer"
-                        title="Bold"
-                      >
-                        B
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => insertJobFormatTag("<i>", "</i>")}
-                        className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 italic font-serif rounded cursor-pointer"
-                        title="Italic"
-                      >
-                        I
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => insertJobFormatTag("<h2>", "</h2>")}
-                        className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-cyan-400 font-bold rounded cursor-pointer"
-                        title="Heading 2"
-                      >
-                        H2
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => insertJobFormatTag("<h3>", "</h3>")}
-                        className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-cyan-400 font-bold rounded cursor-pointer"
-                        title="Heading 3"
-                      >
-                        H3
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => insertJobFormatTag("<ul>\n  <li>", "</li>\n  <li>Item 2</li>\n</ul>")}
-                        className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold rounded cursor-pointer"
-                        title="Bullet List"
-                      >
-                        • Bullet List
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => insertJobFormatTag("<ol>\n  <li>", "</li>\n  <li>Step 2</li>\n</ol>")}
-                        className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold rounded cursor-pointer"
-                        title="Numbered List"
-                      >
-                        1. Numbered List
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => insertJobFormatTag("<blockquote>", "</blockquote>")}
-                        className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-amber-300 font-semibold rounded cursor-pointer"
-                        title="Callout Box"
-                      >
-                        ❝ Quote / Box
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => insertJobFormatTag("<mark>", "</mark>")}
-                        className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-yellow-400 font-semibold rounded cursor-pointer"
-                        title="Highlight"
-                      >
-                        Highlight
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => insertJobFormatTag("<hr/>\n")}
-                        className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-400 font-semibold rounded cursor-pointer"
-                        title="Horizontal Line"
-                      >
-                        ― Line
-                      </button>
-                    </div>
-
-                    <textarea
-                      id="job_description_editor"
-                      rows={8}
-                      value={jobForm.description}
-                      onChange={(e) => setJobForm({ ...jobForm, description: e.target.value })}
-                      placeholder="Write detailed responsibilities, key requirements, tech stack, and benefits using HTML tags..."
-                      className="w-full p-4 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs font-mono leading-relaxed focus:outline-none focus:border-[#00a2ad]"
-                    />
-                  </div>
-                ) : (
-                  <div
-                    className="w-full p-4 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs leading-relaxed min-h-[220px] max-h-[350px] overflow-y-auto
-                      [&>h2]:text-base [&>h2]:font-bold [&>h2]:text-cyan-400 [&>h2]:mt-3 [&>h2]:mb-1.5 [&>h2]:border-b [&>h2]:border-slate-800 [&>h2]:pb-1
-                      [&>h3]:text-sm [&>h3]:font-bold [&>h3]:text-[#00a2ad] [&>h3]:mt-2.5 [&>h3]:mb-1
-                      [&>p]:text-slate-300 [&>p]:leading-relaxed [&>p]:mb-2.5
-                      [&>ul]:list-disc [&>ul]:pl-5 [&>ul]:space-y-1 [&>ul]:text-slate-300 [&>ul]:mb-3
-                      [&>ol]:list-decimal [&>ol]:pl-5 [&>ol]:space-y-1 [&>ol]:text-slate-300 [&>ol]:mb-3
-                      [&>blockquote]:border-l-4 [&>blockquote]:border-[#00a2ad] [&>blockquote]:bg-slate-950 [&>blockquote]:p-3 [&>blockquote]:rounded-r-lg [&>blockquote]:italic [&>blockquote]:text-slate-300 [&>blockquote]:my-3
-                      [&>mark]:bg-amber-400 [&>mark]:text-slate-900 [&>mark]:px-1.5 [&>mark]:py-0.5 [&>mark]:rounded"
-                    dangerouslySetInnerHTML={{
-                      __html: jobForm.description || "<p class='text-slate-500 italic'>No description text entered yet. Switch to Edit tab to write job details.</p>",
-                    }}
-                  />
-                )}
+                <RichTextEditor
+                  value={jobForm.description}
+                  onChange={(newDesc) => setJobForm((prev) => ({ ...prev, description: newDesc }))}
+                  label="Detailed Job Description & Requirements"
+                  placeholder="Write detailed responsibilities, key requirements, tech stack, and benefits or paste directly from ChatGPT..."
+                  minHeight="260px"
+                />
               </div>
 
               <div className="flex items-center gap-3 pt-2">
