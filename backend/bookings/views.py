@@ -27,6 +27,7 @@ class AdminSendBatchEmailView(NewAPIView):
         message = request.data.get('message', '').strip()
         button_text = request.data.get('button_text', '').strip()
         button_url = request.data.get('button_url', '').strip()
+        from_email = request.data.get('from_email', '').strip()
 
         # Handle recipients passed as string (comma or newline separated) or array
         if isinstance(recipients, str):
@@ -45,7 +46,7 @@ class AdminSendBatchEmailView(NewAPIView):
             }, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            send_marketing_batch_email.delay(recipients, subject, message, button_text, button_url)
+            send_marketing_batch_email.delay(recipients, subject, message, button_text, button_url, from_email)
             return Response({
                 'success': True,
                 'message': f'Marketing email queued successfully for {len(recipients)} recipient(s).',
@@ -53,7 +54,7 @@ class AdminSendBatchEmailView(NewAPIView):
             }, status=status.HTTP_200_OK)
         except Exception as e:
             try:
-                result = send_marketing_batch_email(recipients, subject, message, button_text, button_url)
+                result = send_marketing_batch_email(recipients, subject, message, button_text, button_url, from_email)
                 return Response({
                     'success': True,
                     'message': f'Emails sent directly. Result: {result}',
@@ -207,6 +208,7 @@ class AdminSendBookingEmailView(NewAPIView):
         booking = get_object_or_404(Booking, pk=pk)
         subject = request.data.get('subject', '').strip()
         message = request.data.get('message', '').strip()
+        from_email = request.data.get('from_email', '').strip()
 
         if not subject or not message:
             return Response({
@@ -215,7 +217,7 @@ class AdminSendBookingEmailView(NewAPIView):
             }, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            send_custom_booking_email.delay(booking.id, subject, message)
+            send_custom_booking_email.delay(booking.id, subject, message, from_email)
             return Response({
                 'success': True,
                 'message': f'Email scheduled successfully for {booking.email}.'

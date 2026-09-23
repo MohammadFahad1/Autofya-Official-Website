@@ -167,6 +167,7 @@ export default function AdminDashboardPage() {
   const [activeTab, setActiveTab] = useState<"overview" | "users" | "bookings" | "analytics" | "blogs" | "careers" | "marketing" | "settings" | "profile">("overview");
 
   // Batch Marketing Email Broadcast State
+  const [batchFromEmail, setBatchFromEmail] = useState("info@autofya.com");
   const [batchRecipients, setBatchRecipients] = useState("");
   const [batchSubject, setBatchSubject] = useState("");
   const [batchMessage, setBatchMessage] = useState("");
@@ -190,6 +191,7 @@ export default function AdminDashboardPage() {
 
   // Send Direct Email State
   const [emailingBooking, setEmailingBooking] = useState<BookingItem | null>(null);
+  const [customFromEmail, setCustomFromEmail] = useState("info@autofya.com");
   const [emailSubject, setEmailSubject] = useState("");
   const [emailMessage, setEmailMessage] = useState("");
   const [isSendingEmail, setIsSendingEmail] = useState(false);
@@ -1160,6 +1162,7 @@ console.log("Task Status:", result.status);</code></pre>
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
+          from_email: customFromEmail,
           subject: emailSubject,
           message: emailMessage,
         }),
@@ -1213,6 +1216,7 @@ console.log("Task Status:", result.status);</code></pre>
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
+          from_email: batchFromEmail,
           recipients: batchRecipients,
           subject: batchSubject,
           message: batchMessage,
@@ -2761,6 +2765,23 @@ console.log("Task Status:", result.status);</code></pre>
                   {/* Left Column: Composer Controls */}
                   <form onSubmit={handleSendBatchEmail} className="lg:col-span-7 bg-[#0F172A] p-6 sm:p-8 rounded-2xl border border-slate-800 shadow-xl space-y-6">
                     
+                    {/* From Email Selector */}
+                    <div>
+                      <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                        Send From (Sender Email Address) *
+                      </label>
+                      <select
+                        value={batchFromEmail}
+                        onChange={(e) => setBatchFromEmail(e.target.value)}
+                        className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs font-semibold focus:outline-none focus:border-[#00a2ad]"
+                      >
+                        <option value="info@autofya.com">info@autofya.com (Autofya Inc. — Official System)</option>
+                        <option value="support@autofya.com">support@autofya.com (Autofya Support Desk)</option>
+                        <option value="ceo.kamrul@autofya.com">ceo.kamrul@autofya.com (Kamrul Hasan — CEO)</option>
+                        <option value="cto.fahad@autofya.com">cto.fahad@autofya.com (Md. Fahad Monshi — CTO)</option>
+                      </select>
+                    </div>
+
                     {/* Recipients */}
                     <div>
                       <div className="flex items-center justify-between mb-1.5">
@@ -3180,6 +3201,22 @@ console.log("Task Status:", result.status);</code></pre>
             </div>
 
             <form onSubmit={handleSendCustomEmail} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-300 uppercase mb-1.5">
+                  Send From (Sender Email) *
+                </label>
+                <select
+                  value={customFromEmail}
+                  onChange={(e) => setCustomFromEmail(e.target.value)}
+                  className="w-full p-3 bg-slate-900 border border-slate-800 rounded-xl text-white text-xs focus:outline-none focus:border-emerald-500"
+                >
+                  <option value="info@autofya.com">info@autofya.com (Autofya Inc. — System)</option>
+                  <option value="support@autofya.com">support@autofya.com (Autofya Support)</option>
+                  <option value="ceo.kamrul@autofya.com">ceo.kamrul@autofya.com (Kamrul Hasan — CEO)</option>
+                  <option value="cto.fahad@autofya.com">cto.fahad@autofya.com (Md. Fahad Monshi — CTO)</option>
+                </select>
+              </div>
+
               <div>
                 <label className="block text-xs font-bold text-slate-300 uppercase mb-1.5">
                   Subject

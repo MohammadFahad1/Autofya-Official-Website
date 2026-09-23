@@ -78,13 +78,13 @@ def send_booking_status_update_email(booking_id, old_status, new_status):
         return f"Error sending booking status update email: {e}"
 
 @shared_task
-def send_custom_booking_email(booking_id, subject, message):
+def send_custom_booking_email(booking_id, subject, message, from_email=None):
     try:
         booking = Booking.objects.get(id=booking_id)
     except Booking.DoesNotExist:
         return f"Booking with id {booking_id} does not exist."
 
-    from_email = settings.EMAIL_HOST_USER or "no-reply@autofya.com"
+    sender = (from_email and from_email.strip()) or getattr(settings, 'EMAIL_HOST_USER', None) or "info@autofya.com"
 
     # Recipients: Client email + any additional guest emails
     recipients = [booking.email]
@@ -105,19 +105,19 @@ def send_custom_booking_email(booking_id, subject, message):
         msg = EmailMultiAlternatives(
             subject,
             text_content,
-            from_email,
+            sender,
             recipients
         )
         msg.attach_alternative(html_content, "text/html")
         msg.send()
-        return f"Custom booking email sent to {', '.join(recipients)}"
+        return f"Custom booking email sent to {', '.join(recipients)} from {sender}"
     except Exception as e:
         return f"Error sending custom booking email: {e}"
 
 
 @shared_task
-def send_marketing_batch_email(recipients, subject, message, button_text=None, button_url=None):
-    from_email = getattr(settings, 'EMAIL_HOST_USER', None) or "no-reply@autofya.com"
+def send_marketing_batch_email(recipients, subject, message, button_text=None, button_url=None, from_email=None):
+    sender = (from_email and from_email.strip()) or getattr(settings, 'EMAIL_HOST_USER', None) or "info@autofya.com"
     
     if isinstance(recipients, str):
         recipients = [r.strip() for r in recipients.split(',') if r.strip()]
@@ -142,7 +142,7 @@ def send_marketing_batch_email(recipients, subject, message, button_text=None, b
             msg = EmailMultiAlternatives(
                 subject,
                 text_content,
-                from_email,
+                sender,
                 [recipient]
             )
             msg.attach_alternative(html_content, "text/html")
@@ -151,6 +151,6 @@ def send_marketing_batch_email(recipients, subject, message, button_text=None, b
         except Exception as e:
             errors.append(f"{recipient}: {str(e)}")
 
-    return f"Batch marketing email sent to {sent_count}/{len(recipients)} recipients. Errors: {errors}"
+    return f"Batch marketing email sent from {sender} to {sent_count}/{len(recipients)} recipients. Errors: {errors}"
 
 
