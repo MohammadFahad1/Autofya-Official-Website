@@ -580,10 +580,10 @@ export default function CaseStudiesPage() {
                   House 6, Road 2, Block B, Niketan, Gulshan-1, Dhaka-1212
                 </p>
                 <a
-                  href="mailto:sales@autofya.com"
+                  href="mailto:info@autofya.com"
                   className="text-xs font-semibold text-[#00a2ad] hover:underline block mt-1"
                 >
-                  sales@autofya.com
+                  info@autofya.com
                 </a>
               </div>
             </div>
@@ -599,10 +599,10 @@ export default function CaseStudiesPage() {
                   1209 North Orange St, Wilmington, DE 19801
                 </p>
                 <a
-                  href="mailto:sales@autofya.com"
+                  href="mailto:info@autofya.com"
                   className="text-xs font-semibold text-[#00a2ad] hover:underline block mt-1"
                 >
-                  sales@autofya.com
+                  info@autofya.com
                 </a>
               </div>
             </div>
@@ -637,10 +637,10 @@ export default function CaseStudiesPage() {
                   DSO-IFZA-9234, Dubai Silicon Oasis, Dubai
                 </p>
                 <a
-                  href="mailto:sales@autofya.com"
+                  href="mailto:info@autofya.com"
                   className="text-xs font-semibold text-[#00a2ad] hover:underline block mt-1"
                 >
-                  sales@autofya.com
+                  info@autofya.com
                 </a>
               </div>
             </div>
@@ -656,10 +656,10 @@ export default function CaseStudiesPage() {
                   Level 15, Menara Sunrise, Mont Kiara, 50480 Kuala Lumpur
                 </p>
                 <a
-                  href="mailto:sales@autofya.com"
+                  href="mailto:info@autofya.com"
                   className="text-xs font-semibold text-[#00a2ad] hover:underline block mt-1"
                 >
-                  sales@autofya.com
+                  info@autofya.com
                 </a>
               </div>
             </div>
@@ -675,10 +675,10 @@ export default function CaseStudiesPage() {
                   Shibuya Business Tower, 1-16-14 Shibuya, Tokyo 150-0002
                 </p>
                 <a
-                  href="mailto:sales@autofya.com"
+                  href="mailto:info@autofya.com"
                   className="text-xs font-semibold text-[#00a2ad] hover:underline block mt-1"
                 >
-                  sales@autofya.com
+                  info@autofya.com
                 </a>
               </div>
             </div>

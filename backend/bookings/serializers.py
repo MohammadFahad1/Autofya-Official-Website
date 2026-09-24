@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from bookings.models import Booking
+from bookings.models import Booking, ContactSubmission
 
 class BookingCreateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -18,3 +18,21 @@ class BookingAdminSerializer(serializers.ModelSerializer):
         model = Booking
         fields = '__all__'
         read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+class ContactSubmissionCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ContactSubmission
+        fields = [
+            'id', 'full_name', 'email', 'phone', 'company_name',
+            'industry', 'service', 'budget', 'project_details', 'created_at'
+        ]
+        read_only_fields = ['id', 'created_at']
+
+
+class ContactSubmissionAdminSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ContactSubmission
+        fields = '__all__'
+        read_only_fields = ['id', 'created_at', 'updated_at']
+

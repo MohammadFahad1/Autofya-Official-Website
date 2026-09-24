@@ -59,6 +59,30 @@ interface BookingStatsData {
   cancelled_bookings: number;
 }
 
+interface ContactSubmissionItem {
+  id: number;
+  full_name: string;
+  email: string;
+  phone: string | null;
+  company_name: string | null;
+  industry: string | null;
+  service: string | null;
+  budget: string | null;
+  project_details: string;
+  status: "new" | "replied" | "archived";
+  admin_reply: string | null;
+  replied_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+interface ContactStatsData {
+  total_contacts: number;
+  new_contacts: number;
+  replied_contacts: number;
+  archived_contacts: number;
+}
+
 interface AnalyticsStats {
   total_pageviews: number;
   unique_visitors: number;
@@ -164,7 +188,22 @@ export default function AdminDashboardPage() {
   const router = useRouter();
 
   // Navigation Tabs State
-  const [activeTab, setActiveTab] = useState<"overview" | "users" | "bookings" | "analytics" | "blogs" | "careers" | "marketing" | "settings" | "profile">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "users" | "bookings" | "contacts" | "analytics" | "blogs" | "careers" | "marketing" | "settings" | "profile">("overview");
+
+  // Contact Submission Data State
+  const [contacts, setContacts] = useState<ContactSubmissionItem[]>([]);
+  const [contactStats, setContactStats] = useState<ContactStatsData | null>(null);
+  const [contactSearch, setContactSearch] = useState("");
+  const [contactStatusFilter, setContactStatusFilter] = useState<string>("all");
+  const [selectedContact, setSelectedContact] = useState<ContactSubmissionItem | null>(null);
+  const [deletingContact, setDeletingContact] = useState<ContactSubmissionItem | null>(null);
+
+  // Send Direct Contact Reply State
+  const [emailingContact, setEmailingContact] = useState<ContactSubmissionItem | null>(null);
+  const [contactReplyFromEmail, setContactReplyFromEmail] = useState("support@autofya.com");
+  const [contactReplySubject, setContactReplySubject] = useState("");
+  const [contactReplyMessage, setContactReplyMessage] = useState("");
+  const [isSendingContactReply, setIsSendingContactReply] = useState(false);
 
   // Batch Marketing Email Broadcast State
   const [batchFromEmail, setBatchFromEmail] = useState("info@autofya.com");
@@ -304,11 +343,127 @@ export default function AdminDashboardPage() {
     if (token) {
       fetchDashboardData();
       fetchBookingData();
+      fetchContactData();
       fetchAnalyticsData();
       fetchCMSData();
       fetchJobsData();
     }
-  }, [token, roleFilter, statusFilter, bookingStatusFilter, analyticsSearch, cmsSearch, cmsCategoryFilter, cmsJobSearch, activeTab]);
+  }, [token, roleFilter, statusFilter, bookingStatusFilter, contactStatusFilter, contactSearch, analyticsSearch, cmsSearch, cmsCategoryFilter, cmsJobSearch, activeTab]);
+
+  const fetchContactData = async () => {
+    if (!token) return;
+    try {
+      let url = `${API_BASE_URL}/bookings/contacts/admin/?search=${encodeURIComponent(contactSearch)}`;
+      if (contactStatusFilter && contactStatusFilter !== "all") {
+        url += `&status=${contactStatusFilter}`;
+      }
+      const res = await fetch(url, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (data.success) {
+        setContacts(data.contacts);
+      }
+
+      const statsRes = await fetch(`${API_BASE_URL}/bookings/contacts/admin/stats/`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const statsData = await statsRes.json();
+      if (statsData.success) {
+        setContactStats(statsData.stats);
+      }
+    } catch (err) {
+      console.error("Error fetching contact submission data:", err);
+    }
+  };
+
+  const handleContactSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    fetchContactData();
+  };
+
+  const handleOpenContactReplyModal = (contact: ContactSubmissionItem) => {
+    setEmailingContact(contact);
+    setContactReplyFromEmail("support@autofya.com");
+    setContactReplySubject(`Re: Inquiry regarding ${contact.service || "Autofya Project"}`);
+    setContactReplyMessage(
+      `Dear ${contact.full_name},\n\nThank you for contacting Autofya! We received your project details regarding "${contact.service || "Custom Development"}" and would love to discuss next steps.\n\nBest regards,\nAutofya Support Team\nsupport@autofya.com`
+    );
+  };
+
+  const handleSendContactReply = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!emailingContact) return;
+    setIsSendingContactReply(true);
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/bookings/contacts/admin/${emailingContact.id}/reply/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          subject: contactReplySubject,
+          message: contactReplyMessage,
+          from_email: contactReplyFromEmail,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setFeedbackMsg({ type: "success", text: `Reply email sent to ${emailingContact.email} successfully!` });
+        setEmailingContact(null);
+        fetchContactData();
+      } else {
+        setFeedbackMsg({ type: "error", text: data.message || "Failed to send email reply." });
+      }
+    } catch (err: any) {
+      setFeedbackMsg({ type: "error", text: err.message || "Error sending email reply." });
+    } finally {
+      setIsSendingContactReply(false);
+    }
+  };
+
+  const handleUpdateContactStatus = async (contactId: number, status: string) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/bookings/contacts/admin/${contactId}/`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ status }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setFeedbackMsg({ type: "success", text: "Contact inquiry status updated." });
+        fetchContactData();
+      }
+    } catch (err) {
+      console.error("Error updating contact status:", err);
+    }
+  };
+
+  const handleDeleteContactConfirm = async () => {
+    if (!deletingContact) return;
+    setIsUpdating(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/bookings/contacts/admin/${deletingContact.id}/`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (data.success) {
+        setFeedbackMsg({ type: "success", text: "Contact submission deleted." });
+        setDeletingContact(null);
+        fetchContactData();
+      }
+    } catch (err) {
+      console.error("Error deleting contact submission:", err);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
   const formatDuration = (seconds: number) => {
     if (!seconds || seconds <= 0) return "0s";
@@ -1336,6 +1491,30 @@ console.log("Task Status:", result.status);</code></pre>
               )}
             </button>
 
+            {/* Contact Inquiries Tab */}
+            <button
+              onClick={() => setActiveTab("contacts")}
+              className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
+                activeTab === "contacts"
+                  ? "bg-gradient-to-r from-[#00a2ad] to-[#00808a] text-white shadow-lg shadow-[#00a2ad]/20"
+                  : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+              }`}
+            >
+              <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              {!sidebarCollapsed && (
+                <div className="flex items-center justify-between w-full">
+                  <span>Contact Inquiries</span>
+                  {contactStats && contactStats.new_contacts > 0 && (
+                    <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-500 text-black animate-pulse">
+                      {contactStats.new_contacts}
+                    </span>
+                  )}
+                </div>
+              )}
+            </button>
+
             <button
               onClick={() => setActiveTab("users")}
               className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
@@ -1795,6 +1974,156 @@ console.log("Task Status:", result.status);</code></pre>
                       <tr>
                         <td colSpan={6} className="py-12 text-center text-slate-500">
                           No schedule call bookings found.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* ========================================== */}
+          {/* CONTACT INQUIRIES MANAGEMENT SECTION       */}
+          {/* ========================================== */}
+          {(activeTab === "overview" || activeTab === "contacts") && (
+            <div className="p-6 rounded-2xl bg-[#0F172A] border border-slate-800 shadow-xl space-y-6">
+              
+              {/* Header & Controls */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                    <span>Contact Form Inquiries</span>
+                    {contactStats && contactStats.new_contacts > 0 && (
+                      <span className="px-2 py-0.5 rounded-full text-xs font-extrabold bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                        {contactStats.new_contacts} Unreplied Messages
+                      </span>
+                    )}
+                  </h2>
+                  <p className="text-xs text-slate-400">Manage inquiries submitted via website Contact page & reply directly via email</p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                  {/* Search Bar */}
+                  <form onSubmit={handleContactSearchSubmit} className="relative flex-1 sm:w-64">
+                    <input
+                      type="text"
+                      placeholder="Search name, email, details..."
+                      value={contactSearch}
+                      onChange={(e) => setContactSearch(e.target.value)}
+                      className="w-full pl-9 pr-4 py-2 bg-slate-800/80 border border-slate-700 text-xs text-white rounded-xl focus:outline-none focus:border-[#00a2ad] placeholder:text-slate-500"
+                    />
+                    <svg className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </form>
+
+                  {/* Status Filter */}
+                  <select
+                    value={contactStatusFilter}
+                    onChange={(e) => setContactStatusFilter(e.target.value)}
+                    className="px-3 py-2 bg-slate-800/80 border border-slate-700 text-xs text-slate-300 rounded-xl focus:outline-none focus:border-[#00a2ad] cursor-pointer"
+                  >
+                    <option value="all">All Inquiries ({contactStats?.total_contacts || 0})</option>
+                    <option value="new">New ({contactStats?.new_contacts || 0})</option>
+                    <option value="replied">Replied ({contactStats?.replied_contacts || 0})</option>
+                    <option value="archived">Archived ({contactStats?.archived_contacts || 0})</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Table Container */}
+              <div className="overflow-x-auto rounded-xl border border-slate-800">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-slate-900/80 text-slate-400 text-[11px] font-bold uppercase tracking-wider border-b border-slate-800">
+                      <th className="py-3.5 px-4">Contact Info</th>
+                      <th className="py-3.5 px-4">Company & Industry</th>
+                      <th className="py-3.5 px-4">Service & Budget</th>
+                      <th className="py-3.5 px-4">Project Message</th>
+                      <th className="py-3.5 px-4">Status</th>
+                      <th className="py-3.5 px-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/60 text-xs text-slate-300">
+                    {contacts.length > 0 ? (
+                      contacts.map((contact) => (
+                        <tr key={contact.id} className="hover:bg-slate-800/40 transition-colors">
+                          <td className="py-3.5 px-4">
+                            <div>
+                              <p className="font-bold text-white text-sm">{contact.full_name}</p>
+                              <a href={`mailto:${contact.email}`} className="text-[#00a2ad] text-xs font-semibold hover:underline block">
+                                {contact.email}
+                              </a>
+                              {contact.phone && <p className="text-slate-400 text-[11px] font-mono">{contact.phone}</p>}
+                            </div>
+                          </td>
+
+                          <td className="py-3.5 px-4">
+                            <p className="font-semibold text-slate-200">{contact.company_name || "N/A"}</p>
+                            <p className="text-slate-400 text-[11px]">{contact.industry || "N/A"}</p>
+                          </td>
+
+                          <td className="py-3.5 px-4">
+                            <p className="font-semibold text-cyan-400">{contact.service || "General Inquiry"}</p>
+                            <p className="text-emerald-400 font-bold text-[11px]">{contact.budget || "N/A"}</p>
+                          </td>
+
+                          <td className="py-3.5 px-4 max-w-xs">
+                            <p className="text-slate-300 line-clamp-2 text-xs italic bg-slate-900/60 p-2 rounded-lg border border-slate-800/80">
+                              &ldquo;{contact.project_details}&rdquo;
+                            </p>
+                          </td>
+
+                          <td className="py-3.5 px-4">
+                            {contact.status === "new" && (
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-amber-500/15 text-amber-400 border border-amber-500/30 uppercase">
+                                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping"></span>
+                                New Unreplied
+                              </span>
+                            )}
+                            {contact.status === "replied" && (
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 uppercase">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                                Replied
+                              </span>
+                            )}
+                            {contact.status === "archived" && (
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-slate-700/50 text-slate-400 border border-slate-600/30 uppercase">
+                                Archived
+                              </span>
+                            )}
+                          </td>
+
+                          <td className="py-3.5 px-4 text-right space-x-2 shrink-0">
+                            <button
+                              onClick={() => handleOpenContactReplyModal(contact)}
+                              className="px-3 py-1.5 rounded-lg bg-[#00a2ad]/10 hover:bg-[#00a2ad]/20 text-[#00a2ad] border border-[#00a2ad]/30 text-xs font-bold transition-colors cursor-pointer"
+                              title="Reply directly via Email"
+                            >
+                              ✉️ Reply
+                            </button>
+                            <button
+                              onClick={() => setSelectedContact(contact)}
+                              className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold border border-slate-700 cursor-pointer"
+                              title="View Details"
+                            >
+                              👁️ Details
+                            </button>
+                            <button
+                              onClick={() => setDeletingContact(contact)}
+                              className="px-2 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs cursor-pointer"
+                              title="Delete Submission"
+                            >
+                              🗑️
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={6} className="py-8 text-center text-slate-500 text-sm">
+                          No contact form inquiries found matching your filters.
                         </td>
                       </tr>
                     )}
@@ -4109,6 +4438,266 @@ console.log("Task Status:", result.status);</code></pre>
                 No job applications received yet for this position.
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* ========================================== */}
+      {/* SEND DIRECT CONTACT REPLY MODAL            */}
+      {/* ========================================== */}
+      {emailingContact && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#0F172A] border border-slate-700 rounded-2xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+              <div>
+                <span className="text-xs font-bold text-[#00a2ad] uppercase tracking-wider block">
+                  Reply to Contact Inquiry
+                </span>
+                <h3 className="text-xl font-bold text-white mt-0.5">
+                  Send Email to {emailingContact.full_name}
+                </h3>
+              </div>
+              <button onClick={() => setEmailingContact(null)} className="text-slate-400 hover:text-white text-lg cursor-pointer">
+                ✕
+              </button>
+            </div>
+
+            {/* Submitter Quick Details */}
+            <div className="bg-slate-900 p-4 rounded-xl border border-slate-800 space-y-2 text-xs">
+              <div className="flex justify-between">
+                <span className="text-slate-400">Recipient Email:</span>
+                <span className="font-bold text-[#00a2ad]">{emailingContact.email}</span>
+              </div>
+              {emailingContact.service && (
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Requested Service:</span>
+                  <span className="font-semibold text-cyan-400">{emailingContact.service}</span>
+                </div>
+              )}
+              {emailingContact.company_name && (
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Company:</span>
+                  <span className="text-slate-300">{emailingContact.company_name}</span>
+                </div>
+              )}
+              <div className="pt-2 border-t border-slate-800">
+                <p className="text-slate-400 font-semibold mb-1">Original Project Inquiry:</p>
+                <p className="text-slate-300 italic bg-slate-950 p-2.5 rounded-lg border border-slate-800">
+                  &ldquo;{emailingContact.project_details}&rdquo;
+                </p>
+              </div>
+            </div>
+
+            <form onSubmit={handleSendContactReply} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1">
+                  From Email Address
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={contactReplyFromEmail}
+                  onChange={(e) => setContactReplyFromEmail(e.target.value)}
+                  placeholder="e.g. support@autofya.com"
+                  className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-[#00a2ad]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1">
+                  Email Subject *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={contactReplySubject}
+                  onChange={(e) => setContactReplySubject(e.target.value)}
+                  placeholder="e.g. Re: Your inquiry at Autofya"
+                  className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-[#00a2ad]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1">
+                  Reply Message Content *
+                </label>
+                <textarea
+                  required
+                  rows={6}
+                  value={contactReplyMessage}
+                  onChange={(e) => setContactReplyMessage(e.target.value)}
+                  placeholder="Type your response to the client..."
+                  className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-[#00a2ad] resize-none"
+                />
+              </div>
+
+              <div className="pt-4 flex items-center justify-end gap-3 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setEmailingContact(null)}
+                  className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold hover:bg-slate-700"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSendingContactReply}
+                  className="px-5 py-2.5 rounded-xl bg-[#00a2ad] hover:bg-[#00808a] text-white text-xs font-bold shadow-lg flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                >
+                  {isSendingContactReply ? (
+                    <>Sending Email...</>
+                  ) : (
+                    <>
+                      <span>Send Email Reply</span>
+                      <span>🚀</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================== */}
+      {/* VIEW CONTACT DETAILS MODAL                 */}
+      {/* ========================================== */}
+      {selectedContact && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#0F172A] border border-slate-700 rounded-2xl max-w-xl w-full p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+              <div>
+                <span className="text-xs font-bold text-[#00a2ad] uppercase tracking-wider block">
+                  Inquiry Details
+                </span>
+                <h3 className="text-xl font-bold text-white mt-0.5">
+                  {selectedContact.full_name}
+                </h3>
+              </div>
+              <button onClick={() => setSelectedContact(null)} className="text-slate-400 hover:text-white text-lg">
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-4 text-xs text-slate-300">
+              <div className="grid grid-cols-2 gap-4 bg-slate-900 p-4 rounded-xl border border-slate-800">
+                <div>
+                  <p className="text-slate-400 font-semibold">Email:</p>
+                  <a href={`mailto:${selectedContact.email}`} className="text-[#00a2ad] font-bold hover:underline">
+                    {selectedContact.email}
+                  </a>
+                </div>
+                <div>
+                  <p className="text-slate-400 font-semibold">Phone:</p>
+                  <p className="font-mono text-white">{selectedContact.phone || "Not provided"}</p>
+                </div>
+                <div>
+                  <p className="text-slate-400 font-semibold">Company:</p>
+                  <p className="text-white font-medium">{selectedContact.company_name || "N/A"}</p>
+                </div>
+                <div>
+                  <p className="text-slate-400 font-semibold">Industry:</p>
+                  <p className="text-white font-medium">{selectedContact.industry || "N/A"}</p>
+                </div>
+                <div>
+                  <p className="text-slate-400 font-semibold">Requested Service:</p>
+                  <p className="text-cyan-400 font-bold">{selectedContact.service || "N/A"}</p>
+                </div>
+                <div>
+                  <p className="text-slate-400 font-semibold">Estimated Budget:</p>
+                  <p className="text-emerald-400 font-bold">{selectedContact.budget || "N/A"}</p>
+                </div>
+              </div>
+
+              <div>
+                <p className="text-slate-400 font-bold mb-1">Project Details / Message:</p>
+                <div className="bg-slate-900 p-4 rounded-xl border border-slate-800 whitespace-pre-line leading-relaxed text-slate-200">
+                  {selectedContact.project_details}
+                </div>
+              </div>
+
+              {selectedContact.admin_reply && (
+                <div className="pt-2">
+                  <p className="text-emerald-400 font-bold mb-1 flex items-center gap-1">
+                    <span>✓ Admin Email Reply Sent</span>
+                    <span className="text-[10px] text-slate-400 font-normal">
+                      ({selectedContact.replied_at ? new Date(selectedContact.replied_at).toLocaleString() : ""})
+                    </span>
+                  </p>
+                  <div className="bg-emerald-950/40 p-4 rounded-xl border border-emerald-500/30 whitespace-pre-line text-emerald-200 text-xs">
+                    {selectedContact.admin_reply}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="pt-4 flex items-center justify-between border-t border-slate-800">
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-slate-400">Status:</span>
+                <select
+                  value={selectedContact.status}
+                  onChange={(e) => {
+                    handleUpdateContactStatus(selectedContact.id, e.target.value);
+                    setSelectedContact({ ...selectedContact, status: e.target.value as any });
+                  }}
+                  className="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-900 border border-slate-700 text-white cursor-pointer"
+                >
+                  <option value="new">New Unreplied</option>
+                  <option value="replied">Replied</option>
+                  <option value="archived">Archived</option>
+                </select>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => {
+                    handleOpenContactReplyModal(selectedContact);
+                    setSelectedContact(null);
+                  }}
+                  className="px-4 py-2 rounded-xl bg-[#00a2ad] text-white text-xs font-bold hover:bg-[#00808a]"
+                >
+                  ✉️ Reply via Email
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================== */}
+      {/* DELETE CONTACT SUBMISSION MODAL            */}
+      {/* ========================================== */}
+      {deletingContact && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#0F172A] border border-rose-500/30 rounded-2xl max-w-sm w-full p-6 shadow-2xl space-y-4">
+            <div className="w-12 h-12 rounded-full bg-rose-500/10 text-rose-400 flex items-center justify-center mx-auto">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+
+            <div className="text-center">
+              <h3 className="text-base font-bold text-white">Delete Contact Submission?</h3>
+              <p className="text-xs text-slate-400 mt-1">
+                Are you sure you want to delete inquiry from <span className="text-rose-300 font-semibold">&ldquo;{deletingContact.full_name}&rdquo;</span>?
+              </p>
+            </div>
+
+            <div className="pt-3 flex items-center justify-center gap-3">
+              <button
+                onClick={() => setDeletingContact(null)}
+                className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteContactConfirm}
+                disabled={isUpdating}
+                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-lg"
+              >
+                {isUpdating ? "Deleting..." : "Confirm Delete"}
+              </button>
+            </div>
           </div>
         </div>
       )}

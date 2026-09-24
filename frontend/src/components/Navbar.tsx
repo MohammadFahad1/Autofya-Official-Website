@@ -833,6 +833,18 @@ export default function Navbar() {
                           </Link>
                         );
                       }
+                      if (item === "Contact") {
+                        return (
+                          <Link
+                            key={idx}
+                            href="/contact"
+                            onClick={() => setActiveMegaMenu(null)}
+                            className="text-[15px] font-medium text-slate-700 hover:text-[#00a2ad] transition-colors block py-0.5 cursor-pointer"
+                          >
+                            {item}
+                          </Link>
+                        );
+                      }
                       return (
                         <a
                           key={idx}

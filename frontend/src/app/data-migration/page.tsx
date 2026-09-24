@@ -652,8 +652,8 @@ export default function DataMigrationPage() {
                 <div className="space-y-3 pt-2 text-sm">
                   <div>
                     <span className="text-xs text-slate-400 font-bold uppercase block">Email Us</span>
-                    <a href="mailto:sales@autofya.com" className="text-[#00a2ad] font-semibold hover:underline">
-                      sales@autofya.com
+                    <a href="mailto:info@autofya.com" className="text-[#00a2ad] font-semibold hover:underline">
+                      info@autofya.com
                     </a>
                   </div>
                   <div>

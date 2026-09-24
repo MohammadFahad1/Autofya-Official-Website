@@ -449,7 +449,7 @@ export default function WebMobileAppDevelopmentPage() {
                   </div>
                   <div>
                     <strong className="text-[#0B1340] block font-bold">Email:</strong>
-                    contact@autofya.com
+                    support@autofya.com
                   </div>
                   <div>
                     <strong className="text-[#0B1340] block font-bold">Global Headquarters:</strong>

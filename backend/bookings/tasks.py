@@ -154,3 +154,46 @@ def send_marketing_batch_email(recipients, subject, message, button_text=None, b
     return f"Batch marketing email sent from {sender} to {sent_count}/{len(recipients)} recipients. Errors: {errors}"
 
 
+@shared_task
+def send_contact_reply_email(submission_id, subject, message, from_email=None):
+    from bookings.models import ContactSubmission
+    try:
+        submission = ContactSubmission.objects.get(id=submission_id)
+    except ContactSubmission.DoesNotExist:
+        return f"Contact submission with id {submission_id} does not exist."
+
+    sender = (from_email and from_email.strip()) or getattr(settings, 'EMAIL_HOST_USER', None) or "support@autofya.com"
+    recipients = [submission.email]
+
+    context = {
+        "submission": submission,
+        "subject": subject,
+        "message": message,
+    }
+
+    try:
+        html_content = render_to_string("custom_booking_email_template.html", {
+            "booking": submission,
+            "subject": subject,
+            "message": message,
+        })
+    except Exception:
+        html_content = f"<h2>{subject}</h2><p>{message}</p>"
+
+    text_content = f"Dear {submission.full_name},\n\n{message}\n\nBest regards,\nAutofya Support"
+
+    try:
+        msg = EmailMultiAlternatives(
+            subject,
+            text_content,
+            sender,
+            recipients
+        )
+        msg.attach_alternative(html_content, "text/html")
+        msg.send()
+        return f"Contact reply email sent to {submission.email} from {sender}"
+    except Exception as e:
+        return f"Error sending contact reply email: {e}"
+
+
+

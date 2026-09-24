@@ -225,10 +225,10 @@ export default function CareerClient({ initialJobs = [] }: { initialJobs?: JobPo
                 <div>
                   <span className="font-bold text-[#0B1340]">Contact Us: </span>
                   <a
-                    href="mailto:contact@autofya.com"
+                    href="mailto:support@autofya.com"
                     className="text-[#00a2ad] hover:underline font-semibold"
                   >
-                    contact@autofya.com
+                    support@autofya.com
                   </a>
                 </div>
                 <div>
@@ -340,7 +340,7 @@ export default function CareerClient({ initialJobs = [] }: { initialJobs?: JobPo
                   No Open Positions Currently
                 </h4>
                 <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                  We are not actively recruiting for new roles right now. Please check back later or send your CV to <a href="mailto:contact@autofya.com" className="text-[#00a2ad] font-bold hover:underline">contact@autofya.com</a>.
+                  We are not actively recruiting for new roles right now. Please check back later or send your CV to <a href="mailto:support@autofya.com" className="text-[#00a2ad] font-bold hover:underline">support@autofya.com</a>.
                 </p>
               </div>
             )}

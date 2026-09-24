@@ -36,3 +36,34 @@ class Booking(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.email}) - {self.date} {self.time_slot}"
+
+
+class ContactSubmission(models.Model):
+    STATUS_CHOICES = [
+        ('new', 'New'),
+        ('replied', 'Replied'),
+        ('archived', 'Archived'),
+    ]
+
+    full_name = models.CharField(max_length=255)
+    email = models.EmailField()
+    phone = models.CharField(max_length=50, blank=True, null=True)
+    company_name = models.CharField(max_length=255, blank=True, null=True)
+    industry = models.CharField(max_length=100, blank=True, null=True)
+    service = models.CharField(max_length=100, blank=True, null=True)
+    budget = models.CharField(max_length=100, blank=True, null=True)
+    project_details = models.TextField()
+    
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='new')
+    admin_reply = models.TextField(blank=True, null=True)
+    replied_at = models.DateTimeField(blank=True, null=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Contact Submission from {self.full_name} ({self.email})"
+

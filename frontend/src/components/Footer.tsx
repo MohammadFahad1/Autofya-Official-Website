@@ -10,6 +10,7 @@ interface Office {
   country: string;
   address: string;
   email: string;
+  phone?: string;
   renderSkyline: () => React.ReactNode;
 }
 
@@ -25,8 +26,9 @@ export default function Footer() {
   const offices: Office[] = [
     {
       country: "Bangladesh",
-      address: "8th Floor, 2 Bir Uttam AK Khandakar Road, Mohakhali C/A,Dhaka 1212, Bangladesh",
-      email: "sales@autofya.com",
+      address: "8th Floor, 2 Bir Uttam AK Khandakar Road, Mohakhali C/A, Dhaka 1212, Bangladesh",
+      email: "support@autofya.com",
+      phone: "+8801406792827",
       renderSkyline: () => (
         <svg viewBox="0 0 160 100" className="w-36 sm:w-44 h-auto text-slate-500/80 stroke-current fill-none stroke-[1.25]" strokeLinecap="round" strokeLinejoin="round">
           <path d="M10 90h140M20 94h120M35 97h90" opacity="0.4" />
@@ -42,7 +44,8 @@ export default function Footer() {
     {
       country: "USA",
       address: "7426 Alban Station Blvd, Suite a101, Springfield, VA 22150",
-      email: "sales@autofya.com",
+      email: "support@autofya.com",
+      phone: "+8801406792827",
       renderSkyline: () => (
         <svg viewBox="0 0 160 100" className="w-36 sm:w-44 h-auto text-slate-500/80 stroke-current fill-none stroke-[1.25]" strokeLinecap="round" strokeLinejoin="round">
           <path d="M10 90h140M20 94h120" opacity="0.4" />
@@ -58,7 +61,8 @@ export default function Footer() {
     {
       country: "Germany",
       address: "Bad Zwischenahn",
-      email: "sales@autofya.de",
+      email: "support@autofya.com",
+      phone: "+8801406792827",
       renderSkyline: () => (
         <svg viewBox="0 0 160 100" className="w-36 sm:w-44 h-auto text-slate-500/80 stroke-current fill-none stroke-[1.25]" strokeLinecap="round" strokeLinejoin="round">
           <path d="M10 90h140M25 94h110" opacity="0.4" />
@@ -73,7 +77,8 @@ export default function Footer() {
     {
       country: "UAE",
       address: "903, Damac XL Tower, Business Bay, P.O. Box: 29544, Dubai, UAE.",
-      email: "sales@autofya.com",
+      email: "support@autofya.com",
+      phone: "+8801406792827",
       renderSkyline: () => (
         <svg viewBox="0 0 160 100" className="w-36 sm:w-44 h-auto text-slate-500/80 stroke-current fill-none stroke-[1.25]" strokeLinecap="round" strokeLinejoin="round">
           <path d="M10 90h140M30 94h100" opacity="0.4" />
@@ -88,7 +93,8 @@ export default function Footer() {
     {
       country: "Malaysia",
       address: "Level 9, Integra Tower, The Intermark, No. 348, Jalan Tun Razak, 50400 Kuala Lumpur, Malaysia",
-      email: "sales@autofya.com",
+      email: "support@autofya.com",
+      phone: "+8801406792827",
       renderSkyline: () => (
         <svg viewBox="0 0 160 100" className="w-36 sm:w-44 h-auto text-slate-500/80 stroke-current fill-none stroke-[1.25]" strokeLinecap="round" strokeLinejoin="round">
           <path d="M10 90h140M20 94h120" opacity="0.4" />
@@ -105,7 +111,8 @@ export default function Footer() {
     {
       country: "Japan",
       address: "Daishin Akiyama Building 3F, THE HUB Shinagawa #324 2-3-1 Konan, Minato-ku, Tokyo 108-0075",
-      email: "sales@autofya.com",
+      email: "support@autofya.com",
+      phone: "+8801406792827",
       renderSkyline: () => (
         <svg viewBox="0 0 160 100" className="w-36 sm:w-44 h-auto text-slate-500/80 stroke-current fill-none stroke-[1.25]" strokeLinecap="round" strokeLinejoin="round">
           <path d="M10 90h140M30 94h100" opacity="0.4" />
@@ -158,6 +165,15 @@ export default function Footer() {
                   >
                     {office.email}
                   </a>
+
+                  {office.phone && (
+                    <a
+                      href={`tel:${office.phone.replace(/\s+/g, '')}`}
+                      className="text-slate-300 hover:text-white text-sm font-medium block transition-colors"
+                    >
+                      {office.phone}
+                    </a>
+                  )}
                 </div>
 
               </div>
@@ -261,7 +277,7 @@ export default function Footer() {
                 <li><Link href="/case-studies" className="hover:text-white transition-colors">Case Studies</Link></li>
                 <li><a href="#blog" className="hover:text-white transition-colors">Blog</a></li>
                 <li><Link href="/career" className="hover:text-white transition-colors">Career</Link></li>
-                <li><a href="#contact" className="hover:text-white transition-colors">Contact</a></li>
+                <li><Link href="/contact" className="hover:text-white transition-colors">Contact</Link></li>
               </ul>
             </div>
 
